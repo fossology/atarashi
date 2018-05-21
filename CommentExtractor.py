@@ -1,6 +1,8 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 import os
 import sys
-import scipy
 import string
 import code_comment # https://github.com/amanjain97/code_comment/
 import tempfile
