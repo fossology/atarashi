@@ -45,9 +45,9 @@ elif [[ ( $PYTHON -eq 0 ) && ( $PIP -ne 0 ) ]]; then
     echo "Detected Distro ... ${DISTRO}. Installing pip..."
     case "$DISTRO" in
       Debian|Ubuntu|LinuxMint)
-        sudo apt-get install python-pip;;
+        sudo apt-get -y install python-pip;;
       Fedora)
-        sudo yum install python-pip;;
+        sudo yum -y install python-pip;;
       RehHatEnterprise*|CentOS)
         sudo yum -y install python36u-pip
         sudo yum -y install python36u-devel;;
@@ -66,11 +66,11 @@ else
     echo "Detected Distro ... ${DISTRO}. Installing Python and pip..."
     case "$DISTRO" in
       Debian|Ubuntu|LinuxMint)
-        sudo apt-get install python3
-        sudo apt-get install python-pip;;
+        sudo apt-get -y install python3
+        sudo apt-get -y install python-pip;;
       Fedora)
-        sudo yum install python3
-        sudo yum install python-pip;;
+        sudo yum -y install python3
+        sudo yum -y install python-pip;;
       RehHatEnterprise*|CentOS)
         sudo yum -y install https://centos7.iuscommunity.org/ius-release.rpm
         sudo yum -y install python36u
