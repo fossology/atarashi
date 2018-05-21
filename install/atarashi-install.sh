@@ -87,4 +87,4 @@ fi
 
 # install Code_comment from Git https://github.com/amanjain97/code_comment
 echo "Installing Code_comment ..."
-pip install -e git+https://github.com/amanjain97/code_comment#egg=code_comment
+sudo pip install -e git+https://github.com/amanjain97/code_comment#egg=code_comment
