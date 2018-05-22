@@ -3,7 +3,6 @@
 
 import os
 import sys
-import scipy
 import string
 import re
 
