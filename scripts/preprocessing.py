@@ -6,7 +6,7 @@ import sys
 import string
 import re
 
-filename = sys.argv[1]
+# filename = sys.argv[1]
 
 """Rules to apply:
 All whitespace should be treated as a single blank space
@@ -66,13 +66,15 @@ replacements = {
 def replace(match):
   return replacements[match.group(0)]
 
-with open(filename) as file:
-  data = file.read().replace('\n', ' ')
-  data = re.sub('|'.join(r'\b%s\b' % re.escape(s) for s in replacements), replace, data)
-  data = data.lower()
-  data = re.sub(r'\s\s*', ' ', data)
-  data = re.sub(r'\u00A9|copyright|\(c\)', 'copyright', data)
-  data = re.sub(r'[{}]'.format(string.punctuation), '.', data)
-  data = re.sub(r'[\u2022,\u2023,\u25E6,\u2043,\u2219]', '', data)
+def preprocess(filename):
+  with open(filename) as file:
+    data = file.read().replace('\n', ' ')
+    data = re.sub('|'.join(r'\b%s\b' % re.escape(s) for s in replacements), replace, data)
+    data = data.lower()
+    data = re.sub(r'\s\s*', ' ', data)
+    data = re.sub(r'\u00A9|copyright|\(c\)', 'copyright', data)
+    data = re.sub(r'[{}]'.format(string.punctuation), '.', data)
+    # data = re.sub(r'[\u2022,\u2023,\u25E6,\u2043,\u2219]', '', data)
+    return data
 
-print(data)
+# print(data)
