@@ -14,8 +14,8 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-Author: Aman Jain (amanjain5221@gmail.com)
 '''
+__author__ = "Aman Jain"
 
 import os
 import sys
@@ -25,6 +25,8 @@ from CommentPreprocessor import preprocess
 from CommentExtractor import CommentExtract
 from pyxdameraulevenshtein import damerau_levenshtein_distance
 from getLicenses import fetch_licenses
+import time
+
 
 '''Python Module to classify license using Damerau Levenshtein distance algorithm
 Input: File from which license needs to be scanned and license list (CSV)
@@ -40,7 +42,8 @@ def classifyLicenseDameruLevenDist(processedData, licenses):
   globalDistance = sys.maxsize
   result = 0
   for idx in range(len(licenses)):
-    distance = damerau_levenshtein_distance(processedData, licenses[idx][1])
+    distance = damerau_levenshtein_distance(processedData.split(' '), licenses[idx][1].split(' '))
+    print(str(idx) + "  " + licenses[idx][0] + "  " + str(distance))
     if distance < globalDistance:
       globalDistance = distance
       result = idx
@@ -59,5 +62,8 @@ with open(commentFile) as file:
   data = file.read().replace('\n', ' ')
 processedData = preprocess(data)
 
+startTime = time.time()
+print("license id --- License name --- Leven Dist")
 result = classifyLicenseDameruLevenDist(processedData, licenses)
+print("time taken is " + str(time.time() - startTime) + " seconds")
 print("License Detected using Dameru Leven Distance: " + licenses[result][0])
