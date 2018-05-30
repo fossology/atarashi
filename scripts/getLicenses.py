@@ -21,7 +21,7 @@ import csv
 from preprocessing import preprocess
 
 def fetch_licenses(licenseList):  # common
-  ''' Fetch license name and description from the License List (CSV) 
+  ''' Fetch license short name and description from the License List (CSV) 
   and preprocess them
   '''
   licenses = []
@@ -30,9 +30,7 @@ def fetch_licenses(licenseList):  # common
     count = 0
     for row in licenseReader:
       if count > 0: 
-        licenses.append(row[1:3])
-      if count == 2:
-        break
+        licenses.append([row[0], row[2]])
       count = count + 1
   for idx in range(len(licenses)):
     licenses[idx][1] = preprocess(licenses[idx][1])
