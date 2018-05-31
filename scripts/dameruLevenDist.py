@@ -37,7 +37,7 @@ Description: It extract comments from the file and after preprocessing,
 
 def classifyLicenseDameruLevenDist(processedData, licenses):
   # Classify the license with minimum distance with scanned file
-  globalDistance = sys.maxint
+  globalDistance = sys.maxsize
   result = 0
   for idx in range(len(licenses)):
     distance = damerau_levenshtein_distance(processedData, licenses[idx][1])
