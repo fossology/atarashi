@@ -21,7 +21,7 @@ import os
 import sys
 import re
 import csv
-from preprocessing import preprocess
+from CommentPreprocessor import preprocess
 from CommentExtractor import CommentExtract
 from pyxdameraulevenshtein import damerau_levenshtein_distance
 from getLicenses import fetch_licenses
