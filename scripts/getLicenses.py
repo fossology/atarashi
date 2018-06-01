@@ -18,7 +18,7 @@ Author: Aman Jain (amanjain5221@gmail.com)
 '''
 
 import csv
-from preprocessing import preprocess
+from CommentPreprocessor import preprocess
 
 def fetch_licenses(licenseList):  # common
   ''' Fetch license short name and description from the License List (CSV) 
