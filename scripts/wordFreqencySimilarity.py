@@ -17,13 +17,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 Author: Aman Jain (amanjain5221@gmail.com)
 '''
 
-import os
-import sys
 import re
-import csv
-from preprocessing import preprocess
+import sys
+
 from CommentExtractor import CommentExtract
 from getLicenses import fetch_licenses
+from CommentPreprocessor import preprocess
 
 '''Python Module to classify license using histogram similarity algorithm
 Input: File from which license needs to be scanned and license list (CSV)
