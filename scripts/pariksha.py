@@ -18,6 +18,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 __author__ = "Aman Jain"
 
 import argparse
+import os
+import sys
 
 from dameruLevenDist import classifyLicenseDameruLevenDist
 from tfidf import tfidfcosinesim
@@ -28,11 +30,14 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument("AgentName", choices=['DLD', 'tfidfcosinesim', 'tfidfsumscore'],
                       help="Name of the agent that needs to be run")
+  parser.add_argument("LicenseList", help="Specify the license list file which contains licenses")
   parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
   args = parser.parse_args()
   agent_name = args.AgentName
+  licenseList = args.LicenseList
 
-  pathto = '../tests/'.format(agent_name="nomos")
+  pathname = os.path.dirname(sys.argv[0])
+  pathto = os.path.abspath(pathname) + '/../tests/'
   expected_license_output = pathto + 'GoodTestfilesScan'
 
   with open(expected_license_output, 'r') as f:
@@ -41,8 +46,8 @@ if __name__ == "__main__":
       filePath = text[1]
 
       if agent_name == "DLD":
-        print(classifyLicenseDameruLevenDist(pathto + filePath, '../licenseList1.csv'), text[1], text[4])
+        print(classifyLicenseDameruLevenDist(pathto + filePath, licenseList), text[1], text[4])
       elif agent_name == "tfidfcosinesim":
-        print(tfidfcosinesim(pathto + filePath, '../licenseList1.csv'), text[1], text[4])
+        print(tfidfcosinesim(pathto + filePath, licenseList), text[1], text[4])
       elif agent_name == "tfidfsumscore":
-        print(tfidfcosinesim(pathto + filePath, '../licenseList1.csv'), text[1], text[4])
+        print(tfidfcosinesim(pathto + filePath, licenseList), text[1], text[4])
