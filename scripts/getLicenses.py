@@ -29,23 +29,16 @@ def fetch_licenses(licenseList):  # common
   ''' Fetch license short name and description from the License List (CSV) 
   and preprocess them
   '''
-  licenses = []
   with open(licenseList, 'r') as licenseFile:
     licenseReader = csv.reader(licenseFile)
-    count = 0
-    for row in licenseReader:
-      if count > 0: 
-        licenses.append([row[1], row[3]])
-      count = count + 1
-  for idx in range(len(licenses)):
-    licenses[idx][1] = preprocess(licenses[idx][1])
+    licenses = [r for r in licenseReader]
   return licenses
 
 
 if __name__ == "__main__":
   print("The file has been run directly")
   parser = argparse.ArgumentParser()
-  parser.add_argument("licenseList", help="Specify the license list file which contains licenses")
+  parser.add_argument("processedLicenseList", help="Specify the processed license list file")
   parser.add_argument("-v", "--verbose", help="increase output verbosity",
                       action="store_true")
   args = parser.parse_args()

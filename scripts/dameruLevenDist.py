@@ -26,6 +26,7 @@ from CommentExtractor import CommentExtract
 from CommentPreprocessor import preprocess
 from getLicenses import fetch_licenses
 from exactMatch import exactMatcher
+from nltk.tokenize import word_tokenize
 
 '''Python Module to classify license using Damerau Levenshtein distance algorithm
 Input: File from which license needs to be scanned and license list (CSV)
@@ -53,7 +54,7 @@ def classifyLicenseDameruLevenDist(filename, licenseList):
     globalDistance = sys.maxsize
     result = 0
     for idx in range(len(licenses)):
-      distance = damerau_levenshtein_distance(processedData.split(' '), licenses[idx][1].split(' '))
+      distance = damerau_levenshtein_distance(word_tokenize(processedData), word_tokenize(licenses[idx][1]))
       if args is not None and args.verbose:
         print(str(idx) + "  " + licenses[idx][0] + "  " + str(distance))
       if distance < globalDistance:

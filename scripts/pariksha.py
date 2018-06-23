@@ -23,6 +23,7 @@ import sys
 
 from dameruLevenDist import classifyLicenseDameruLevenDist
 from tfidf import tfidfcosinesim
+from LicensePreprocessor import create_processed_file
 
 args = None
 
@@ -40,14 +41,17 @@ if __name__ == "__main__":
   pathto = os.path.abspath(pathname) + '/../tests/'
   expected_license_output = pathto + 'GoodTestfilesScan'
 
+  processedLicense = 'processedLicense.csv'
+  processedLicense = create_processed_file(licenseList, processedLicense)
+
   with open(expected_license_output, 'r') as f:
     for counter, text in enumerate([l.strip() for l in f], start=1):
       text = text.split(' ')
       filePath = text[1]
 
       if agent_name == "DLD":
-        print(classifyLicenseDameruLevenDist(pathto + filePath, licenseList), text[1], text[4])
+        print(classifyLicenseDameruLevenDist(pathto + filePath, processedLicense), text[1], text[4])
       elif agent_name == "tfidfcosinesim":
-        print(tfidfcosinesim(pathto + filePath, licenseList), text[1], text[4])
+        print(tfidfcosinesim(pathto + filePath, processedLicense), text[1], text[4])
       elif agent_name == "tfidfsumscore":
-        print(tfidfcosinesim(pathto + filePath, licenseList), text[1], text[4])
+        print(tfidfcosinesim(pathto + filePath, processedLicense), text[1], text[4])

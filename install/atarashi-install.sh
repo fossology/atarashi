@@ -15,6 +15,8 @@
 # This script includes the installation of all pre-requisites
 # for running atarashi project.
 
+BASEDIR=$(dirname $0)
+
 python_for_mac()
 {
   which -s brew
@@ -100,4 +102,11 @@ fi
 
 # Installs Code_comment from Git https://github.com/amanjain97/code_comment
 echo "Installing Code_comment ..."
-sudo pip install -e git+https://github.com/amanjain97/code_comment#egg=code_comment
+pip install --user -e git+https://github.com/amanjain97/code_comment#egg=code_comment
+pip install --user -r $BASEDIR/../requirements.txt
+echo "Installing NLTK ..."
+echo | python <<EOF
+import nltk
+nltk.download('punkt')
+nltk.download('stopwords')
+EOF
