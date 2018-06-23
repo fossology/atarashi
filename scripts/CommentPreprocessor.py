@@ -20,6 +20,9 @@ __author__ = "Aman Jain"
 import argparse
 import string
 import re
+from nltk.stem import PorterStemmer
+from nltk.tokenize import sent_tokenize, word_tokenize
+from nltk.corpus import stopwords
 
 """Rules to apply:
 All whitespace should be treated as a single blank space
@@ -31,51 +34,6 @@ Ignore the list item for matching purposes (eg. bullets, numbered lists)
 
 """
 
-replacements = {
-  'acknowledgement': 'acknowledgment',
-  'analog': 'analogue',
-  'analyze': 'analyse',
-  'artifact': 'artefact',
-  'authorization': 'authorisation',
-  'authorized': 'authorised',
-  'caliber': 'calibre',
-  'canceled': 'cancelled',
-  'capitalizations': 'capitalisations',
-  'catalog': 'catalogue',
-  'categorize': 'categorise',
-  'center': 'centre',
-  'emphasized': 'emphasised',
-  'favor': 'favour',
-  'favorite': 'favourite',
-  'fulfill': 'fulfil',
-  'fulfillment': 'fulfilment',
-  'initialize': 'initialise',
-  'judgement': 'judgment',
-  'labeling': 'labelling',
-  'labor': 'labour',
-  'license': 'licence',
-  'maximize': 'maximise',
-  'modeled': 'modelled',
-  'modeling': 'modelling',
-  'offense': 'offence',
-  'optimize': 'optimise',
-  'organization': 'organisation',
-  'organize': 'organise',
-  'practice': 'practise',
-  'program': 'programme',
-  'realize': 'realise',
-  'recognize': 'recognise',
-  'signaling': 'signalling',
-  'sublicense': 'sub-license',
-  'sub-license': 'sub license',
-  'utilization': 'utilisation',
-  'while': 'whilst',
-  'wilfull': 'wilful',
-  'noncommercial': 'non-commercial',
-  'percent': 'per cent',
-  'copyright holder': 'copyright owner'
-}
-
 args = None
 
 
@@ -84,9 +42,13 @@ def replace(match):
 
 
 def preprocess(data):
-  data = re.sub('|'.join(r'\b%s\b' % re.escape(s) for s in replacements), replace, data)
+  ps = PorterStemmer()
   data = data.lower()
-  data = re.sub(r'\s\s*', ' ', data)
+  words = word_tokenize(data)
+  words = [word for word in words if word not in stopwords.words('english')]
+  data = ""
+  for word in words:
+    data += ps.stem(word) + ' '
   data = re.sub(r'copyright|\(c\)', 'copyright', data)
   data = re.sub(r'[{}]'.format(string.punctuation), '.', data)
   # data = re.sub(r'[\u2022,\u2023,\u25E6,\u2043,\u2219]', '', data)
