@@ -41,7 +41,7 @@ if __name__ == "__main__":
   pathto = os.path.abspath(pathname) + '/../tests/'
   expected_license_output = pathto + 'GoodTestfilesScan'
 
-  processedLicense = '../tests/processedLicense.csv'
+  processedLicense = 'processedLicense.csv'
   processedLicense = create_processed_file(licenseList, processedLicense)
 
   with open(expected_license_output, 'r') as f:
