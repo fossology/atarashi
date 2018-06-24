@@ -31,7 +31,7 @@ Input: License list (CSV)
 Output: Preprocessed license list
 Description: Module tokenize the license text, remove all stop words and
               save the stem using Porter stemmer.
-              python LicensePreprocessor.py <licenseList>
+              python LicensePreprocessor.py <licenseList> <processedLicenseList>
 '''
 
 args = None

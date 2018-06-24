@@ -29,7 +29,6 @@ def fetch_licenses(licenseList):  # common
   ''' Fetch license short name and description from the License List (CSV) 
   and preprocess them
   '''
-  licenses = []
   with open(licenseList, 'r') as licenseFile:
     licenseReader = csv.reader(licenseFile)
     licenses = [r for r in licenseReader]
