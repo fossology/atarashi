@@ -38,7 +38,8 @@ def fetch_licenses(licenseList):  # common
 if __name__ == "__main__":
   print("The file has been run directly")
   parser = argparse.ArgumentParser()
-  parser.add_argument("processedLicenseList", help="Specify the processed license list file")
+  parser.add_argument("processedLicenseList", help="Specify the processed license list file",
+                      required=True)
   parser.add_argument("-v", "--verbose", help="increase output verbosity",
                       action="store_true")
   args = parser.parse_args()

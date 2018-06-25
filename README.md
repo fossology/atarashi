@@ -3,7 +3,7 @@ New License Scanner Project Which Should be Integrated with FOSSology but also W
 
 ### Requirements
 - Python v3.x
-- pip 
+- pip
 
 ### Steps for Installation
 - In install folder, make the "atarashi-install.sh" executable
@@ -21,6 +21,7 @@ dameruLevenDist, getLicenses, LicensePreprocessor, pariksha, tfidf, wordFrequenc
 using `-h` or `--help` command.
 - For verbose mode use `-v` or `--verbose` flag with file name
 - eg. `python tfidf.py <inputFile> <licenseList> -v`
+- For using stop word filtering, use `-s` or `--stop-words`
 
 ### Test
 - Run pariksha (meaning *Test* in Hindi) with the name of the Agent.
