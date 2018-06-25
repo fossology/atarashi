@@ -23,6 +23,7 @@ import os
 import time
 import argparse
 from pathlib import Path
+from tqdm import tqdm
 
 from CommentPreprocessor import preprocess
 
@@ -43,18 +44,20 @@ def load_licenses(licenseList):
   licenses = []
   with open(licenseList, 'r') as licenseFile:
     licenseReader = csv.reader(licenseFile)
-    count = 0
+    next(licenseReader, None) # skip headers
     for row in licenseReader:
-      if count > 0:
-        licenses.append([row[0], row[2]])
-      count = count + 1
+      licenses.append([row[0], row[2]])
     if args is not None and args.verbose:
-      print("Loaded " + str(count) + " licenses")
-  for idx in range(len(licenses)):
+      print("Loaded " + str(len(licenses)) + " licenses")
+  iterator = ""
+  if args is not None and args.verbose:
+    iterator = tqdm(range(len(licenses)),
+                  desc = "Licenses processed:",
+                  total = len(licenses), unit = "license")
+  else:
+    iterator = range(len(licenses))
+  for idx in iterator:
     licenses[idx][1] = preprocess(licenses[idx][1])
-    if args is not None and args.verbose:
-      print('.', end='', flush=True)
-      print('\n')
   return licenses
 
 def write_csv(licenseList, fileLocation):
@@ -77,12 +80,13 @@ def file_is_modified(source, destination):
   return sourceTime > destTime
 
 def create_processed_file(licenseList, processedFile):
-  ''' Drop in for __main__
-  '''
+  ''' Drop in for __main__'''
+  licenseList = os.path.abspath(licenseList)
+  processedFile = os.path.abspath(processedFile)
   if file_is_modified(licenseList, processedFile):
     processedList = load_licenses(licenseList)
     write_csv(processedList, processedFile)
-  return os.path.abspath(processedFile)
+  return processedFile
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
@@ -91,8 +95,8 @@ if __name__ == "__main__":
   parser.add_argument("-v", "--verbose", help="increase output verbosity",
                       action="store_true")
   args = parser.parse_args()
-  licenseList = args.licenseList
-  processedFile = args.processedFile
+  licenseList = os.path.abspath(args.licenseList)
+  processedFile = os.path.abspath(args.processedFile)
   if file_is_modified(licenseList, processedFile):
     processedList = load_licenses(licenseList)
     write_csv(processedList, processedFile)

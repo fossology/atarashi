@@ -23,6 +23,7 @@ import sys
 
 from dameruLevenDist import classifyLicenseDameruLevenDist
 from tfidf import tfidfcosinesim
+from tqdm import tqdm
 from LicensePreprocessor import create_processed_file
 
 args = None
@@ -45,13 +46,24 @@ if __name__ == "__main__":
   processedLicense = create_processed_file(licenseList, processedLicense)
 
   with open(expected_license_output, 'r') as f:
-    for counter, text in enumerate([l.strip() for l in f], start=1):
+    iterator = ""
+    if args is not None and args.verbose:
+      iterator = enumerate(tqdm([l.strip() for l in f], desc = "Files tested:",
+                                 unit = "files"
+                               ), start=1)
+    else:
+      iterator = enumerate([l.strip() for l in f], start=1)
+    for counter, text in iterator:
       text = text.split(' ')
       filePath = text[1]
 
       if agent_name == "DLD":
-        print(classifyLicenseDameruLevenDist(pathto + filePath, processedLicense), text[1], text[4])
+        tqdm.write("{0} {1} {2}".format(
+          classifyLicenseDameruLevenDist(pathto + filePath, processedLicense),
+          text[1], text[4]))
       elif agent_name == "tfidfcosinesim":
-        print(tfidfcosinesim(pathto + filePath, processedLicense), text[1], text[4])
+        tqdm.write("{0} {1} {2}".format(
+          tfidfcosinesim(pathto + filePath, processedLicense), text[1], text[4]))
       elif agent_name == "tfidfsumscore":
-        print(tfidfcosinesim(pathto + filePath, processedLicense), text[1], text[4])
+        tqdm.write("{0} {1} {2}".format(
+          tfidfcosinesim(pathto + filePath, processedLicense), text[1], text[4]))
