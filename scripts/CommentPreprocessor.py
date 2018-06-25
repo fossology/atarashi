@@ -45,7 +45,8 @@ def preprocess(data):
   ps = PorterStemmer()
   data = data.lower()
   words = word_tokenize(data)
-  words = [word for word in words if word not in stopwords.words('english')]
+  if args is not None and args.stopWords:
+    words = [word for word in words if word not in stopwords.words('english')]
   data = ""
   for word in words:
     data += ps.stem(word) + ' '
@@ -54,11 +55,13 @@ def preprocess(data):
   # data = re.sub(r'[\u2022,\u2023,\u25E6,\u2043,\u2219]', '', data)
   return data
 
-
 if __name__ == "__main__":
   print("The file has been run directly")
   parser = argparse.ArgumentParser()
-  parser.add_argument("inputFile", help="Specify the input file which needs to be scanned")
+  parser.add_argument("inputFile", help="Specify the input file which needs to be scanned",
+                      required=True)
+  parser.add_argument("-s", "--stop-words", help="Set to use stop word filtering",
+                      action="store_true", dest="stopWords")
   parser.add_argument("-v", "--verbose", help="increase output verbosity",
                       action="store_true")
   args = parser.parse_args()
