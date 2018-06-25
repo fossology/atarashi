@@ -68,7 +68,8 @@ def CommentExtract(inputFile):
 if __name__ == '__main__':
   print("The file has been run directly")
   parser = argparse.ArgumentParser()
-  parser.add_argument("inputFile", help="Specify the input file from which comments needs to be extracted")
+  parser.add_argument("inputFile", help="Specify the input file from which comments needs to be extracted",
+                      required=True)
   parser.add_argument("-v", "--verbose", help="increase output verbosity",
                       action="store_true")
   args = parser.parse_args()
