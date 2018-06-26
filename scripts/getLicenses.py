@@ -30,7 +30,7 @@ def fetch_licenses(licenseList):  # common
     count = 0
     for row in licenseReader:
       if count > 0: 
-        licenses.append([row[0], row[2]])
+        licenses.append([row[1], row[3]])
       count = count + 1
   for idx in range(len(licenses)):
     licenses[idx][1] = preprocess(licenses[idx][1])
