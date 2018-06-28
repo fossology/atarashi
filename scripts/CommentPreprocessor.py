@@ -37,29 +37,22 @@ Ignore the list item for matching purposes (eg. bullets, numbered lists)
 args = None
 
 
-def replace(match):
-  return replacements[match.group(0)]
-
-
 def preprocess(data):
   ps = PorterStemmer()
   data = data.lower()
-  words = word_tokenize(data)
-  if args is not None and args.stopWords:
-    words = [word for word in words if word not in stopwords.words('english')]
-  data = ""
-  for word in words:
-    data += ps.stem(word) + ' '
   data = re.sub(r'copyright|\(c\)', 'copyright', data)
-  data = re.sub(r'[{}]'.format(string.punctuation), '.', data)
+  data = re.sub(r'[{}]'.format(string.punctuation), ' ', data)
+  words = word_tokenize(data)
+  if args is not None and args.stopWords:   # Filter stopwords
+    words = [word for word in words if word not in stopwords.words('english')]
+  data = " ".join([ps.stem(word) for word in words])  # Apply PS on each word and join with space
   # data = re.sub(r'[\u2022,\u2023,\u25E6,\u2043,\u2219]', '', data)
   return data
 
 if __name__ == "__main__":
   print("The file has been run directly")
   parser = argparse.ArgumentParser()
-  parser.add_argument("inputFile", help="Specify the input file which needs to be scanned",
-                      required=True)
+  parser.add_argument("inputFile", help="Specify the input file which needs to be scanned")
   parser.add_argument("-s", "--stop-words", help="Set to use stop word filtering",
                       action="store_true", dest="stopWords")
   parser.add_argument("-v", "--verbose", help="increase output verbosity",

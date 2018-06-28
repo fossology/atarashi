@@ -126,10 +126,8 @@ def tfidfcosinesim(filename, licenseList):
 if __name__ == "__main__":
   print("The main file is called")
   parser = argparse.ArgumentParser()
-  parser.add_argument("inputFile", help="Specify the input file which needs to be scanned",
-                      required=True)
-  parser.add_argument("licenseList", help="Specify the license list file which contains licenses",
-                      required=True)
+  parser.add_argument("inputFile", help="Specify the input file which needs to be scanned")
+  parser.add_argument("licenseList", help="Specify the license list file which contains licenses")
   parser.add_argument("-s", "--stop-words", help="Set to use stop word filtering",
                       action="store_true", dest="stopWords")
   parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")

@@ -31,10 +31,8 @@ args = None
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument("AgentName", choices=['DLD', 'tfidfcosinesim', 'tfidfsumscore'],
-                      help="Name of the agent that needs to be run",
-                      required=True)
-  parser.add_argument("LicenseList", help="Specify the license list file which contains licenses",
-                      required=True)
+                      help="Name of the agent that needs to be run")
+  parser.add_argument("LicenseList", help="Specify the license list file which contains licenses")
   parser.add_argument("-s", "--stop-words", help="Set to use stop word filtering",
                       action="store_true", dest="stopWords")
   parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")

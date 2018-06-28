@@ -90,10 +90,8 @@ def create_processed_file(licenseList, processedFile):
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
-  parser.add_argument("licenseList", help="Specify the license list file which contains licenses",
-                      required=True)
-  parser.add_argument("processedFile", help="Specify the destination to store processed list",
-                      required=True)
+  parser.add_argument("licenseList", help="Specify the license list file which contains licenses")
+  parser.add_argument("processedFile", help="Specify the destination to store processed list")
   parser.add_argument("-s", "--stop-words", help="Set to use stop word filtering",
                       action="store_true", dest="stopWords")
   parser.add_argument("-v", "--verbose", help="increase output verbosity",
