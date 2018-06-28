@@ -75,8 +75,8 @@ def classifyLicenseFreqMatch(filename, licenseList):
     processedLicense = wordFrequency(processedData)
 
     if args is not None and args.verbose:
-      print("Frequency array of licenses".upper(), licensesFrequency[0])
-      print("Frequency table of input data".upper(), processedLicense)
+      print("Frequency array of licenses", licensesFrequency[0])
+      print("Frequency table of input data", processedLicense)
 
     # Histogram Similarity Algorithm
     globalCount = 0
@@ -103,10 +103,8 @@ def classifyLicenseFreqMatch(filename, licenseList):
 if __name__ == "__main__":
   print("The file has been called from main")
   parser = argparse.ArgumentParser()
-  parser.add_argument("inputFile", help="Specify the input file which needs to be scanned",
-                      required=True)
-  parser.add_argument("licenseList", help="Specify the license list file which contains licenses",
-                      required=True)
+  parser.add_argument("inputFile", help="Specify the input file which needs to be scanned")
+  parser.add_argument("licenseList", help="Specify the license list file which contains licenses")
   parser.add_argument("-s", "--stop-words", help="Set to use stop word filtering",
                       action="store_true", dest="stopWords")
   parser.add_argument("-v", "--verbose", help="increase output verbosity",

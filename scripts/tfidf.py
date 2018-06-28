@@ -27,13 +27,12 @@ from exactMatch import exactMatcher
 from getLicenses import fetch_licenses
 from numpy import unique, sum, dot
 from sklearn.feature_extraction.text import TfidfVectorizer
+from nltk.tokenize import word_tokenize
 
 args = None
 
 
 def initialize(filename, licenseList):
-  tokenize = lambda doc: doc.lower().split(" ")
-
   commentFile = CommentExtract(filename)
   with open(commentFile) as file:
     data = file.read().replace('\n', ' ')
@@ -41,7 +40,7 @@ def initialize(filename, licenseList):
 
   licenses = fetch_licenses(licenseList)
 
-  return tokenize, processedData, licenses
+  return processedData, licenses
 
 
 def l2_norm(a):
@@ -53,7 +52,7 @@ def cosine_similarity(a, b):
 
 
 def tfidfsumscore(filename, licenseList):
-  tokenize, processedData1, licenses = initialize(filename, licenseList)
+  processedData1, licenses = initialize(filename, licenseList)
   if args is not None and args.verbose:
     print("PROCESSED DATA IS", processedData1)
     print("First License is ", licenses[0])
@@ -61,12 +60,12 @@ def tfidfsumscore(filename, licenseList):
   temp = exactMatcher(processedData1, licenseList)
   if temp == -1:
     startTime = time.time()
-    processedData = unique(processedData1.split(" "))  # unique words from tokenized input file
+    processedData = unique(word_tokenize(processedData1))  # unique words from tokenized input file
 
     all_documents = [license[1] for license in licenses]
     all_documents.append(processedData1)
     sklearn_tfidf = TfidfVectorizer(norm='l2', min_df=0, use_idf=True, smooth_idf=True, sublinear_tf=True,
-                                    tokenizer=tokenize, vocabulary=processedData)
+                                    tokenizer=word_tokenize, vocabulary=processedData)
 
     sklearn_representation = sklearn_tfidf.fit_transform(all_documents)
 
@@ -88,7 +87,7 @@ def tfidfsumscore(filename, licenseList):
 
 
 def tfidfcosinesim(filename, licenseList):
-  tokenize, processedData1, licenses = initialize(filename, licenseList)
+  processedData1, licenses = initialize(filename, licenseList)
   if args is not None and args.verbose:
     print("PROCESSED DATA IS", processedData1)
     print("First License is ", licenses[0])
@@ -97,13 +96,13 @@ def tfidfcosinesim(filename, licenseList):
   if temp == -1:
     startTime = time.time()
 
-    processedData = unique(processedData1.split(" "))  # unique words from tokenized input file
+    processedData = unique(word_tokenize(processedData1))  # unique words from tokenized input file
     all_documents = [license[1] for license in licenses]
     all_documents.append(processedData1)
     # sklearn_tfidf = TfidfVectorizer(norm='l2', min_df=0, use_idf=True, smooth_idf=True, sublinear_tf=True,
-    #                                 tokenizer=tokenize, vocabulary=processedData)
+    #                                 tokenizer=word_tokenize, vocabulary=processedData)
     sklearn_tfidf = TfidfVectorizer(norm='l2', min_df=0, use_idf=True, smooth_idf=True, sublinear_tf=True,
-                                    tokenizer=tokenize)
+                                    tokenizer=word_tokenize)
 
     sklearn_representation = sklearn_tfidf.fit_transform(all_documents)
 
@@ -126,10 +125,8 @@ def tfidfcosinesim(filename, licenseList):
 if __name__ == "__main__":
   print("The main file is called")
   parser = argparse.ArgumentParser()
-  parser.add_argument("inputFile", help="Specify the input file which needs to be scanned",
-                      required=True)
-  parser.add_argument("licenseList", help="Specify the license list file which contains licenses",
-                      required=True)
+  parser.add_argument("inputFile", help="Specify the input file which needs to be scanned")
+  parser.add_argument("licenseList", help="Specify the license list file which contains licenses")
   parser.add_argument("-s", "--stop-words", help="Set to use stop word filtering",
                       action="store_true", dest="stopWords")
   parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
