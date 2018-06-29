@@ -45,7 +45,7 @@ def preprocess(data):
   words = word_tokenize(data)
   if args is not None and args.stopWords:   # Filter stopwords
     words = [word for word in words if word not in stopwords.words('english')]
-  data = " ".join([ps.stem(word) for word in words])  # Apply PS on each word and join with space
+  data = " ".join([word for word in words])  # Apply PS on each word and join with space
   # data = re.sub(r'[\u2022,\u2023,\u25E6,\u2043,\u2219]', '', data)
   return data
 

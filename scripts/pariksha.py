@@ -50,7 +50,7 @@ if __name__ == "__main__":
   with open(expected_license_output, 'r') as f:
     iterator = ""
     if args is not None and args.verbose:
-      iterator = enumerate(tqdm([l.strip() for l in f], desc = "Files tested:",
+      iterator = enumerate(tqdm([l.strip() for l in f], desc = "Files tested",
                                  unit = "files"
                                ), start=1)
     else:

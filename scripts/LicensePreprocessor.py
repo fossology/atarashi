@@ -46,7 +46,7 @@ def load_licenses(licenseList):
     licenseReader = csv.reader(licenseFile)
     next(licenseReader, None) # skip headers
     for row in licenseReader:
-      licenses.append([row[0], row[2]])
+      licenses.append([row[1], row[3]])
     if args is not None and args.verbose:
       print("Loaded " + str(len(licenses)) + " licenses")
   iterator = ""

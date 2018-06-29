@@ -75,8 +75,8 @@ def classifyLicenseFreqMatch(filename, licenseList):
     processedLicense = wordFrequency(processedData)
 
     if args is not None and args.verbose:
-      print("Frequency array of licenses".upper(), licensesFrequency[0])
-      print("Frequency table of input data".upper(), processedLicense)
+      print("Frequency array of licenses", licensesFrequency[0])
+      print("Frequency table of input data", processedLicense)
 
     # Histogram Similarity Algorithm
     globalCount = 0
