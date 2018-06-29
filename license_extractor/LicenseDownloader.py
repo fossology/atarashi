@@ -75,8 +75,10 @@ def download_license():
         if 'There is no standard license header for the license' in licenseDict['license_header']:
           licenseDict['license_header'] = ''
         temp = pandas.DataFrame(licenseDict, columns=csvColumns)
-        licenseDataFrame = pandas.concat([licenseDataFrame, temp], sort=False, ignore_index=True)
+        licenseDataFrame = pandas.concat([licenseDataFrame, temp],
+                                         sort=False, ignore_index=True)
 
+      licenseDataFrame = licenseDataFrame.drop_duplicates(subset='shortname').sort_values(by=['shortname']).reset_index(drop=True)
       licenseDataFrame.to_csv(str(filePath), index_label='index', encoding='utf-8')
       delete_files(csvFiles, str(filePath))
       return str(filePath)
