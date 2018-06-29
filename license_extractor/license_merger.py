@@ -21,19 +21,20 @@ __author__ = "Aman Jain"
 import argparse
 import pandas
 from tqdm import tqdm
+from pathlib import Path
 import sys
+
 sys.path.insert(0, '../scripts/')
 from getLicenses import fetch_licenses
 
 args = None
 
+
 def license_merger(licenseList, requiredlicenseList):
-  '''
-  check if both files exists -----
-  if not throw error
-  else fetch all license short from arg1 and check whats left with arg 2
-  add all license from arg 1 to arg 2 with append flag
-  '''
+  my_file = Path(licenseList)
+  if not my_file.is_file() or not Path(requiredlicenseList).is_file():
+    print("Files donot exist. Please check the file paths")
+    return
 
   licenses = fetch_licenses(licenseList)
   requiredlicenses = fetch_licenses(requiredlicenseList)
@@ -43,9 +44,7 @@ def license_merger(licenseList, requiredlicenseList):
   csvColumns = ["shortname", "fullname", "text", "license_header", "url",
                 "depricated", "osi_approved"]
 
-  # licenseDataFrame = pandas.DataFrame(columns=csvColumns)
   licenseDataFrame = pandas.read_csv(requiredlicenseList, index_col=0)
-  print(licenseDataFrame)
   iterator = tqdm(range(len(licenses_merge)),
                   desc="Licenses merged",
                   total=len(licenses_merge), unit="license")
@@ -62,15 +61,11 @@ def license_merger(licenseList, requiredlicenseList):
     licenseDataFrame = pandas.concat([licenseDataFrame, temp],
                                      sort=False, ignore_index=True)
 
-
   licenseDataFrame = licenseDataFrame.drop_duplicates(subset='shortname').sort_values(by=['shortname']).reset_index(
-    drop=True)
-  print(licenseDataFrame)
+      drop=True)
 
   licenseDataFrame.to_csv(str(requiredlicenseList), index_label='index', encoding='utf-8')
-
-  # if args is not None and args.verbose:
-  #   print(pandas.read_csv(requiredlicenseList))
+  return str(requiredlicenseList)
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
@@ -82,4 +77,8 @@ if __name__ == "__main__":
 
   licenseList = args.licenseList
   requiredlicenseList = args.requiredlicenseList
-  license_merger(licenseList, requiredlicenseList)
+  filePath = license_merger(licenseList, requiredlicenseList)
+  if filePath:
+    print("Updated", filePath)
+
+
