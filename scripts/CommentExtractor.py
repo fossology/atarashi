@@ -17,9 +17,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 Author: Aman Jain (amanjain5221@gmail.com)
 '''
 
+import argparse
 import os
-import sys
-import string
 import code_comment # https://github.com/amanjain97/code_comment/
 import tempfile
 
@@ -31,6 +30,9 @@ Description: This reads all comments from the files types c, cpp, py, go, php, j
               python CommentExtractor.py <filePath>
 '''
 
+args = None
+
+
 # input
 # inputFile = sys.argv[1]
 def CommentExtract(inputFile):
@@ -38,10 +40,11 @@ def CommentExtract(inputFile):
   fd, outputFile = tempfile.mkstemp()
 
   fileType = inputFile.split('.')[-1]
-  supportedFileExtensions = ['c', 'cpp', 'py', 'go', 'php', 'js']
 
-  # Remove BOM UTF-8 at the beginning of file
-  file = open(inputFile, mode='r', encoding='utf-8-sig').read()
+  supportedFileExtensions = ['c', 'cpp', 'py', 'go', 'php', 'js', 'java', 'h', 'hpp', 'cc']
+
+  # Remove BOM UTF-8 at the beginning of file and ignore errors
+  file = open(inputFile, mode='r', encoding='utf-8-sig', errors='ignore').read()
   open(inputFile, mode='w', encoding='utf-8').write(file)
 
   with open(outputFile, 'w') as outFile:
@@ -60,6 +63,19 @@ def CommentExtract(inputFile):
         for line in lines:
           outFile.write(line + '\n')
 
-  # print("Output temporary file - " + outputFile)
   os.close(fd)
   return outputFile
+
+
+
+if __name__ == '__main__':
+  print("The file has been run directly")
+  parser = argparse.ArgumentParser()
+  parser.add_argument("inputFile", help="Specify the input file from which comments needs to be extracted")
+  parser.add_argument("-v", "--verbose", help="increase output verbosity",
+                      action="store_true")
+  args = parser.parse_args()
+  inputFile = args.inputFile
+  print("Temporary output file path --", str(CommentExtract(inputFile)))
+  if args.verbose:
+    print(open(CommentExtract(inputFile), 'r').read())

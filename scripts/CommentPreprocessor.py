@@ -17,12 +17,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 Author: Aman Jain (amanjain5221@gmail.com)
 '''
 
-import os
-import sys
+import argparse
+
 import string
 import re
-
-# filename = sys.argv[1]
 
 """Rules to apply:
 All whitespace should be treated as a single blank space
@@ -35,52 +33,56 @@ Ignore the list item for matching purposes (eg. bullets, numbered lists)
 """
 
 replacements = {
-  'acknowledgement':'acknowledgment',
-  'analog':'analogue',
-  'analyze':'analyse',
-  'artifact':'artefact',
-  'authorization':'authorisation',
-  'authorized':'authorised',
-  'caliber':'calibre',
-  'canceled':'cancelled',
-  'capitalizations':'capitalisations',
-  'catalog':'catalogue',
-  'categorize':'categorise',
-  'center':'centre',
-  'emphasized':'emphasised',
-  'favor':'favour',
-  'favorite':'favourite',
-  'fulfill':'fulfil',
-  'fulfillment':'fulfilment',
-  'initialize':'initialise',
-  'judgement':'judgment',
-  'labeling':'labelling',
-  'labor':'labour',
-  'license':'licence',
-  'maximize':'maximise',
-  'modeled':'modelled',
-  'modeling':'modelling',
-  'offense':'offence',
-  'optimize':'optimise',
-  'organization':'organisation',
-  'organize':'organise',
-  'practice':'practise',
-  'program':'programme',
-  'realize':'realise',
-  'recognize':'recognise',
-  'signaling':'signalling',
-  'sublicense':'sub-license',
-  'sub-license':'sub license',
-  'utilization':'utilisation',
-  'while':'whilst',
-  'wilfull':'wilful',
-  'noncommercial':'non-commercial',
-  'percent':'per cent',
-  'copyright holder':'copyright owner'
+  'acknowledgement': 'acknowledgment',
+  'analog': 'analogue',
+  'analyze': 'analyse',
+  'artifact': 'artefact',
+  'authorization': 'authorisation',
+  'authorized': 'authorised',
+  'caliber': 'calibre',
+  'canceled': 'cancelled',
+  'capitalizations': 'capitalisations',
+  'catalog': 'catalogue',
+  'categorize': 'categorise',
+  'center': 'centre',
+  'emphasized': 'emphasised',
+  'favor': 'favour',
+  'favorite': 'favourite',
+  'fulfill': 'fulfil',
+  'fulfillment': 'fulfilment',
+  'initialize': 'initialise',
+  'judgement': 'judgment',
+  'labeling': 'labelling',
+  'labor': 'labour',
+  'license': 'licence',
+  'maximize': 'maximise',
+  'modeled': 'modelled',
+  'modeling': 'modelling',
+  'offense': 'offence',
+  'optimize': 'optimise',
+  'organization': 'organisation',
+  'organize': 'organise',
+  'practice': 'practise',
+  'program': 'programme',
+  'realize': 'realise',
+  'recognize': 'recognise',
+  'signaling': 'signalling',
+  'sublicense': 'sub-license',
+  'sub-license': 'sub license',
+  'utilization': 'utilisation',
+  'while': 'whilst',
+  'wilfull': 'wilful',
+  'noncommercial': 'non-commercial',
+  'percent': 'per cent',
+  'copyright holder': 'copyright owner'
 }
+
+args = None
+
 
 def replace(match):
   return replacements[match.group(0)]
+
 
 def preprocess(data):
   data = re.sub('|'.join(r'\b%s\b' % re.escape(s) for s in replacements), replace, data)
@@ -90,3 +92,16 @@ def preprocess(data):
   data = re.sub(r'[{}]'.format(string.punctuation), '.', data)
   # data = re.sub(r'[\u2022,\u2023,\u25E6,\u2043,\u2219]', '', data)
   return data
+
+
+if __name__ == "__main__":
+  print("The file has been run directly")
+  parser = argparse.ArgumentParser()
+  parser.add_argument("inputFile", help="Specify the input file which needs to be scanned")
+  parser.add_argument("-v", "--verbose", help="increase output verbosity",
+                      action="store_true")
+  args = parser.parse_args()
+  inputFile = args.inputFile
+  with open(inputFile) as file:
+    data = file.read().replace('\n', ' ')
+  print("Preprocessed data is --", str(preprocess(data)))
