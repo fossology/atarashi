@@ -48,7 +48,12 @@ def l2_norm(a):
 
 
 def cosine_similarity(a, b):
-  return dot(a, b) / (l2_norm(a) * l2_norm(b))
+  dot_product = dot(a, b)
+  temp = l2_norm(a) * l2_norm(b)
+  if temp == 0:
+    return 0
+  else:
+    return dot_product / temp
 
 
 def tfidfsumscore(filename, licenseList):
@@ -83,7 +88,7 @@ def tfidfsumscore(filename, licenseList):
       print("time taken is " + str(time.time() - startTime) + " sec")
     return licenses[result][0]
   else:
-    return temp
+    return temp[0]
 
 
 def tfidfcosinesim(filename, licenseList):
@@ -119,7 +124,7 @@ def tfidfcosinesim(filename, licenseList):
       print("time taken is " + str(time.time() - startTime) + " sec")
     return licenses[result][0]
   else:
-    return temp
+    return temp[0]
 
 
 if __name__ == "__main__":

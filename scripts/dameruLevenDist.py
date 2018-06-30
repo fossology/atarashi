@@ -61,9 +61,9 @@ def classifyLicenseDameruLevenDist(filename, licenseList):
         globalDistance = distance
         result = idx
 
-    return licenses[result][0] + "(" + str(globalDistance) + ")"
+    return licenses[result][0]
   else:
-    return temp
+    return temp[0]
 
 
 if __name__ == "__main__":

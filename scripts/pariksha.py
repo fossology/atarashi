@@ -32,40 +32,45 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument("AgentName", choices=['DLD', 'tfidfcosinesim', 'tfidfsumscore'],
                       help="Name of the agent that needs to be run")
-  parser.add_argument("LicenseList", help="Specify the license list file which contains licenses")
+  parser.add_argument("LicenseList", help="Specify the processed license list file which contains licenses")
   parser.add_argument("-s", "--stop-words", help="Set to use stop word filtering",
                       action="store_true", dest="stopWords")
   parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
   args = parser.parse_args()
   agent_name = args.AgentName
-  licenseList = args.LicenseList
+  processedLicense = args.LicenseList
 
   pathname = os.path.dirname(sys.argv[0])
   pathto = os.path.abspath(pathname) + '/../tests/'
   expected_license_output = pathto + 'GoodTestfilesScan'
 
-  processedLicense = 'processedLicense.csv'
-  processedLicense = create_processed_file(licenseList, processedLicense)
-
   with open(expected_license_output, 'r') as f:
+    matched = 0
     iterator = ""
     if args is not None and args.verbose:
-      iterator = enumerate(tqdm([l.strip() for l in f], desc = "Files tested",
-                                 unit = "files"
-                               ), start=1)
+      iterator = enumerate(tqdm([l.strip() for l in f][:3], desc="Files tested",
+                                unit="files"
+                                ), start=1)
     else:
-      iterator = enumerate([l.strip() for l in f], start=1)
+      iterator = enumerate([l.strip() for l in f][:10], start=1)
     for counter, text in iterator:
       text = text.split(' ')
       filePath = text[1]
 
       if agent_name == "DLD":
-        tqdm.write("{0} {1} {2}".format(
-          classifyLicenseDameruLevenDist(pathto + filePath, processedLicense),
-          text[1], text[4]))
+        temp = classifyLicenseDameruLevenDist(pathto + filePath, processedLicense)
+        if temp in text[4]:
+          matched += 1
+        tqdm.write("{0} {1} {2}".format(temp, text[1], text[4]))
       elif agent_name == "tfidfcosinesim":
-        tqdm.write("{0} {1} {2}".format(
-          tfidfcosinesim(pathto + filePath, processedLicense), text[1], text[4]))
+        temp = tfidfcosinesim(pathto + filePath, processedLicense)
+        if temp in text[4]:
+          matched += 1
+        tqdm.write("{0} {1} {2}".format(temp, text[1], text[4]))
       elif agent_name == "tfidfsumscore":
-        tqdm.write("{0} {1} {2}".format(
-          tfidfcosinesim(pathto + filePath, processedLicense), text[1], text[4]))
+        temp = tfidfcosinesim(pathto + filePath, processedLicense)
+        if temp in text[4]:
+          matched += 1
+        tqdm.write("{0} {1} {2}".format(temp, text[1], text[4]))
+
+  print("Accuracy is ", float(matched) / float(counter))
