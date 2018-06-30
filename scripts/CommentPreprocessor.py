@@ -18,11 +18,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 __author__ = "Aman Jain"
 
 import argparse
-import string
 import re
-from nltk.stem import PorterStemmer
-from nltk.tokenize import sent_tokenize, word_tokenize
+import string
+
 from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
 
 """Rules to apply:
 All whitespace should be treated as a single blank space
@@ -38,15 +38,13 @@ args = None
 
 
 def preprocess(data):
-  ps = PorterStemmer()
   data = data.lower()
   data = re.sub(r'copyright|\(c\)', 'copyright', data)
   data = re.sub(r'[{}]'.format(string.punctuation), ' ', data)
   words = word_tokenize(data)
   if args is not None and args.stopWords:   # Filter stopwords
     words = [word for word in words if word not in stopwords.words('english')]
-  data = " ".join([word for word in words])  # Apply PS on each word and join with space
-  # data = re.sub(r'[\u2022,\u2023,\u25E6,\u2043,\u2219]', '', data)
+  data = " ".join(words)
   return data
 
 if __name__ == "__main__":
