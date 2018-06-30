@@ -19,12 +19,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 __author__ = "Aman Jain"
 
 import argparse
-import pandas
+import pandas as pd
 from tqdm import tqdm
 from pathlib import Path
+import os
 import sys
-
-sys.path.insert(0, '../scripts/')
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)) + '/../scripts/')
 from getLicenses import fetch_licenses
 
 args = None
@@ -44,7 +44,7 @@ def license_merger(licenseList, requiredlicenseList):
   csvColumns = ["shortname", "fullname", "text", "license_header", "url",
                 "depricated", "osi_approved"]
 
-  licenseDataFrame = pandas.read_csv(requiredlicenseList, index_col=0)
+  licenseDataFrame = pd.read_csv(requiredlicenseList, index_col=0)
   iterator = tqdm(range(len(licenses_merge)),
                   desc="Licenses merged",
                   total=len(licenses_merge), unit="license")
@@ -57,15 +57,16 @@ def license_merger(licenseList, requiredlicenseList):
     licenseDict['text'] = licenses_merge[i][2]
     licenseDict['url'] = licenses_merge[i][5]
     licenseDict['license_header'] = ['']
-    temp = pandas.DataFrame(licenseDict, columns=csvColumns)
-    licenseDataFrame = pandas.concat([licenseDataFrame, temp],
+    temp = pd.DataFrame(licenseDict, columns=csvColumns)
+    licenseDataFrame = pd.concat([licenseDataFrame, temp],
                                      sort=False, ignore_index=True)
 
   licenseDataFrame = licenseDataFrame.drop_duplicates(subset='shortname').sort_values(by=['shortname']).reset_index(
       drop=True)
 
   licenseDataFrame.to_csv(str(requiredlicenseList), index_label='index', encoding='utf-8')
-  return str(requiredlicenseList)
+
+  return str(Path(os.path.abspath(requiredlicenseList)))
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
