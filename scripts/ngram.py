@@ -19,9 +19,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 __author__ = "Aman Jain"
 
 import argparse
+import os
 import json
 from tqdm import tqdm
 from getLicenses import fetch_licenses
+from multiprocessing import Pool as ThreadPool
 
 
 def find_ngrams(input_list, n):
@@ -49,56 +51,62 @@ def load_database(licenseList):
   return uniqueNGrams, licenses
 
 
+def unique_ngrams(uniqueNGram):
+  matches = []
+  idx = uniqueNGram[0]
+  uniqueNGram = uniqueNGram[1]
+  for ngram in uniqueNGram['ngrams']:
+    find = ' '.join(ngram)
+    ismatch = True
+
+    filtered = [x for x in licenses if x[0] != licenses[idx][0]]
+    for lic in filtered:
+      if find in lic[1]:
+        ismatch = False
+        break
+
+    if ismatch:
+      matches.append(find)
+  return matches
+
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
   parser.add_argument("licenseList", help="Specify the license list file which contains licenses")
+  parser.add_argument("-t", "--threads", required=False, default=os.cpu_count(),
+                      type=int,
+                      help="No of threads to use for download. Default: CPU count")
   parser.add_argument("-v", "--verbose", help="increase output verbosity",
                       action="store_true")
   args = parser.parse_args()
 
   licenseList = args.licenseList
+  threads = args.threads
   uniqueNGrams, licenses = load_database(licenseList)
   no_keyword_matched = []
   matched_output = []
   ngram_keywords = []
-  iterator = tqdm(range(len(licenses)),
-                  desc="Licenses merged",
-                  total=len(licenses), unit="license")
-  for idx, value in enumerate(iterator):
-    # print(idx)
-    # join ngrams and check if they exists in any other file
-    matches = []
-    for ngram in uniqueNGrams[idx]['ngrams']:
-      # print("ngram is ", ngram)
 
-      # ngram = ngram['ngrams']
-      find = ' '.join(ngram)
-      ismatch = True
+  cpuCount = os.cpu_count()
+  threads = cpuCount * 2 if threads > cpuCount * 2 else threads
+  pool = ThreadPool(threads)
+  zip_ngrams = zip(list(range(len(licenses))), uniqueNGrams)
 
-      filtered = [x for x in licenses if x[0] != licenses[idx][0]]
-      for lic in filtered:
-        if find in lic[1]:
-          ismatch = False
-          break
-
-      if ismatch:
-        matches.append(find)
-    # print(matches)
+  for idx, row in enumerate(tqdm(pool.imap_unordered(unique_ngrams, list(zip_ngrams)),
+                  desc="Licenses processed", total=len(licenses),
+                  unit="license")):
 
     if args is not None and args.verbose:
-      matched_output.append([licenses[idx][0], len(matches)])
-      if len(matches) == 0:
+      matched_output.append([licenses[idx][0], len(row)])
+      if len(row) == 0:
         # print('>>>>>', licenses[idx][0], len(matches))
         no_keyword_matched.append(licenses[idx][0])
 
-
-
     ngram_keywords.append({
       'shortname': licenses[idx][0],
-      'ngrams': matches
+      'ngrams': row
     })
 
-  with open('database_keywordsNoStemSPDX.json', 'w') as myfile:
+  with open('database_keywordsNoStemSPDX1.json', 'w') as myfile:
     myfile.write(json.dumps(ngram_keywords))
 
   if args is not None and args.verbose:
