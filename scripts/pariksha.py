@@ -48,11 +48,11 @@ if __name__ == "__main__":
     matched = 0
     iterator = ""
     if args is not None and args.verbose:
-      iterator = enumerate(tqdm([l.strip() for l in f][:3], desc="Files tested",
+      iterator = enumerate(tqdm([l.strip() for l in f], desc="Files tested",
                                 unit="files"
                                 ), start=1)
     else:
-      iterator = enumerate([l.strip() for l in f][:10], start=1)
+      iterator = enumerate([l.strip() for l in f], start=1)
     for counter, text in iterator:
       text = text.split(' ')
       filePath = text[1]

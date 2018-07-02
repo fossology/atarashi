@@ -31,7 +31,7 @@ def fetch_licenses(licenseList):  # common
   '''
   with open(licenseList, 'r') as licenseFile:
     licenseReader = csv.reader(licenseFile)
-    licenses = [r for r in licenseReader]
+    licenses = [[r[0],r[2],r[1],r[3]] for r in licenseReader]
   return licenses
 
 
