@@ -26,6 +26,7 @@ import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)) + '/../scripts/')
 from getLicenses import fetch_licenses
+from CommentPreprocessor import preprocess
 
 args = None
 
@@ -37,14 +38,32 @@ def license_merger(licenseList, requiredlicenseList):
     return
 
   licenses = fetch_licenses(licenseList)
-  requiredlicenses = fetch_licenses(requiredlicenseList)
-  licenses_merge = [license for license in licenses if license[0] not in [x[1] for x in requiredlicenses]]
+  requiredlicensestemp = fetch_licenses(requiredlicenseList)
+
+  requiredlicenses = []
+  for license in requiredlicensestemp:
+    if license[2] not in [x[2] for x in requiredlicenses]:
+      requiredlicenses.append(license)
+  requiredlicenses = [x[1:] for x in requiredlicenses]
+
+  licenses_merge = []
+  for license in licenses:
+    if license[1] in [x[1] for x in requiredlicenses]:
+      # full name match
+      continue
+    elif license[0] in [x[0] for x in requiredlicenses]:
+      # short name match
+      continue
+    else:
+      licenses_merge.append(license)
+
   if args is not None and args.verbose:
-    print(len(licenses_merge))
+    print("Licenses to Merge", len(licenses_merge))
+
   csvColumns = ["shortname", "fullname", "text", "license_header", "url",
                 "depricated", "osi_approved"]
 
-  licenseDataFrame = pd.read_csv(requiredlicenseList, index_col=0)
+  licenseDataFrame = pd.DataFrame(requiredlicenses, columns=csvColumns)
   iterator = tqdm(range(len(licenses_merge)),
                   desc="Licenses merged",
                   total=len(licenses_merge), unit="license")
