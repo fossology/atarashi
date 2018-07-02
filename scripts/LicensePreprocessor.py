@@ -46,7 +46,7 @@ def load_licenses(licenseList):
     licenseReader = csv.reader(licenseFile)
     next(licenseReader, None) # skip headers
     for row in licenseReader:
-      licenses.append([row[1], row[3]])
+      licenses.append(row[1:5])
     if args is not None and args.verbose:
       print("Loaded " + str(len(licenses)) + " licenses")
   iterator = ""
@@ -58,6 +58,8 @@ def load_licenses(licenseList):
     iterator = range(len(licenses))
   for idx in iterator:
     licenses[idx][1] = preprocess(licenses[idx][1])
+    licenses[idx][2] = preprocess(licenses[idx][2])
+    licenses[idx][3] = preprocess(licenses[idx][3])
   return licenses
 
 def write_csv(licenseList, fileLocation):
