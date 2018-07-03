@@ -68,7 +68,8 @@ def download_license(threads=os.cpu_count()):
         licenseDataFrame = pd.concat([licenseDataFrame,row], sort=False, ignore_index=True)
 
       licenseDataFrame = licenseDataFrame.drop_duplicates(subset='shortname')
-      licenseDataFrame = licenseDataFrame.sort_values(by=['shortname']).reset_index(drop=True)
+      licenseDataFrame = licenseDataFrame.sort_values('depricated').drop_duplicates(subset='fullname', keep='first')
+      licenseDataFrame = licenseDataFrame.sort_values('shortname').reset_index(drop=True)
       licenseDataFrame.to_csv(str(filePath), index_label='index', encoding='utf-8')
       delete_files(csvFiles, str(filePath))
       return str(filePath)
