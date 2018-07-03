@@ -38,12 +38,7 @@ def license_merger(licenseList, requiredlicenseList):
     return
 
   licenses = fetch_licenses(licenseList)
-  requiredlicensestemp = fetch_licenses(requiredlicenseList)
-
-  requiredlicenses = []
-  for license in requiredlicensestemp:
-    if license[2] not in [x[2] for x in requiredlicenses]:
-      requiredlicenses.append(license)
+  requiredlicenses = fetch_licenses(requiredlicenseList)
   requiredlicenses = [x[1:] for x in requiredlicenses]
 
   licenses_merge = []
@@ -82,7 +77,11 @@ def license_merger(licenseList, requiredlicenseList):
 
   licenseDataFrame = licenseDataFrame.drop_duplicates(subset='shortname').sort_values(by=['shortname']).reset_index(
       drop=True)
-
+  indexesToDrop = []
+  for idx, row in licenseDataFrame.iterrows():
+    if len(licenseDataFrame.loc[licenseDataFrame['shortname'] == row['shortname']+'-only']['depricated'] == 'True') > 0:
+      indexesToDrop.append(idx)
+  licenseDataFrame.drop(indexesToDrop, inplace=True)
   licenseDataFrame.to_csv(str(requiredlicenseList), index_label='index', encoding='utf-8')
 
   return str(Path(os.path.abspath(requiredlicenseList)))
