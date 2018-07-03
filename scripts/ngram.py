@@ -24,6 +24,7 @@ import json
 from tqdm import tqdm
 from getLicenses import fetch_licenses
 from multiprocessing import Pool as ThreadPool
+import csv
 
 
 def find_ngrams(input_list, n):
@@ -108,6 +109,10 @@ if __name__ == '__main__':
 
   with open('database_keywordsNoStemSPDX1.json', 'w') as myfile:
     myfile.write(json.dumps(ngram_keywords))
+
+  with open("NGram_DataFrame.csv", 'w') as f:
+    wr = csv.writer(f, quoting=csv.QUOTE_ALL)
+    wr.writerows(matched_output)
 
   if args is not None and args.verbose:
     print(matched_output)
