@@ -49,8 +49,8 @@ def cosine_similarity(a, b):
     return dot_product / temp
 
 
-def wordFrequency(a):
-  arr = word_tokenize(a)
+def wordFrequency(arr):
+  # arr = word_tokenize(a)
   frequency = {}
   for word in arr:
     if word in frequency:
@@ -85,6 +85,10 @@ def Ngram_guess(processedData):
   return initial_guess
 
 
+def bigram_tokenize(s):
+  return [s[i:i+2] for i in range(len(s) - 1)]
+
+
 def NgramSim(inputFile, licenseList):
   commentFile = CommentExtract(inputFile)
   with open(commentFile) as file:
@@ -94,12 +98,12 @@ def NgramSim(inputFile, licenseList):
   licenses = fetch_licenses(licenseList)
   Cosine_matches = []
   Dice_matches = []
+  Bigram_cosine_matches = []
 
   initial_guess = Ngram_guess(processedData)
   for license in [x for x in licenses if x[0] in [y['shortname'] for y in initial_guess]]:
     # cosine similarity with unigram
-    cosineSim = cosine_similarity(wordFrequency(license[1]), wordFrequency(processedData))
-    print(cosineSim)
+    cosineSim = cosine_similarity(wordFrequency(word_tokenize(license[1])), wordFrequency(word_tokenize(processedData)))
     if cosineSim >= 0:
       Cosine_matches.append({
         'shortname': license[0],
@@ -109,7 +113,7 @@ def NgramSim(inputFile, licenseList):
       print("Cosine Sim ", str(cosineSim), license[0])
 
     # dice similarity
-    diceSim = textdistance.sorensen(license[1], processedData)
+    diceSim = textdistance.sorensen(word_tokenize(license[1]), word_tokenize(processedData))
     if diceSim >= 0:
       Dice_matches.append({
         'shortname': license[0],
@@ -118,8 +122,16 @@ def NgramSim(inputFile, licenseList):
     if args is not None and args.verbose:
       print("Dice Sim ", str(diceSim), license[0])
 
-  result = []
+    bigram_cosine_sim = cosine_similarity(wordFrequency(bigram_tokenize(license[1])), wordFrequency(bigram_tokenize(processedData)))
+    if bigram_cosine_sim >= 0:
+      Bigram_cosine_matches.append({
+        'shortname': license[0],
+        'bigram_cosine_sim': bigram_cosine_sim
+      })
+    if args is not None and args.verbose:
+      print("Bigram Cosine Sim ", str(bigram_cosine_sim), license[0])
 
+  result = []
   if len(Cosine_matches) > 0:
     if args is not None and args.verbose:
       print("Length of matches ", len(Cosine_matches))
@@ -131,6 +143,12 @@ def NgramSim(inputFile, licenseList):
       print("Length of matches ", len(Dice_matches))
     Dice_matches.sort(key=lambda x: x['diceSim'], reverse=True)
     result.append(Dice_matches)
+
+  if len(Bigram_cosine_matches) > 0:
+    if args is not None and args.verbose:
+      print("Length of matches ", len(Bigram_cosine_matches))
+    Bigram_cosine_matches.sort(key=lambda x: x['bigram_cosine_sim'], reverse=True)
+    result.append(Bigram_cosine_matches)
 
   return result
 
@@ -150,6 +168,6 @@ if __name__ == "__main__":
   if len(result) > 0:
     print("N-Gram identifier and Vector space search ", str(result[0]) if len(result[0]) > 0 else "None")
     print("N-Gram identifier and Dice Similarity ", str(result[1]) if len(result[1]) > 0 else "None")
-    # print("N-Gram identifier and  ", str(result[2]) if len(result[2]) > 0 else "None")
+    print("N-Gram identifier and Bigram Cosine Similarity ", str(result[2]) if len(result[2]) > 0 else "None")
   else:
     print("Result is nothing")
