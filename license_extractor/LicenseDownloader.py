@@ -23,10 +23,14 @@ import glob
 from pathlib import Path
 from urllib import request
 from tqdm import tqdm
-import pandas
+import pandas as pd
+import argparse
+from multiprocessing import Pool as ThreadPool
 
+csvColumns = ["shortname", "fullname", "text", "license_header", "url",
+              "depricated", "osi_approved"]
 
-def download_license():
+def download_license(threads=os.cpu_count()):
   """
   Downloads license data from spdx.org.
 
@@ -54,36 +58,40 @@ def download_license():
       delete_files(csvFiles, str(filePath))
       return str(filePath)
     else:
-      csvColumns = ["shortname", "fullname", "text", "license_header", "url",
-                    "depricated", "osi_approved"]
-      licenseDataFrame = pandas.DataFrame(columns=csvColumns)
-      iterator = tqdm(range(len(licenses)),
-                      desc="Licenses processed",
-                      total=len(licenses), unit="license")
-      for i in iterator:
-        licenseDict = {}
-        licenseDict['shortname'] = licenses[i].get('licenseId')
-        licenseDict['fullname'] = licenses[i].get('name')
-        licenseDict['osi_approved'] = licenses[i].get('isOsiApproved')
-        licenseDict['depricated'] = licenses[i].get('isDeprecatedLicenseId')
-        nextUrl = "https://spdx.org/licenses/{0}.json".format(licenseDict['shortname'])
-        licenseData = request.urlopen(nextUrl).read()
-        licenseData = json.loads(licenseData.decode('utf-8'))
-        licenseDict['text'] = licenseData.get('licenseText')
-        licenseDict['url'] = licenseData.get('seeAlso')
-        licenseDict['license_header'] = licenseData.get('standardLicenseHeader', '')
-        if 'There is no standard license header for the license' in licenseDict['license_header']:
-          licenseDict['license_header'] = ''
-        temp = pandas.DataFrame(licenseDict, columns=csvColumns)
-        licenseDataFrame = pandas.concat([licenseDataFrame, temp],
-                                         sort=False, ignore_index=True)
+      licenseDataFrame = pd.DataFrame(columns=csvColumns)
+      cpuCount = os.cpu_count()
+      threads = cpuCount*2 if threads > cpuCount*2 else threads
+      pool = ThreadPool(threads)
+      for row in tqdm(pool.imap_unordered(fetch_license, licenses),
+                      desc="Licenses processed", total=len(licenses),
+                      unit="license"):
+        licenseDataFrame = pd.concat([licenseDataFrame,row], sort=False, ignore_index=True)
 
-      licenseDataFrame = licenseDataFrame.drop_duplicates(subset='shortname').sort_values(by=['shortname']).reset_index(drop=True)
+      licenseDataFrame = licenseDataFrame.drop_duplicates(subset='shortname')
+      licenseDataFrame = licenseDataFrame.sort_values('depricated').drop_duplicates(subset='fullname', keep='first')
+      licenseDataFrame = licenseDataFrame.sort_values('shortname').reset_index(drop=True)
       licenseDataFrame.to_csv(str(filePath), index_label='index', encoding='utf-8')
       delete_files(csvFiles, str(filePath))
       return str(filePath)
   else:
     return None
+
+
+def fetch_license(license):
+  licenseDict = {}
+  licenseDict['shortname'] = license.get('licenseId')
+  licenseDict['fullname'] = license.get('name')
+  licenseDict['osi_approved'] = license.get('isOsiApproved')
+  licenseDict['depricated'] = license.get('isDeprecatedLicenseId')
+  nextUrl = "https://spdx.org/licenses/{0}.json".format(licenseDict['shortname'])
+  licenseData = request.urlopen(nextUrl).read()
+  licenseData = json.loads(licenseData.decode('utf-8'))
+  licenseDict['text'] = licenseData.get('licenseText')
+  licenseDict['url'] = licenseData.get('seeAlso')
+  licenseDict['license_header'] = licenseData.get('standardLicenseHeader', '')
+  if 'There is no standard license header for the license' in licenseDict['license_header']:
+    licenseDict['license_header'] = ''
+  return pd.DataFrame(licenseDict, columns=csvColumns)
 
 
 def delete_files(files, skip):
@@ -96,4 +104,10 @@ def delete_files(files, skip):
 
 
 if __name__ == "__main__":
-  print(download_license())
+  parser = argparse.ArgumentParser()
+  parser.add_argument("-t", "--threads", required=False, default=os.cpu_count(),
+                      type=int,
+                      help="No of threads to use for download. Default: CPU count")
+  args = parser.parse_args()
+  threads = args.threads
+  print(download_license(threads))
