@@ -50,7 +50,6 @@ def cosine_similarity(a, b):
 
 
 def wordFrequency(arr):
-  # arr = word_tokenize(a)
   frequency = {}
   for word in arr:
     if word in frequency:
@@ -62,7 +61,7 @@ def wordFrequency(arr):
 
 def Ngram_guess(processedData):
   dir = os.path.dirname(os.path.abspath(__file__))
-  with open(dir + '/database_keywordsNoStemSPDX.json', 'r') as file:
+  with open(dir + '/../database_keywordsNoStemSPDX1.json', 'r') as file:
     unique_keywords = json.loads(file.read())
 
   initial_guess = []
@@ -85,9 +84,28 @@ def Ngram_guess(processedData):
   return initial_guess
 
 
+def HeadersNgramSim(header, processedData):
+  """
+  make array of ngrams
+  check with the processed data how much are matching
+  sim_score = matches/ count of ngrams
+  """
+  header = word_tokenize(header)
+  ngrams = []
+  for i in range(3, 8):
+    ngrams += [header[j:j + i] for j in range(len(header) - i + 1)]
+  count = 0
+  for ngram in ngrams:
+    if ' '.join(ngram) in processedData:
+      count += 1
+  sim = 0
+  if len(ngrams) > 0:
+    sim = float(count) / float(len(ngrams))
+  return sim
+
+
 def bigram_tokenize(s):
   return [s[i:i + 2] for i in range(len(s) - 1)]
-  # return [s[i:i + 3] for i in range(len(s) - 2)]
 
 
 def NgramSim(inputFile, licenseList, simType):
@@ -98,43 +116,53 @@ def NgramSim(inputFile, licenseList, simType):
 
   licenses = fetch_licenses(licenseList)
 
-  temp_results = []
+  exact_match_results = []
 
   # match full name
   for license in licenses:
     full_name = license[2]
     if full_name in processedData:
-      temp_results.append(license[0])
+      exact_match_results.append(license[0])
 
   # match with headers
-  # sim with headers
+  # similarity with headers
+  header_sim_results = []
   for license in licenses:
     header = license[3]
-    if header in processedData:
-      temp_results.append(license[0])
-    # bigram_cosine_sim = cosine_similarity(wordFrequency(bigram_tokenize(header)), wordFrequency(bigram_tokenize(processedData)))
-    # if bigram_cosine_sim >= 0.:
+    if len(header) > 0:
+      if header in processedData:
+        exact_match_results.append(license[0])
+      ngram_sim = HeadersNgramSim(header, processedData)
+      if ngram_sim >= 0.7:
+        header_sim_results.append({
+          'shortname': license[0],
+          'ngram_sim': ngram_sim
+        })
 
   # match with full text
   for license in licenses:
     full_text = license[1]
     if full_text in processedData:
-      temp_results.append(license[0])
+      exact_match_results.append(license[0])
 
-  temp_results = unique(temp_results)
-  print("EXACT RESULTS ARE", str(temp_results))
+  header_sim_results.sort(key=lambda x: x['ngram_sim'], reverse=True)
+  exact_match_results += [result['shortname'] for result in header_sim_results[:5]]
+  exact_match_results = unique(exact_match_results)
+
   Cosine_matches = []
   Dice_matches = []
   Bigram_cosine_matches = []
 
   initial_guess = Ngram_guess(processedData)
-  for license in [x for x in licenses if x[0] in [y['shortname'] for y in initial_guess]]:
+
+  for license in [x for x in licenses if
+                  x[0] in [y['shortname'] for y in initial_guess] or x[0] in exact_match_results]:
 
     if simType == "CosineSim":
       # cosine similarity with unigram
       cosineSim = cosine_similarity(wordFrequency(word_tokenize(license[1])),
                                     wordFrequency(word_tokenize(processedData)))
-      if cosineSim >= 0:
+      if cosineSim >= 0.6:
         Cosine_matches.append({
           'shortname': license[0],
           'cosineSim': cosineSim
@@ -145,7 +173,7 @@ def NgramSim(inputFile, licenseList, simType):
     elif simType == "DiceSim":
       # dice similarity
       diceSim = textdistance.sorensen(word_tokenize(license[1]), word_tokenize(processedData))
-      if diceSim >= 0:
+      if diceSim >= 0.6:
         Dice_matches.append({
           'shortname': license[0],
           'diceSim': diceSim
@@ -156,7 +184,7 @@ def NgramSim(inputFile, licenseList, simType):
     elif simType == "BigramCosineSim":
       bigram_cosine_sim = cosine_similarity(wordFrequency(bigram_tokenize(license[1])),
                                             wordFrequency(bigram_tokenize(processedData)))
-      if bigram_cosine_sim >= 0:
+      if bigram_cosine_sim >= 0.6:
         Bigram_cosine_matches.append({
           'shortname': license[0],
           'bigram_cosine_sim': bigram_cosine_sim
@@ -181,7 +209,7 @@ def NgramSim(inputFile, licenseList, simType):
     if args is not None and args.verbose:
       print("Length of matches ", len(Bigram_cosine_matches))
     Bigram_cosine_matches.sort(key=lambda x: x['bigram_cosine_sim'], reverse=True)
-    result = Bigram_cosine_matches[:10]
+    result = Bigram_cosine_matches[0]['shortname']
   return result
 
 

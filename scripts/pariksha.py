@@ -24,8 +24,7 @@ import sys
 from dameruLevenDist import classifyLicenseDameruLevenDist
 from tfidf import tfidfcosinesim
 from tqdm import tqdm
-from LicensePreprocessor import create_processed_file
-from CosineSimNgram1 import NgramSim
+from CosineSimNgram import NgramSim
 
 args = None
 
@@ -43,7 +42,7 @@ if __name__ == "__main__":
   pathname = os.path.dirname(sys.argv[0])
   pathto = os.path.abspath(pathname) + '/../tests/'
   expected_license_output = pathto + 'GoodTestfilesScan'
-
+  counter = 0
   with open(expected_license_output, 'r') as f:
     matched = 0
     iterator = ""
