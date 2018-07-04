@@ -25,12 +25,13 @@ from dameruLevenDist import classifyLicenseDameruLevenDist
 from tfidf import tfidfcosinesim
 from tqdm import tqdm
 from LicensePreprocessor import create_processed_file
+from CosineSimNgram1 import NgramSim
 
 args = None
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
-  parser.add_argument("AgentName", choices=['DLD', 'tfidfcosinesim', 'tfidfsumscore'],
+  parser.add_argument("AgentName", choices=['DLD', 'tfidfcosinesim', 'tfidfsumscore', 'Ngram'],
                       help="Name of the agent that needs to be run")
   parser.add_argument("ProcessedLicenseList",
                       help="Specify the processed license list file which contains licenses")
@@ -68,6 +69,11 @@ if __name__ == "__main__":
         tqdm.write("{0} {1} {2}".format(temp, text[1], text[4]))
       elif agent_name == "tfidfsumscore":
         temp = tfidfsumscore(pathto + filePath, processedLicense)
+        if temp in text[4]:
+          matched += 1
+        tqdm.write("{0} {1} {2}".format(temp, text[1], text[4]))
+      elif agent_name == "Ngram":
+        temp = str(NgramSim(pathto + filePath, processedLicense, "BigramCosineSim"))
         if temp in text[4]:
           matched += 1
         tqdm.write("{0} {1} {2}".format(temp, text[1], text[4]))

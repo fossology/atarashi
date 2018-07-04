@@ -124,7 +124,7 @@ def tfidfcosinesim(filename, licenseList):
         result = counter
     if args is not None and args.verbose:
       print("time taken is " + str(time.time() - startTime) + " sec")
-    return licenses.at[result,'shortname']
+    return str([licenses.at[result,'shortname'], globalmax])
   else:
     return temp[0]
 
