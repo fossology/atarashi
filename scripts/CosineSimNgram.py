@@ -22,7 +22,7 @@ import argparse
 import math
 import os
 import json
-from numpy import dot
+from numpy import dot, unique
 from CommentPreprocessor import preprocess
 from CommentExtractor import CommentExtract
 from getLicenses import fetch_licenses
@@ -86,9 +86,8 @@ def Ngram_guess(processedData):
 
 
 def bigram_tokenize(s):
-  return [s[i:i+2] for i in range(len(s) - 1)]
+  return [s[i:i + 2] for i in range(len(s) - 1)]
   # return [s[i:i + 3] for i in range(len(s) - 2)]
-
 
 
 def NgramSim(inputFile, licenseList, simType):
@@ -98,6 +97,32 @@ def NgramSim(inputFile, licenseList, simType):
   processedData = preprocess(data)
 
   licenses = fetch_licenses(licenseList)
+
+  temp_results = []
+
+  # match full name
+  for license in licenses:
+    full_name = license[2]
+    if full_name in processedData:
+      temp_results.append(license[0])
+
+  # match with headers
+  # sim with headers
+  for license in licenses:
+    header = license[3]
+    if header in processedData:
+      temp_results.append(license[0])
+    # bigram_cosine_sim = cosine_similarity(wordFrequency(bigram_tokenize(header)), wordFrequency(bigram_tokenize(processedData)))
+    # if bigram_cosine_sim >= 0.:
+
+  # match with full text
+  for license in licenses:
+    full_text = license[1]
+    if full_text in processedData:
+      temp_results.append(license[0])
+
+  temp_results = unique(temp_results)
+  print("EXACT RESULTS ARE", str(temp_results))
   Cosine_matches = []
   Dice_matches = []
   Bigram_cosine_matches = []
@@ -107,7 +132,8 @@ def NgramSim(inputFile, licenseList, simType):
 
     if simType == "CosineSim":
       # cosine similarity with unigram
-      cosineSim = cosine_similarity(wordFrequency(word_tokenize(license[1])), wordFrequency(word_tokenize(processedData)))
+      cosineSim = cosine_similarity(wordFrequency(word_tokenize(license[1])),
+                                    wordFrequency(word_tokenize(processedData)))
       if cosineSim >= 0:
         Cosine_matches.append({
           'shortname': license[0],
@@ -128,7 +154,8 @@ def NgramSim(inputFile, licenseList, simType):
         print("Dice Sim ", str(diceSim), license[0])
 
     elif simType == "BigramCosineSim":
-      bigram_cosine_sim = cosine_similarity(wordFrequency(bigram_tokenize(license[1])), wordFrequency(bigram_tokenize(processedData)))
+      bigram_cosine_sim = cosine_similarity(wordFrequency(bigram_tokenize(license[1])),
+                                            wordFrequency(bigram_tokenize(processedData)))
       if bigram_cosine_sim >= 0:
         Bigram_cosine_matches.append({
           'shortname': license[0],
@@ -142,28 +169,28 @@ def NgramSim(inputFile, licenseList, simType):
     if args is not None and args.verbose:
       print("Length of matches ", len(Cosine_matches))
     Cosine_matches.sort(key=lambda x: x['cosineSim'], reverse=True)
-    result = Cosine_matches[0]
+    result = Cosine_matches[:10]
 
   if simType == "DiceSim" and len(Dice_matches) > 0:
     if args is not None and args.verbose:
       print("Length of matches ", len(Dice_matches))
     Dice_matches.sort(key=lambda x: x['diceSim'], reverse=True)
-    result = Dice_matches[0]
+    result = Dice_matches[:10]
 
   if simType == "BigramCosineSim" and len(Bigram_cosine_matches) > 0:
     if args is not None and args.verbose:
       print("Length of matches ", len(Bigram_cosine_matches))
     Bigram_cosine_matches.sort(key=lambda x: x['bigram_cosine_sim'], reverse=True)
-    result = Bigram_cosine_matches
+    result = Bigram_cosine_matches[:10]
   return result
-
 
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument("inputFile", help="Specify the input file which needs to be scanned")
   parser.add_argument("licenseList", help="Specify the license list file which contains licenses")
-  parser.add_argument("Similarity", choices=["CosineSim", "DiceSim", "BigramCosineSim"], help="Specify the similarity algorithm that you want")
+  parser.add_argument("Similarity", choices=["CosineSim", "DiceSim", "BigramCosineSim"],
+                      help="Specify the similarity algorithm that you want")
   parser.add_argument("-v", "--verbose", help="increase output verbosity",
                       action="store_true")
   args = parser.parse_args()
