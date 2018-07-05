@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-'''
+"""
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 version 2 as published by the Free Software Foundation.
@@ -13,16 +13,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+"""
 
-Author: Aman Jain (amanjain5221@gmail.com)
-'''
+__author__ = "Aman Jain"
 
-import os
-import sys
-import string
+import argparse
 import re
+import string
 
-# filename = sys.argv[1]
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
 
 """Rules to apply:
 All whitespace should be treated as a single blank space
@@ -34,59 +34,29 @@ Ignore the list item for matching purposes (eg. bullets, numbered lists)
 
 """
 
-replacements = {
-  'acknowledgement':'acknowledgment',
-  'analog':'analogue',
-  'analyze':'analyse',
-  'artifact':'artefact',
-  'authorization':'authorisation',
-  'authorized':'authorised',
-  'caliber':'calibre',
-  'canceled':'cancelled',
-  'capitalizations':'capitalisations',
-  'catalog':'catalogue',
-  'categorize':'categorise',
-  'center':'centre',
-  'emphasized':'emphasised',
-  'favor':'favour',
-  'favorite':'favourite',
-  'fulfill':'fulfil',
-  'fulfillment':'fulfilment',
-  'initialize':'initialise',
-  'judgement':'judgment',
-  'labeling':'labelling',
-  'labor':'labour',
-  'license':'licence',
-  'maximize':'maximise',
-  'modeled':'modelled',
-  'modeling':'modelling',
-  'offense':'offence',
-  'optimize':'optimise',
-  'organization':'organisation',
-  'organize':'organise',
-  'practice':'practise',
-  'program':'programme',
-  'realize':'realise',
-  'recognize':'recognise',
-  'signaling':'signalling',
-  'sublicense':'sub-license',
-  'sub-license':'sub license',
-  'utilization':'utilisation',
-  'while':'whilst',
-  'wilfull':'wilful',
-  'noncommercial':'non-commercial',
-  'percent':'per cent',
-  'copyright holder':'copyright owner'
-}
+args = None
 
-def replace(match):
-  return replacements[match.group(0)]
 
 def preprocess(data):
-  data = re.sub('|'.join(r'\b%s\b' % re.escape(s) for s in replacements), replace, data)
   data = data.lower()
-  data = re.sub(r'\s\s*', ' ', data)
   data = re.sub(r'copyright|\(c\)', 'copyright', data)
-  data = re.sub(r'[{}]'.format(string.punctuation), '.', data)
-  # data = re.sub(r'[\u2022,\u2023,\u25E6,\u2043,\u2219]', '', data)
+  data = re.sub(r'[{}]'.format(string.punctuation), ' ', data)
+  words = word_tokenize(data)
+  if args is not None and args.stopWords:   # Filter stopwords
+    words = [word for word in words if word not in stopwords.words('english')]
+  data = " ".join(words)
   return data
+
+if __name__ == "__main__":
+  print("The file has been run directly")
+  parser = argparse.ArgumentParser()
+  parser.add_argument("inputFile", help="Specify the input file which needs to be scanned")
+  parser.add_argument("-s", "--stop-words", help="Set to use stop word filtering",
+                      action="store_true", dest="stopWords")
+  parser.add_argument("-v", "--verbose", help="increase output verbosity",
+                      action="store_true")
+  args = parser.parse_args()
+  inputFile = args.inputFile
+  with open(inputFile) as file:
+    data = file.read().replace('\n', ' ')
+  print("Preprocessed data is --", str(preprocess(data)))

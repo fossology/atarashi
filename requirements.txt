@@ -1,2 +1,6 @@
 tqdm==4.23.4
 pandas==0.23.1
+pyxDamerauLevenshtein==1.5
+scikit-learn==0.18.1
+scipy==0.18.1
+nltk==3.3

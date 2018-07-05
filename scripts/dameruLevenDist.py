@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-'''
+"""
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 version 2 as published by the Free Software Foundation.
@@ -14,19 +14,19 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-'''
+"""
+
 __author__ = "Aman Jain"
 
-import os
+import argparse
 import sys
-import re
-import csv
-from CommentPreprocessor import preprocess
-from CommentExtractor import CommentExtract
 from pyxdameraulevenshtein import damerau_levenshtein_distance
-from getLicenses import fetch_licenses
-import time
 
+from CommentExtractor import CommentExtract
+from CommentPreprocessor import preprocess
+from getLicenses import fetch_licenses
+from exactMatch import exactMatcher
+from nltk.tokenize import word_tokenize
 
 '''Python Module to classify license using Damerau Levenshtein distance algorithm
 Input: File from which license needs to be scanned and license list (CSV)
@@ -37,33 +37,46 @@ Description: It extract comments from the file and after preprocessing,
               python dameruLevenDist.py <filename> <licenseList>
 '''
 
-def classifyLicenseDameruLevenDist(processedData, licenses):
-  # Classify the license with minimum distance with scanned file
-  globalDistance = sys.maxsize
-  result = 0
-  for idx in range(len(licenses)):
-    distance = damerau_levenshtein_distance(processedData.split(' '), licenses[idx][1].split(' '))
-    print(str(idx) + "  " + licenses[idx][0] + "  " + str(distance))
-    if distance < globalDistance:
-      globalDistance = distance
-      result = idx
-  return result
+args = None
 
-# Input
-filename = sys.argv[1]
-licenseList = sys.argv[2]
 
-# fetch preprocessed licenses
-licenses = fetch_licenses(licenseList)
+def classifyLicenseDameruLevenDist(filename, licenseList):
+  licenses = fetch_licenses(licenseList)
 
-# extract comments and preprocess them
-commentFile = CommentExtract(filename)
-with open(commentFile) as file:
-  data = file.read().replace('\n', ' ')
-processedData = preprocess(data)
+  commentFile = CommentExtract(filename)
+  with open(commentFile) as file:
+    data = file.read().replace('\n', ' ')
+  processedData = preprocess(data)
 
-startTime = time.time()
-print("license id --- License name --- Leven Dist")
-result = classifyLicenseDameruLevenDist(processedData, licenses)
-print("time taken is " + str(time.time() - startTime) + " seconds")
-print("License Detected using Dameru Leven Distance: " + licenses[result][0])
+  temp = exactMatcher(processedData, licenseList)
+  if temp == -1:
+    # Classify the license with minimum distance with scanned file
+    globalDistance = sys.maxsize
+    result = 0
+    for idx in range(len(licenses)):
+      distance = damerau_levenshtein_distance(word_tokenize(processedData), word_tokenize(licenses[idx][1]))
+      if args is not None and args.verbose:
+        print(str(idx) + "  " + licenses[idx][0] + "  " + str(distance))
+      if distance < globalDistance:
+        globalDistance = distance
+        result = idx
+
+    return licenses[result][0]
+  else:
+    return temp[0]
+
+
+if __name__ == "__main__":
+  print("The file has been run directly")
+  parser = argparse.ArgumentParser()
+  parser.add_argument("inputFile", help="Specify the input file which needs to be scanned")
+  parser.add_argument("licenseList", help="Specify the license list file which contains licenses")
+  parser.add_argument("-s", "--stop-words", help="Set to use stop word filtering",
+                      action="store_true", dest="stopWords")
+  parser.add_argument("-v", "--verbose", help="increase output verbosity",
+                      action="store_true")
+  args = parser.parse_args()
+  filename = args.inputFile
+  licenseList = args.licenseList
+
+  print("License Detected using Dameru Leven Distance: " + str(classifyLicenseDameruLevenDist(filename, licenseList)))
