@@ -14,20 +14,22 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+SPDX-License-Identifier: GPL-2.0+
 """
 
 __author__ = "Aman Jain"
 
 import argparse
+import json
 import math
 import os
-import json
-from numpy import dot, unique
-from CommentPreprocessor import preprocess
+
+import textdistance
 from CommentExtractor import CommentExtract
+from CommentPreprocessor import preprocess
 from getLicenses import fetch_licenses
 from nltk.tokenize import word_tokenize
-import textdistance
+from numpy import dot, unique
 
 args = None
 
@@ -108,6 +110,28 @@ def bigram_tokenize(s):
   return [s[i:i + 2] for i in range(len(s) - 1)]
 
 
+def spdx_identifer(data, shortnames):
+  """
+  Identify SPDX-License-Identifier
+  Make sure the identifier must be present in Fossology merged license list
+  """
+  tokenized_data = data.split(" ")
+  possible_spdx = []
+  max_licenses = 5
+  for idx in range(len(tokenized_data)):
+    if tokenized_data[idx] == "SPDX-License-Identifier:":
+      possible_spdx.append(tokenized_data[idx + 1:idx + 1 + max_licenses])
+  print(possible_spdx)
+  spdx_identifiers = []
+  for arr in possible_spdx:
+    if len(arr) > 0:
+      for word in arr:
+        if word in shortnames:
+          spdx_identifiers.append(word)
+
+  return spdx_identifiers
+
+
 def NgramSim(inputFile, licenseList, simType):
   commentFile = CommentExtract(inputFile)
   with open(commentFile) as file:
@@ -116,13 +140,10 @@ def NgramSim(inputFile, licenseList, simType):
 
   licenses = fetch_licenses(licenseList)
 
-  exact_match_results = []
+  spdx_identifiers = spdx_identifer(data, [license[0] for license in licenses])
+  print(spdx_identifiers)
 
-  # match full name
-  for license in licenses:
-    full_name = license[2]
-    if full_name in processedData:
-      exact_match_results.append(license[0])
+  exact_match_results = []
 
   # match with headers
   # similarity with headers
@@ -148,6 +169,8 @@ def NgramSim(inputFile, licenseList, simType):
   header_sim_results.sort(key=lambda x: x['ngram_sim'], reverse=True)
   exact_match_results += [result['shortname'] for result in header_sim_results[:5]]
   exact_match_results = unique(exact_match_results)
+  print("EXACT MATCH ", str(exact_match_results))
+  print("SIM MATCH", str(header_sim_results))
 
   Cosine_matches = []
   Dice_matches = []
@@ -209,7 +232,7 @@ def NgramSim(inputFile, licenseList, simType):
     if args is not None and args.verbose:
       print("Length of matches ", len(Bigram_cosine_matches))
     Bigram_cosine_matches.sort(key=lambda x: x['bigram_cosine_sim'], reverse=True)
-    result = Bigram_cosine_matches[0]['shortname']
+    result = Bigram_cosine_matches[:10]
   return result
 
 
