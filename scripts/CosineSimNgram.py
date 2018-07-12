@@ -13,8 +13,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-SPDX-License-Identifier: GPL-2.0+
 """
 
 __author__ = "Aman Jain"
@@ -70,7 +68,6 @@ def Ngram_guess(processedData):
   initial_guess = []
 
   for keywords in unique_keywords:
-    # print(keywords)
     matched_keys = 0
     for key in keywords['ngrams']:
       if key in processedData:
@@ -78,11 +75,13 @@ def Ngram_guess(processedData):
     if matched_keys > 0:
       initial_guess.append({
         'shortname': keywords['shortname'],
-        'match': matched_keys / len(keywords['ngrams'])
+        'sim_type': 'Ngram guess',
+        'sim_score': matched_keys / len(keywords['ngrams']),
+        'description': ' '
       })
   if args is not None and args.verbose:
     print("Length of guess using ngram identifers ", len(initial_guess))
-    initial_guess.sort(key=lambda x: x['match'], reverse=True)
+    initial_guess.sort(key=lambda x: x['sim_score'], reverse=True)
     print("INITIAL GUESS WITH NGRAM IDENTIFIER", initial_guess)
   return initial_guess
 
@@ -122,13 +121,17 @@ def spdx_identifer(data, shortnames):
   for idx in range(len(tokenized_data)):
     if tokenized_data[idx] == "SPDX-License-Identifier:":
       possible_spdx.append(tokenized_data[idx + 1:idx + 1 + max_licenses])
-  # print(possible_spdx)
   spdx_identifiers = []
   for arr in possible_spdx:
     if len(arr) > 0:
       for word in arr:
         if word in shortnames:
-          spdx_identifiers.append(word)
+          spdx_identifiers.append({
+            'shortname': word,
+            'sim_type': 'SPDXIdentifier',
+            'sim_score': 1.0,
+            'description': ''
+          })
 
   return spdx_identifiers
 
@@ -141,52 +144,55 @@ def NgramSim(inputFile, licenseList, simType):
 
   licenses = fetch_licenses(licenseList)
 
+  # Match SPDX identifiers
   spdx_identifiers = spdx_identifer(data, [license[0] for license in licenses])
-
-  exact_match_header = []
 
   # match with headers
   # similarity with headers
+  exact_match_header = []
   header_sim_match = []
   for license in licenses:
     header = license[3]
     if len(header) > 0:
       if header in processedData:
-        exact_match_header.append(license[0])
+        exact_match_header.append({
+          'shortname': license[0],
+          'sim_type': 'ExactHeader',
+          'sim_score': 1.0,
+          'description': ''
+        })
       ngram_sim = HeadersNgramSim(header, processedData)
       if ngram_sim >= 0.7:
         header_sim_match.append({
           'shortname': license[0],
-          'ngram_sim': ngram_sim
+          'sim_type': 'HeaderNgramSimilarity',
+          'sim_score': ngram_sim,
+          'description': ''
         })
+  header_sim_match.sort(key=lambda x: x['sim_score'], reverse=True)
 
   # match with full text
   exact_match_fulltext = []
   for license in licenses:
     full_text = license[1]
     if full_text in processedData:
-      exact_match_fulltext.append(license[0])
+      exact_match_fulltext.append({
+        'shortname': license[0],
+        'sim_type': 'ExactFullText',
+        'sim_score': 1.0,
+        'description': ''
+      })
 
-  header_sim_match.sort(key=lambda x: x['ngram_sim'], reverse=True)
-  # exact_match_results += [result['shortname'] for result in header_sim_results[:5]]
+  matches = list(itertools.chain(spdx_identifiers, exact_match_header, exact_match_fulltext, header_sim_match[:5]))
 
-  exact_match_header = unique(exact_match_header)
-  exact_match_fulltext = unique(exact_match_fulltext)
-
-  print("SPDX IDENTIFIERS MATCH", str(spdx_identifiers))
-  print("EXACT MATCH OF HEADERS", str(exact_match_header))
-  print("SIM MATCH WITH HEADERS", str(header_sim_match))
-  print("EXACT MATCH OF FULL TEXT", str(exact_match_fulltext))
-  # print(list(spdx_identifiers + exact_match_header + header_sim_match + exact_match_fulltext))
+  # Full text Bi-gram Cosine Similarity Match
   Cosine_matches = []
   Dice_matches = []
   Bigram_cosine_matches = []
 
   initial_guess = Ngram_guess(processedData)
-
-  for license in [x for x in licenses if
-                  x[0] in [y['shortname'] for y in initial_guess] or x[0] in list(
-                      itertools.chain(spdx_identifiers, exact_match_header, header_sim_match, exact_match_fulltext))]:
+  all_guesses = unique([l['shortname'] for l in matches])
+  for license in [x for x in licenses if x[0] in [y['shortname'] for y in initial_guess] or x[0] in all_guesses]:
 
     if simType == "CosineSim":
       # cosine similarity with unigram
@@ -195,7 +201,9 @@ def NgramSim(inputFile, licenseList, simType):
       if cosineSim >= 0.6:
         Cosine_matches.append({
           'shortname': license[0],
-          'cosineSim': cosineSim
+          'sim_type': 'CosineSim',
+          'sim_score': cosineSim,
+          'description': ''
         })
       if args is not None and args.verbose:
         print("Cosine Sim ", str(cosineSim), license[0])
@@ -206,7 +214,9 @@ def NgramSim(inputFile, licenseList, simType):
       if diceSim >= 0.6:
         Dice_matches.append({
           'shortname': license[0],
-          'diceSim': diceSim
+          'sim_type': 'DiceSim',
+          'sim_score': diceSim,
+          'description': ''
         })
       if args is not None and args.verbose:
         print("Dice Sim ", str(diceSim), license[0])
@@ -214,33 +224,28 @@ def NgramSim(inputFile, licenseList, simType):
     elif simType == "BigramCosineSim":
       bigram_cosine_sim = cosine_similarity(wordFrequency(bigram_tokenize(license[1])),
                                             wordFrequency(bigram_tokenize(processedData)))
-      if bigram_cosine_sim >= 0.9:
+      if bigram_cosine_sim >= 0.8:
         Bigram_cosine_matches.append({
           'shortname': license[0],
-          'bigram_cosine_sim': bigram_cosine_sim
+          'sim_type': 'BigramCosineSim',
+          'sim_score': bigram_cosine_sim,
+          'description': ''
         })
       if args is not None and args.verbose:
         print("Bigram Cosine Sim ", str(bigram_cosine_sim), license[0])
 
-  result = ""
   if simType == "CosineSim" and len(Cosine_matches) > 0:
-    if args is not None and args.verbose:
-      print("Length of matches ", len(Cosine_matches))
-    Cosine_matches.sort(key=lambda x: x['cosineSim'], reverse=True)
-    result = Cosine_matches[:10]
+    Cosine_matches.sort(key=lambda x: x['sim_score'], reverse=True)
+    matches = list(itertools.chain(matches, Cosine_matches))
 
   if simType == "DiceSim" and len(Dice_matches) > 0:
-    if args is not None and args.verbose:
-      print("Length of matches ", len(Dice_matches))
-    Dice_matches.sort(key=lambda x: x['diceSim'], reverse=True)
-    result = Dice_matches[:10]
+    Dice_matches.sort(key=lambda x: x['sim_score'], reverse=True)
+    matches = list(itertools.chain(matches, Dice_matches))
 
   if simType == "BigramCosineSim" and len(Bigram_cosine_matches) > 0:
-    if args is not None and args.verbose:
-      print("Length of matches ", len(Bigram_cosine_matches))
-    Bigram_cosine_matches.sort(key=lambda x: x['bigram_cosine_sim'], reverse=True)
-    result = Bigram_cosine_matches[:10]
-  return result
+    Bigram_cosine_matches.sort(key=lambda x: x['sim_score'], reverse=True)
+    matches = list(itertools.chain(matches, Bigram_cosine_matches))
+  return matches
 
 
 if __name__ == "__main__":
