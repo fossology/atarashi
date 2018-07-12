@@ -62,7 +62,7 @@ def wordFrequency(arr):
 
 def Ngram_guess(processedData):
   dir = os.path.dirname(os.path.abspath(__file__))
-  with open(dir + '/../database_keywordsNoStemSPDX1.json', 'r') as file:
+  with open(dir + '/ngram_keywords.json', 'r') as file:
     unique_keywords = json.loads(file.read())
 
   initial_guess = []
