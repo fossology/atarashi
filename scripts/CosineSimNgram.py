@@ -23,6 +23,7 @@ import argparse
 import json
 import math
 import os
+import itertools
 
 import textdistance
 from CommentExtractor import CommentExtract
@@ -82,7 +83,7 @@ def Ngram_guess(processedData):
   if args is not None and args.verbose:
     print("Length of guess using ngram identifers ", len(initial_guess))
     initial_guess.sort(key=lambda x: x['match'], reverse=True)
-    print(initial_guess)
+    print("INITIAL GUESS WITH NGRAM IDENTIFIER", initial_guess)
   return initial_guess
 
 
@@ -121,7 +122,7 @@ def spdx_identifer(data, shortnames):
   for idx in range(len(tokenized_data)):
     if tokenized_data[idx] == "SPDX-License-Identifier:":
       possible_spdx.append(tokenized_data[idx + 1:idx + 1 + max_licenses])
-  print(possible_spdx)
+  # print(possible_spdx)
   spdx_identifiers = []
   for arr in possible_spdx:
     if len(arr) > 0:
@@ -141,37 +142,42 @@ def NgramSim(inputFile, licenseList, simType):
   licenses = fetch_licenses(licenseList)
 
   spdx_identifiers = spdx_identifer(data, [license[0] for license in licenses])
-  print(spdx_identifiers)
 
-  exact_match_results = []
+  exact_match_header = []
 
   # match with headers
   # similarity with headers
-  header_sim_results = []
+  header_sim_match = []
   for license in licenses:
     header = license[3]
     if len(header) > 0:
       if header in processedData:
-        exact_match_results.append(license[0])
+        exact_match_header.append(license[0])
       ngram_sim = HeadersNgramSim(header, processedData)
       if ngram_sim >= 0.7:
-        header_sim_results.append({
+        header_sim_match.append({
           'shortname': license[0],
           'ngram_sim': ngram_sim
         })
 
   # match with full text
+  exact_match_fulltext = []
   for license in licenses:
     full_text = license[1]
     if full_text in processedData:
-      exact_match_results.append(license[0])
+      exact_match_fulltext.append(license[0])
 
-  header_sim_results.sort(key=lambda x: x['ngram_sim'], reverse=True)
-  exact_match_results += [result['shortname'] for result in header_sim_results[:5]]
-  exact_match_results = unique(exact_match_results)
-  print("EXACT MATCH ", str(exact_match_results))
-  print("SIM MATCH", str(header_sim_results))
+  header_sim_match.sort(key=lambda x: x['ngram_sim'], reverse=True)
+  # exact_match_results += [result['shortname'] for result in header_sim_results[:5]]
 
+  exact_match_header = unique(exact_match_header)
+  exact_match_fulltext = unique(exact_match_fulltext)
+
+  print("SPDX IDENTIFIERS MATCH", str(spdx_identifiers))
+  print("EXACT MATCH OF HEADERS", str(exact_match_header))
+  print("SIM MATCH WITH HEADERS", str(header_sim_match))
+  print("EXACT MATCH OF FULL TEXT", str(exact_match_fulltext))
+  # print(list(spdx_identifiers + exact_match_header + header_sim_match + exact_match_fulltext))
   Cosine_matches = []
   Dice_matches = []
   Bigram_cosine_matches = []
@@ -179,7 +185,8 @@ def NgramSim(inputFile, licenseList, simType):
   initial_guess = Ngram_guess(processedData)
 
   for license in [x for x in licenses if
-                  x[0] in [y['shortname'] for y in initial_guess] or x[0] in exact_match_results]:
+                  x[0] in [y['shortname'] for y in initial_guess] or x[0] in list(
+                      itertools.chain(spdx_identifiers, exact_match_header, header_sim_match, exact_match_fulltext))]:
 
     if simType == "CosineSim":
       # cosine similarity with unigram
@@ -207,7 +214,7 @@ def NgramSim(inputFile, licenseList, simType):
     elif simType == "BigramCosineSim":
       bigram_cosine_sim = cosine_similarity(wordFrequency(bigram_tokenize(license[1])),
                                             wordFrequency(bigram_tokenize(processedData)))
-      if bigram_cosine_sim >= 0.6:
+      if bigram_cosine_sim >= 0.9:
         Bigram_cosine_matches.append({
           'shortname': license[0],
           'bigram_cosine_sim': bigram_cosine_sim
