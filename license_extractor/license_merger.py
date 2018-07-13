@@ -34,23 +34,29 @@ args = None
 def license_merger(licenseList, requiredlicenseList):
   my_file = Path(licenseList)
   if not my_file.is_file() or not Path(requiredlicenseList).is_file():
-    print("Files donot exist. Please check the file paths")
+    raise ValueError("Files donot exist. Please check the file paths")
     return
 
   licenses = fetch_licenses(licenseList)
-  requiredlicenses = fetch_licenses(requiredlicenseList)
-  requiredlicenses = [x[1:] for x in requiredlicenses]
+  licenses = licenses.drop(licenses.loc[licenses.shortname=="Void"].index).reset_index(drop=True)
 
-  licenses_merge = []
-  for license in licenses:
-    if license[1] in [x[1] for x in requiredlicenses]:
+  requiredlicenses = fetch_licenses(requiredlicenseList)
+
+  licenses_merge = pd.DataFrame(columns=licenses.columns)
+  for idx in range(len(licenses)):
+    currFullname = str(licenses.loc[idx]['fullname'])
+    currShortname = str(licenses.loc[idx]['shortname'])
+    if requiredlicenses['fullname'].str.contains(currFullname,
+                                                 case=False, regex=False).any():
       # full name match
       continue
-    elif license[0] in [x[0] for x in requiredlicenses]:
+    elif requiredlicenses['shortname'].str.contains(currShortname,
+                                                 case=False, regex=False).any():
       # short name match
       continue
     else:
-      licenses_merge.append(license)
+      licenses_merge = licenses_merge.append(licenses.loc[idx],
+                                             ignore_index=True, sort=False)
 
   if args is not None and args.verbose:
     print("Licenses to Merge", len(licenses_merge))
@@ -58,31 +64,30 @@ def license_merger(licenseList, requiredlicenseList):
   csvColumns = ["shortname", "fullname", "text", "license_header", "url",
                 "depricated", "osi_approved"]
 
-  licenseDataFrame = pd.DataFrame(requiredlicenses, columns=csvColumns)
   iterator = tqdm(range(len(licenses_merge)),
                   desc="Licenses merged",
                   total=len(licenses_merge), unit="license")
   for i in iterator:
     licenseDict = {}
-    licenseDict['shortname'] = licenses_merge[i][0]
-    licenseDict['fullname'] = licenses_merge[i][1]
+    licenseDict['shortname'] = licenses_merge.loc[i,'shortname']
+    licenseDict['fullname'] = licenses_merge.loc[i,'fullname']
     licenseDict['osi_approved'] = False
     licenseDict['depricated'] = True
-    licenseDict['text'] = licenses_merge[i][2]
-    licenseDict['url'] = licenses_merge[i][5]
+    licenseDict['text'] = licenses_merge.loc[i,'text']
+    licenseDict['url'] = licenses_merge.loc[i,'url']
     licenseDict['license_header'] = ['']
     temp = pd.DataFrame(licenseDict, columns=csvColumns)
-    licenseDataFrame = pd.concat([licenseDataFrame, temp],
+    requiredlicenses = pd.concat([requiredlicenses, temp],
                                      sort=False, ignore_index=True)
 
-  licenseDataFrame = licenseDataFrame.drop_duplicates(subset='shortname').sort_values(by=['shortname']).reset_index(
+  requiredlicenses = requiredlicenses.drop_duplicates(subset='shortname').sort_values(by=['shortname']).reset_index(
       drop=True)
   indexesToDrop = []
-  for idx, row in licenseDataFrame.iterrows():
-    if len(licenseDataFrame.loc[licenseDataFrame['shortname'] == row['shortname']+'-only']['depricated'] == 'True') > 0:
+  for idx, row in requiredlicenses.iterrows():
+    if len(requiredlicenses.loc[requiredlicenses['shortname'] == row['shortname']+'-only']['depricated'] == True) > 0:
       indexesToDrop.append(idx)
-  licenseDataFrame.drop(indexesToDrop, inplace=True)
-  licenseDataFrame.to_csv(str(requiredlicenseList), index_label='index', encoding='utf-8')
+  requiredlicenses.drop(indexesToDrop, inplace=True)
+  requiredlicenses.to_csv(str(requiredlicenseList), index=False, encoding='utf-8')
 
   return str(Path(os.path.abspath(requiredlicenseList)))
 

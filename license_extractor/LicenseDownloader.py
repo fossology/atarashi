@@ -30,7 +30,7 @@ from multiprocessing import Pool as ThreadPool
 csvColumns = ["shortname", "fullname", "text", "license_header", "url",
               "depricated", "osi_approved"]
 
-def download_license(threads=os.cpu_count()):
+def download_license(threads=os.cpu_count(), force=False):
   """
   Downloads license data from spdx.org.
 
@@ -52,27 +52,26 @@ def download_license(threads=os.cpu_count()):
     dir = os.path.dirname(os.path.abspath(__file__))
     dir = os.path.abspath(dir + "/../licenses")
     Path(dir).mkdir(exist_ok=True)
-    csvFiles = glob.glob(dir + "/*.csv")
     filePath = Path(os.path.abspath(dir + "/" + fileName))
     if (filePath.is_file()):
-      delete_files(csvFiles, str(filePath))
-      return str(filePath)
-    else:
-      licenseDataFrame = pd.DataFrame(columns=csvColumns)
-      cpuCount = os.cpu_count()
-      threads = cpuCount*2 if threads > cpuCount*2 else threads
-      pool = ThreadPool(threads)
-      for row in tqdm(pool.imap_unordered(fetch_license, licenses),
-                      desc="Licenses processed", total=len(licenses),
-                      unit="license"):
-        licenseDataFrame = pd.concat([licenseDataFrame,row], sort=False, ignore_index=True)
+      if (force):
+        filePath.unlink()
+      else:
+        return str(filePath)
+    licenseDataFrame = pd.DataFrame(columns=csvColumns)
+    cpuCount = os.cpu_count()
+    threads = cpuCount*2 if threads > cpuCount*2 else threads
+    pool = ThreadPool(threads)
+    for row in tqdm(pool.imap_unordered(fetch_license, licenses),
+                    desc="Licenses processed", total=len(licenses),
+                    unit="license"):
+      licenseDataFrame = pd.concat([licenseDataFrame,row], sort=False, ignore_index=True)
 
-      licenseDataFrame = licenseDataFrame.drop_duplicates(subset='shortname')
-      licenseDataFrame = licenseDataFrame.sort_values('depricated').drop_duplicates(subset='fullname', keep='first')
-      licenseDataFrame = licenseDataFrame.sort_values('shortname').reset_index(drop=True)
-      licenseDataFrame.to_csv(str(filePath), index_label='index', encoding='utf-8')
-      delete_files(csvFiles, str(filePath))
-      return str(filePath)
+    licenseDataFrame = licenseDataFrame.drop_duplicates(subset='shortname')
+    licenseDataFrame = licenseDataFrame.sort_values('depricated').drop_duplicates(subset='fullname', keep='first')
+    licenseDataFrame = licenseDataFrame.sort_values('shortname').reset_index(drop=True)
+    licenseDataFrame.to_csv(str(filePath), index=False, encoding='utf-8')
+    return str(filePath)
   else:
     return None
 
@@ -94,20 +93,14 @@ def fetch_license(license):
   return pd.DataFrame(licenseDict, columns=csvColumns)
 
 
-def delete_files(files, skip):
-  """
-  Deletes files from files list, skip the file defined by skip.
-  """
-  for file in files:
-    if os.path.basename(file) != os.path.basename(skip):
-      Path(file).unlink()
-
-
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument("-t", "--threads", required=False, default=os.cpu_count(),
                       type=int,
                       help="No of threads to use for download. Default: CPU count")
+  parser.add_argument("-f", "--force", action="store_true",
+                      help="Force download regardless of existing list")
   args = parser.parse_args()
   threads = args.threads
-  print(download_license(threads))
+  force = args.force
+  print(download_license(threads, force))

@@ -27,21 +27,35 @@ from CommentPreprocessor import preprocess
 from getLicenses import fetch_licenses
 from exactMatch import exactMatcher
 from nltk.tokenize import word_tokenize
+import pandas as pd
 
 '''Python Module to classify license using Damerau Levenshtein distance algorithm
-Input: File from which license needs to be scanned and license list (CSV)
+Input: File from which license needs to be scanned and processed license list (CSV)
 Output: License which is contained in the file.
 Description: It extract comments from the file and after preprocessing,
               it calculates the damerau_levenshtein_distance and then classify
               by finding the leadt distance.
-              python dameruLevenDist.py <filename> <licenseList>
+              python dameruLevenDist.py <filename> <processedLicenseList>
 '''
 
 args = None
 
 
 def classifyLicenseDameruLevenDist(filename, licenseList):
+  '''
+  Read the content content of filename, extract the comments and preprocess them.
+  Find the Damerau Levenshtein distance between the preprocessed file content
+  and the license text.
+  
+  Arguments:
+  filename    -- path of the file to scan
+  licenseList -- path of the preprocessed license list (CSV)
+  
+  Returns the license's shortname
+  '''
   licenses = fetch_licenses(licenseList)
+  if 'processed_text' not in licenses.columns:
+    raise ValueError('The license list does not contain processed_text column.')
 
   commentFile = CommentExtract(filename)
   with open(commentFile) as file:
@@ -54,14 +68,15 @@ def classifyLicenseDameruLevenDist(filename, licenseList):
     globalDistance = sys.maxsize
     result = 0
     for idx in range(len(licenses)):
-      distance = damerau_levenshtein_distance(word_tokenize(processedData), word_tokenize(licenses[idx][1]))
+      distance = damerau_levenshtein_distance(word_tokenize(processedData),
+                                              word_tokenize(licenses.loc[idx]['processed_text']))
       if args is not None and args.verbose:
-        print(str(idx) + "  " + licenses[idx][0] + "  " + str(distance))
+        print(str(idx) + "  " + licenses.loc[idx]['shortname'] + "  " + str(distance))
       if distance < globalDistance:
         globalDistance = distance
         result = idx
 
-    return licenses[result][0]
+    return str(licenses.loc[result]['shortname'])
   else:
     return temp[0]
 
@@ -70,13 +85,12 @@ if __name__ == "__main__":
   print("The file has been run directly")
   parser = argparse.ArgumentParser()
   parser.add_argument("inputFile", help="Specify the input file which needs to be scanned")
-  parser.add_argument("licenseList", help="Specify the license list file which contains licenses")
-  parser.add_argument("-s", "--stop-words", help="Set to use stop word filtering",
-                      action="store_true", dest="stopWords")
+  parser.add_argument("processedLicenseList",
+                      help="Specify the processed license list file which contains licenses")
   parser.add_argument("-v", "--verbose", help="increase output verbosity",
                       action="store_true")
   args = parser.parse_args()
   filename = args.inputFile
-  licenseList = args.licenseList
+  licenseList = args.processedLicenseList
 
   print("License Detected using Dameru Leven Distance: " + str(classifyLicenseDameruLevenDist(filename, licenseList)))

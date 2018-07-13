@@ -39,6 +39,8 @@ def initialize(filename, licenseList):
   processedData = preprocess(data)
 
   licenses = fetch_licenses(licenseList)
+  if 'processed_text' not in licenses.columns:
+    raise ValueError('The license list does not contain processed_text column.')
 
   return processedData, licenses
 
@@ -60,14 +62,14 @@ def tfidfsumscore(filename, licenseList):
   processedData1, licenses = initialize(filename, licenseList)
   if args is not None and args.verbose:
     print("PROCESSED DATA IS", processedData1)
-    print("First License is ", licenses[0])
+    print("First License is ", str(licenses.loc[0]))
 
   temp = exactMatcher(processedData1, licenseList)
   if temp == -1:
     startTime = time.time()
     processedData = unique(word_tokenize(processedData1))  # unique words from tokenized input file
 
-    all_documents = [license[1] for license in licenses]
+    all_documents = list(licenses['processed_text'])
     all_documents.append(processedData1)
     sklearn_tfidf = TfidfVectorizer(norm='l2', min_df=0, use_idf=True, smooth_idf=True, sublinear_tf=True,
                                     tokenizer=word_tokenize, vocabulary=processedData)
@@ -86,7 +88,7 @@ def tfidfsumscore(filename, licenseList):
 
     if args is not None and args.verbose:
       print("time taken is " + str(time.time() - startTime) + " sec")
-    return licenses[result][0]
+    return licenses.at[result,'shortname']
   else:
     return temp[0]
 
@@ -95,14 +97,14 @@ def tfidfcosinesim(filename, licenseList):
   processedData1, licenses = initialize(filename, licenseList)
   if args is not None and args.verbose:
     print("PROCESSED DATA IS", processedData1)
-    print("First License is ", licenses[0])
+    print("First License is ", str(licenses.loc[0]))
 
   temp = exactMatcher(processedData1, licenseList)
   if temp == -1:
     startTime = time.time()
 
     processedData = unique(word_tokenize(processedData1))  # unique words from tokenized input file
-    all_documents = [license[1] for license in licenses]
+    all_documents = list(licenses['processed_text'])
     all_documents.append(processedData1)
     # sklearn_tfidf = TfidfVectorizer(norm='l2', min_df=0, use_idf=True, smooth_idf=True, sublinear_tf=True,
     #                                 tokenizer=word_tokenize, vocabulary=processedData)
@@ -122,7 +124,7 @@ def tfidfcosinesim(filename, licenseList):
         result = counter
     if args is not None and args.verbose:
       print("time taken is " + str(time.time() - startTime) + " sec")
-    return licenses[result][0]
+    return licenses.at[result,'shortname']
   else:
     return temp[0]
 
@@ -131,13 +133,12 @@ if __name__ == "__main__":
   print("The main file is called")
   parser = argparse.ArgumentParser()
   parser.add_argument("inputFile", help="Specify the input file which needs to be scanned")
-  parser.add_argument("licenseList", help="Specify the license list file which contains licenses")
-  parser.add_argument("-s", "--stop-words", help="Set to use stop word filtering",
-                      action="store_true", dest="stopWords")
+  parser.add_argument("processedLicenseList",
+                      help="Specify the processed license list file which contains licenses")
   parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
   args = parser.parse_args()
 
   filename = args.inputFile
-  licenseList = args.licenseList
+  licenseList = args.processedLicenseList
   print("License Detected using TF-IDF algorithm + cosine similarity " + str(tfidfcosinesim(filename, licenseList)))
   print("License Detected using TF-IDF algorithm + sum score " + str(tfidfsumscore(filename, licenseList)))

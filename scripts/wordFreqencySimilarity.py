@@ -46,6 +46,9 @@ def initialize(filename, licenseList):
 
   # fetch preprocessed licenses
   licenses = fetch_licenses(licenseList)
+  if 'processed_text' not in licenses.columns:
+    raise ValueError('The license list does not contain processed_text column.')
+
   return processedData, licenses
 
 
@@ -62,14 +65,14 @@ def classifyLicenseFreqMatch(filename, licenseList):
   processedData, licenses = initialize(filename, licenseList)
   if args is not None and args.verbose:
     print("PROCESSED DATA IS ", processedData)
-    print("LICENSES[0]", licenses[0])
+    print("LICENSES[0]", str(licenses.loc[0]))
 
   temp = exactMatcher(processedData, licenseList)
   if temp == -1:
     # create array of frequency array of licenses
     licensesFrequency = []
     for idx in range(len(licenses)):
-      license = licenses[idx][1]
+      license = licenses.at[idx, 'processed_text']
       licensesFrequency.append(wordFrequency(license))
 
     processedLicense = wordFrequency(processedData)
@@ -88,13 +91,13 @@ def classifyLicenseFreqMatch(filename, licenseList):
         if min(licenseWordFreq, processedLicenseWordFreq) > 0:
           tempCount = tempCount + min(licenseWordFreq, processedLicenseWordFreq)
       if args is not None and args.verbose:
-        print(idx, licenses[idx][0], tempCount)
+        print(idx, licenses.at[idx,'shortname'], tempCount)
       if globalCount < tempCount:
         result = idx
         globalCount = tempCount
     if args is not None and args.verbose:
       print("Result is license with ID", result)
-    return licenses[result][0]
+    return str(licenses.at[result,'shortname'])
 
   else:
     return temp
@@ -104,13 +107,12 @@ if __name__ == "__main__":
   print("The file has been called from main")
   parser = argparse.ArgumentParser()
   parser.add_argument("inputFile", help="Specify the input file which needs to be scanned")
-  parser.add_argument("licenseList", help="Specify the license list file which contains licenses")
-  parser.add_argument("-s", "--stop-words", help="Set to use stop word filtering",
-                      action="store_true", dest="stopWords")
+  parser.add_argument("processedLicenseList",
+                      help="Specify the processed license list file which contains licenses")
   parser.add_argument("-v", "--verbose", help="increase output verbosity",
                       action="store_true")
   args = parser.parse_args()
 
   filename = args.inputFile
-  licenseList = args.licenseList
+  licenseList = args.processedLicenseList
   print("The result from Histogram similarity algo is ", classifyLicenseFreqMatch(filename, licenseList))

@@ -28,9 +28,12 @@ from getLicenses import fetch_licenses
 def exactMatcher(licenseText, licenseList):
   output = []
   licenses = fetch_licenses(licenseList)
+  if 'processed_text' not in licenses.columns:
+    raise ValueError('The license list does not contain processed_text column.')
+
   for idx in range(len(licenses)):
-    if licenses[idx][1] in licenseText and licenses[idx][0] != 'Void':
-      output.append(licenses[idx][0])
+    if licenses.loc[idx][1] in licenseText and licenses.loc[idx]['shortname'] != 'Void':
+      output.append(licenses.loc[idx]['shortname'])
   if not output:
     return -1
   return output

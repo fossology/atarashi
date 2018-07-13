@@ -21,18 +21,21 @@ import csv
 import sys
 import argparse
 from CommentPreprocessor import preprocess
+import pandas as pd
+import numpy as np
 
 args = None
 
 
 def fetch_licenses(licenseList):  # common
-  ''' Fetch license short name and description from the License List (CSV) 
-  and preprocess them
   '''
-  with open(licenseList, 'r') as licenseFile:
-    licenseReader = csv.reader(licenseFile)
-    licenses = [[r[0],r[2],r[1],r[3]] for r in licenseReader]
-  return licenses
+  Fetch the CSV contents as padnas.DataFrame and return it
+  
+  licenseList Path to the license csv
+  '''
+  licenseDataFrame = pd.read_csv(licenseList)
+  licenseDataFrame = licenseDataFrame.replace(np.nan, '', regex=True)
+  return licenseDataFrame
 
 
 if __name__ == "__main__":
@@ -44,5 +47,5 @@ if __name__ == "__main__":
   args = parser.parse_args()
   licenseList = args.licenseList
   print("Displaying first 5 licenses")
-  print(fetch_licenses(sys.argv[1])[:5])
+  print(fetch_licenses(licenseList)[:5])
 
