@@ -75,6 +75,6 @@ if __name__ == "__main__":
         temp = str(NgramSim(pathto + filePath, processedLicense, "BigramCosineSim"))
         if temp in text[4]:
           matched += 1
-        tqdm.write("{0} {1} {2}".format(temp, text[1], text[4]))
+        tqdm.write("{0} {1} {2}".format(temp, text[4], text[1]))
 
   print("Accuracy is ", float(matched) / float(counter))

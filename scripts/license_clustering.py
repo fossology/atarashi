@@ -20,16 +20,18 @@ __author__ = "Aman Jain"
 import argparse
 from getLicenses import fetch_licenses
 import textdistance
+import time
 import math
-from numpy import dot, unique
+import numpy as np
 from nltk.tokenize import word_tokenize
+import itertools
 
 args = None
 
 
 def l2_norm(a):
   a = [value for key, value in a.items()]
-  return math.sqrt(dot(a, a))
+  return math.sqrt(np.dot(a, a))
 
 
 def cosine_similarity(a, b):
@@ -94,9 +96,14 @@ def refine_cluster(license_cluster):
               cluster[key].append([initial_cluster[i][0], initial_cluster[j][0]])
             else:
               cluster[key] = [[initial_cluster[i][0], initial_cluster[j][0]]]
+  result = []
   for key, arr in cluster.items():
     cluster[key] = union_and_find(arr)
-  return cluster
+    # convert the set to list
+    for clustr in cluster[key]:
+      result.append(list(clustr))
+    # result.append(cluster[key])
+  return result, cluster
 
 
 def cluster_licenses(licenseList):
@@ -109,7 +116,20 @@ def cluster_licenses(licenseList):
     else:
       initial_cluster[license_initials].append(license)
 
-  return refine_cluster(initial_cluster)
+  result, cluster = refine_cluster(initial_cluster)
+  flatten_result = []
+  for arr in result:
+    for x in arr:
+      flatten_result.append(x)
+  # print(flatten_result)
+  unclustered_licenses = [license[0] for license in licenses if license[0] not in flatten_result]
+  print(len(unclustered_licenses), unclustered_licenses)
+  for license in unclustered_licenses:
+    result.append([license])
+  print("Length of result", len(result), len(licenses))
+  if args is not None and args.verbose:
+    print("Result", result)
+  return result
 
 
 if __name__ == "__main__":
@@ -120,6 +140,9 @@ if __name__ == "__main__":
   args = parser.parse_args()
 
   licenseList = args.licenseList
+  start = time.time()
   cluster = cluster_licenses(licenseList)
-  for key, arr in cluster.items():
-    print(key + "==========>" + str(cluster[key]))
+  print("Time taken is ", str(time.time() - start))
+  print(cluster)
+  # for key, arr in cluster.items():
+  #   print(key + "==========>" + str(cluster[key]))

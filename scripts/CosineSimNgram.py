@@ -62,17 +62,22 @@ def wordFrequency(arr):
 
 def Ngram_guess(processedData):
   dir = os.path.dirname(os.path.abspath(__file__))
-  with open(dir + '/ngram_keywords.json', 'r') as file:
+  with open(dir + '/../database_keywordsNoStemSPDX1.json', 'r') as file:
     unique_keywords = json.loads(file.read())
 
   initial_guess = []
 
   for keywords in unique_keywords:
+    # if "GPL-2.0+" in keywords['shortname']:
+    #   print(keywords['ngrams'])
     matched_keys = 0
     for key in keywords['ngrams']:
       if key in processedData:
         matched_keys += 1
     if matched_keys > 0:
+      # print(keywords['shortname'])
+      # license_cluster = keywords['shortname'][2:-2]  # strip [' and ']
+      # license_cluster = license_cluster.split("', '")
       initial_guess.append({
         'shortname': keywords['shortname'],
         'sim_type': 'Ngram guess',
@@ -115,23 +120,24 @@ def spdx_identifer(data, shortnames):
   Identify SPDX-License-Identifier
   Make sure the identifier must be present in Fossology merged license list
   """
-  tokenized_data = data.split(" ")
+  data = data.lower()  # preprocessing of data
+  shortnames = [shortname.lower() for shortname in shortnames]
+  tokenized_data = data.split('\n')
   possible_spdx = []
-  max_licenses = 5
   for idx in range(len(tokenized_data)):
-    if tokenized_data[idx] == "SPDX-License-Identifier:":
-      possible_spdx.append(tokenized_data[idx + 1:idx + 1 + max_licenses])
+    if "spdx-license-identifier:" in tokenized_data[idx] or "license:" in tokenized_data[idx]:
+      possible_spdx.append(tokenized_data[idx])
+
   spdx_identifiers = []
-  for arr in possible_spdx:
-    if len(arr) > 0:
-      for word in arr:
-        if word in shortnames:
-          spdx_identifiers.append({
-            'shortname': word,
-            'sim_type': 'SPDXIdentifier',
-            'sim_score': 1.0,
-            'description': ''
-          })
+  for identifiers in possible_spdx:
+    for shortname in shortnames:
+      if shortname in identifiers:
+        spdx_identifiers.append({
+          'shortname': shortname,
+          'sim_type': 'SPDXIdentifier',
+          'sim_score': 1.0,
+          'description': ''
+        })
 
   return spdx_identifiers
 
@@ -139,13 +145,14 @@ def spdx_identifer(data, shortnames):
 def NgramSim(inputFile, licenseList, simType):
   commentFile = CommentExtract(inputFile)
   with open(commentFile) as file:
-    data = file.read().replace('\n', ' ')
+    raw_data = file.read()
+    data = raw_data.replace('\n', ' ')
   processedData = preprocess(data)
 
   licenses = fetch_licenses(licenseList)
 
   # Match SPDX identifiers
-  spdx_identifiers = spdx_identifer(data, [license[0] for license in licenses])
+  spdx_identifiers = spdx_identifer(raw_data, [license[0] for license in licenses])
 
   # match with headers
   # similarity with headers
@@ -191,8 +198,14 @@ def NgramSim(inputFile, licenseList, simType):
   Bigram_cosine_matches = []
 
   initial_guess = Ngram_guess(processedData)
+  ngram_guesses = []
+  for guess in initial_guess:
+    for x in guess['shortname']:
+      ngram_guesses.append(x)
+  # print(ngram_guesses)
+
   all_guesses = unique([l['shortname'] for l in matches])
-  for license in [x for x in licenses if x[0] in [y['shortname'] for y in initial_guess] or x[0] in all_guesses]:
+  for license in [x for x in licenses if x[0] in ngram_guesses or x[0] in all_guesses]:
 
     if simType == "CosineSim":
       # cosine similarity with unigram
