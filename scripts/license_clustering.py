@@ -18,13 +18,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 __author__ = "Aman Jain"
 
 import argparse
-from getLicenses import fetch_licenses
-import textdistance
-import time
 import math
+import time
+
 import numpy as np
+from getLicenses import fetch_licenses
 from nltk.tokenize import word_tokenize
-import itertools
 
 args = None
 
@@ -72,14 +71,9 @@ def union_and_find(arr):
 
 
 def refine_cluster(license_cluster):
-  """
-  license_cluster is a dict type
-  for each value in dict
-  """
   cluster = {}
-  # print(license_cluster)
   for key, initial_cluster in license_cluster.items():
-    # for every initial_cluster, call levenshtein dist and union find
+    # for every initial_cluster, call cosine sim and union find
     for i in range(len(initial_cluster)):
       if i + 1 < len(initial_cluster):
         for j in range(i + 1, len(initial_cluster)):
@@ -102,8 +96,8 @@ def refine_cluster(license_cluster):
     # convert the set to list
     for clustr in cluster[key]:
       result.append(list(clustr))
-    # result.append(cluster[key])
-  return result, cluster
+
+  return result
 
 
 def cluster_licenses(licenseList):
@@ -116,17 +110,14 @@ def cluster_licenses(licenseList):
     else:
       initial_cluster[license_initials].append(license)
 
-  result, cluster = refine_cluster(initial_cluster)
+  result = refine_cluster(initial_cluster)
   flatten_result = []
   for arr in result:
     for x in arr:
       flatten_result.append(x)
-  # print(flatten_result)
   unclustered_licenses = [license[0] for license in licenses if license[0] not in flatten_result]
-  print(len(unclustered_licenses), unclustered_licenses)
   for license in unclustered_licenses:
     result.append([license])
-  print("Length of result", len(result), len(licenses))
   if args is not None and args.verbose:
     print("Result", result)
   return result
@@ -144,5 +135,3 @@ if __name__ == "__main__":
   cluster = cluster_licenses(licenseList)
   print("Time taken is ", str(time.time() - start))
   print(cluster)
-  # for key, arr in cluster.items():
-  #   print(key + "==========>" + str(cluster[key]))

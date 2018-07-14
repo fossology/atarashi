@@ -19,8 +19,11 @@ __author__ = "Aman Jain"
 
 import os
 import sys
+import argparse
 
 from CosineSimNgram import NgramSim
+from dameruLevenDist import classifyLicenseDameruLevenDist
+from tfidf import tfidfcosinesim, tfidfsumscore
 
 args = None
 
@@ -29,11 +32,27 @@ if __name__ == "__main__":
   Iterate on all files in directory 
   expected output is the name 
   """
+  parser = argparse.ArgumentParser()
+  parser.add_argument("LicenseList", help="Specify the processed license list file which contains licenses")
+  parser.add_argument("AgentName", choices=['DLD', 'tfidfcosinesim', 'tfidfsumscore', 'Ngram'],
+                      help="Name of the agent that needs to be run")
+  parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
+  args = parser.parse_args()
+  agent_name = args.AgentName
+  processedLicense = args.LicenseList
+
   pathname = os.path.dirname(sys.argv[0])
-  pathto = os.path.abspath(pathname) + '/../tests/SPDXTestfiles/noid'
+  pathto = os.path.abspath(pathname) + '/../tests/SPDXTestfiles'
   for subdir, dirs, files in os.walk(pathto):
     for file in files:
       filepath = subdir + os.sep + file
-      temp = str(NgramSim(filepath, sys.argv[1], "BigramCosineSim"))
       actual_license = filepath.split('/')[-1].split('.c')[0]
-      print(actual_license + " " + temp)
+      if agent_name == "DLD":
+        result = str(classifyLicenseDameruLevenDist(filepath, processedLicense))
+      elif agent_name == "tfidfcosinesim":
+        result = str(tfidfcosinesim(filepath, processedLicense))
+      elif agent_name == "tfidfsumscore":
+        result = str(tfidfsumscore(filepath, processedLicense))
+      elif agent_name == "Ngram":
+        result = str(NgramSim(filepath, processedLicense, "BigramCosineSim"))
+      print(actual_license + " " + result)

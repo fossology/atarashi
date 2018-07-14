@@ -22,7 +22,7 @@ import os
 import sys
 
 from dameruLevenDist import classifyLicenseDameruLevenDist
-from tfidf import tfidfcosinesim
+from tfidf import tfidfcosinesim, tfidfsumscore
 from tqdm import tqdm
 from CosineSimNgram import NgramSim
 

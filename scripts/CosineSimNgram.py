@@ -130,10 +130,10 @@ def spdx_identifer(data, shortnames):
 
   spdx_identifiers = []
   for identifiers in possible_spdx:
-    for shortname in shortnames:
-      if shortname in identifiers:
+    for x in identifiers.split(" "):
+      if x in shortnames:
         spdx_identifiers.append({
-          'shortname': shortname,
+          'shortname': x,
           'sim_type': 'SPDXIdentifier',
           'sim_score': 1.0,
           'description': ''
