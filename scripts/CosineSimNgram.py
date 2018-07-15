@@ -24,9 +24,7 @@ import os
 import itertools
 
 import textdistance
-from CommentExtractor import CommentExtract
-from CommentPreprocessor import preprocess
-from getLicenses import fetch_licenses
+from initial_match import initial_match
 from nltk.tokenize import word_tokenize
 from numpy import dot, unique
 
@@ -68,16 +66,11 @@ def Ngram_guess(processedData):
   initial_guess = []
 
   for keywords in unique_keywords:
-    # if "GPL-2.0+" in keywords['shortname']:
-    #   print(keywords['ngrams'])
     matched_keys = 0
     for key in keywords['ngrams']:
       if key in processedData:
         matched_keys += 1
     if matched_keys > 0:
-      # print(keywords['shortname'])
-      # license_cluster = keywords['shortname'][2:-2]  # strip [' and ']
-      # license_cluster = license_cluster.split("', '")
       initial_guess.append({
         'shortname': keywords['shortname'],
         'sim_type': 'Ngram guess',
@@ -91,106 +84,12 @@ def Ngram_guess(processedData):
   return initial_guess
 
 
-def HeadersNgramSim(header, processedData):
-  """
-  make array of ngrams
-  check with the processed data how much are matching
-  sim_score = matches/ count of ngrams
-  """
-  header = word_tokenize(header)
-  ngrams = []
-  for i in range(3, 8):
-    ngrams += [header[j:j + i] for j in range(len(header) - i + 1)]
-  count = 0
-  for ngram in ngrams:
-    if ' '.join(ngram) in processedData:
-      count += 1
-  sim = 0
-  if len(ngrams) > 0:
-    sim = float(count) / float(len(ngrams))
-  return sim
-
-
 def bigram_tokenize(s):
   return [s[i:i + 2] for i in range(len(s) - 1)]
 
 
-def spdx_identifer(data, shortnames):
-  """
-  Identify SPDX-License-Identifier
-  Make sure the identifier must be present in Fossology merged license list
-  """
-  data = data.lower()  # preprocessing of data
-  shortnames = [shortname.lower() for shortname in shortnames]
-  tokenized_data = data.split('\n')
-  possible_spdx = []
-  for idx in range(len(tokenized_data)):
-    if "spdx-license-identifier:" in tokenized_data[idx] or "license:" in tokenized_data[idx]:
-      possible_spdx.append(tokenized_data[idx])
-
-  spdx_identifiers = []
-  for identifiers in possible_spdx:
-    for x in identifiers.split(" "):
-      if x in shortnames:
-        spdx_identifiers.append({
-          'shortname': x,
-          'sim_type': 'SPDXIdentifier',
-          'sim_score': 1.0,
-          'description': ''
-        })
-
-  return spdx_identifiers
-
-
 def NgramSim(inputFile, licenseList, simType):
-  commentFile = CommentExtract(inputFile)
-  with open(commentFile) as file:
-    raw_data = file.read()
-    data = raw_data.replace('\n', ' ')
-  processedData = preprocess(data)
-
-  licenses = fetch_licenses(licenseList)
-
-  # Match SPDX identifiers
-  spdx_identifiers = spdx_identifer(raw_data, [license[0] for license in licenses])
-
-  # match with headers
-  # similarity with headers
-  exact_match_header = []
-  header_sim_match = []
-  for license in licenses:
-    header = license[3]
-    if len(header) > 0:
-      if header in processedData:
-        exact_match_header.append({
-          'shortname': license[0],
-          'sim_type': 'ExactHeader',
-          'sim_score': 1.0,
-          'description': ''
-        })
-      ngram_sim = HeadersNgramSim(header, processedData)
-      if ngram_sim >= 0.7:
-        header_sim_match.append({
-          'shortname': license[0],
-          'sim_type': 'HeaderNgramSimilarity',
-          'sim_score': ngram_sim,
-          'description': ''
-        })
-  header_sim_match.sort(key=lambda x: x['sim_score'], reverse=True)
-
-  # match with full text
-  exact_match_fulltext = []
-  for license in licenses:
-    full_text = license[1]
-    if full_text in processedData:
-      exact_match_fulltext.append({
-        'shortname': license[0],
-        'sim_type': 'ExactFullText',
-        'sim_score': 1.0,
-        'description': ''
-      })
-
-  matches = list(itertools.chain(spdx_identifiers, exact_match_header, exact_match_fulltext, header_sim_match[:5]))
+  processedData, licenses, matches = initial_match(inputFile, licenseList)
 
   # Full text Bi-gram Cosine Similarity Match
   Cosine_matches = []
@@ -248,16 +147,15 @@ def NgramSim(inputFile, licenseList, simType):
         print("Bigram Cosine Sim ", str(bigram_cosine_sim), license[0])
 
   if simType == "CosineSim" and len(Cosine_matches) > 0:
-    Cosine_matches.sort(key=lambda x: x['sim_score'], reverse=True)
     matches = list(itertools.chain(matches, Cosine_matches))
 
   if simType == "DiceSim" and len(Dice_matches) > 0:
-    Dice_matches.sort(key=lambda x: x['sim_score'], reverse=True)
     matches = list(itertools.chain(matches, Dice_matches))
 
   if simType == "BigramCosineSim" and len(Bigram_cosine_matches) > 0:
-    Bigram_cosine_matches.sort(key=lambda x: x['sim_score'], reverse=True)
     matches = list(itertools.chain(matches, Bigram_cosine_matches))
+
+  matches.sort(key=lambda x: x['sim_score'], reverse=True)
   return matches
 
 

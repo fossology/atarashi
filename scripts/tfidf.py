@@ -18,31 +18,16 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 __author__ = "Aman Jain"
 
 import argparse
+import itertools
 import math
 import time
 
-from CommentExtractor import CommentExtract
-from CommentPreprocessor import preprocess
-from exactMatch import exactMatcher
-from getLicenses import fetch_licenses
+from initial_match import initial_match
+from nltk.tokenize import word_tokenize
 from numpy import unique, sum, dot
 from sklearn.feature_extraction.text import TfidfVectorizer
-from nltk.tokenize import word_tokenize
 
 args = None
-
-
-def initialize(filename, licenseList):
-  commentFile = CommentExtract(filename)
-  with open(commentFile) as file:
-    data = file.read().replace('\n', ' ')
-  processedData = preprocess(data)
-
-  licenses = fetch_licenses(licenseList)
-  if 'processed_text' not in licenses.columns:
-    raise ValueError('The license list does not contain processed_text column.')
-
-  return processedData, licenses
 
 
 def l2_norm(a):
@@ -58,75 +43,67 @@ def cosine_similarity(a, b):
     return dot_product / temp
 
 
-def tfidfsumscore(filename, licenseList):
-  processedData1, licenses = initialize(filename, licenseList)
+def tfidfsumscore(inputFile, licenseList):
+  processedData1, licenses, matches = initial_match(inputFile, licenseList)
+
+  startTime = time.time()
+  processedData = unique(word_tokenize(processedData1))  # unique words from tokenized input file
+
+  all_documents = [license[1] for license in licenses]
+  all_documents.append(processedData1)
+  sklearn_tfidf = TfidfVectorizer(norm='l2', min_df=0, use_idf=True, smooth_idf=True, sublinear_tf=True,
+                                  tokenizer=word_tokenize, vocabulary=processedData)
+
+  sklearn_representation = sklearn_tfidf.fit_transform(all_documents)
+
+  score_arr = []
+  result = 0
+  for counter, value in enumerate(sklearn_representation.toarray()[:len(sklearn_representation.toarray()) - 1],
+                                  start=0):
+    sim_score = sum(value)
+    score_arr.append({
+      'shortname': licenses[result][0],
+      'sim_type': "Sum of TF-IDF score",
+      'sim_score': sim_score,
+      'desc': "Score can be greater than 1 also"
+    })
+  score_arr.sort(key=lambda x: x['sim_score'], reverse=True)
+  matches = list(itertools.chain(matches, score_arr[:5]))
+  matches.sort(key=lambda x: x['sim_score'], reverse=True)
   if args is not None and args.verbose:
-    print("PROCESSED DATA IS", processedData1)
-    print("First License is ", str(licenses.loc[0]))
-
-  temp = exactMatcher(processedData1, licenseList)
-  if temp == -1:
-    startTime = time.time()
-    processedData = unique(word_tokenize(processedData1))  # unique words from tokenized input file
-
-    all_documents = list(licenses['processed_text'])
-    all_documents.append(processedData1)
-    sklearn_tfidf = TfidfVectorizer(norm='l2', min_df=0, use_idf=True, smooth_idf=True, sublinear_tf=True,
-                                    tokenizer=word_tokenize, vocabulary=processedData)
-
-    sklearn_representation = sklearn_tfidf.fit_transform(all_documents)
-
-    globalmax = -1
-    result = 0
-    for counter, value in enumerate(sklearn_representation.toarray()[:len(sklearn_representation.toarray()) - 1],
-                                    start=0):
-      localmax = sum(value)
-      if localmax > globalmax:
-        # change the condition for all possibilities
-        globalmax = localmax
-        result = counter
-
-    if args is not None and args.verbose:
-      print("time taken is " + str(time.time() - startTime) + " sec")
-    return licenses.at[result,'shortname']
-  else:
-    return temp[0]
+    print("time taken is " + str(time.time() - startTime) + " sec")
+  return matches
 
 
-def tfidfcosinesim(filename, licenseList):
-  processedData1, licenses = initialize(filename, licenseList)
+def tfidfcosinesim(inputFile, licenseList):
+  processedData1, licenses, matches = initial_match(inputFile, licenseList)
+  
+  startTime = time.time()
+
+  processedData = unique(word_tokenize(processedData1))  # unique words from tokenized input file
+  all_documents = [license[1] for license in licenses]
+  all_documents.append(processedData1)
+  # sklearn_tfidf = TfidfVectorizer(norm='l2', min_df=0, use_idf=True, smooth_idf=True, sublinear_tf=True,
+  #                                 tokenizer=word_tokenize, vocabulary=processedData)
+  sklearn_tfidf = TfidfVectorizer(norm='l2', min_df=0, use_idf=True, smooth_idf=True, sublinear_tf=True,
+                                  tokenizer=word_tokenize)
+
+  sklearn_representation = sklearn_tfidf.fit_transform(all_documents)
+
+  for counter, value in enumerate(sklearn_representation.toarray()[:len(sklearn_representation.toarray()) - 1],
+                                  start=0):
+    sim_score = cosine_similarity(value, sklearn_representation.toarray()[-1])
+    if sim_score >= 0.8:
+      matches.append({
+        'shortname': licenses[counter][0],
+        'sim_type': "TF-IDF Cosine Sim",
+        'sim_score': sim_score,
+        'desc': ''
+      })
+  matches.sort(key=lambda x: x['sim_score'], reverse=True)
   if args is not None and args.verbose:
-    print("PROCESSED DATA IS", processedData1)
-    print("First License is ", str(licenses.loc[0]))
-
-  temp = exactMatcher(processedData1, licenseList)
-  if temp == -1:
-    startTime = time.time()
-
-    processedData = unique(word_tokenize(processedData1))  # unique words from tokenized input file
-    all_documents = list(licenses['processed_text'])
-    all_documents.append(processedData1)
-    # sklearn_tfidf = TfidfVectorizer(norm='l2', min_df=0, use_idf=True, smooth_idf=True, sublinear_tf=True,
-    #                                 tokenizer=word_tokenize, vocabulary=processedData)
-    sklearn_tfidf = TfidfVectorizer(norm='l2', min_df=0, use_idf=True, smooth_idf=True, sublinear_tf=True,
-                                    tokenizer=word_tokenize)
-
-    sklearn_representation = sklearn_tfidf.fit_transform(all_documents)
-
-    globalmax = -1
-    result = 0
-    for counter, value in enumerate(sklearn_representation.toarray()[:len(sklearn_representation.toarray()) - 1],
-                                    start=0):
-      localmax = cosine_similarity(value, sklearn_representation.toarray()[-1])
-      if localmax > globalmax:
-        # change the condition for all possibilities
-        globalmax = localmax
-        result = counter
-    if args is not None and args.verbose:
-      print("time taken is " + str(time.time() - startTime) + " sec")
-    return str([licenses.at[result,'shortname'], globalmax])
-  else:
-    return temp[0]
+    print("time taken is " + str(time.time() - startTime) + " sec")
+  return matches
 
 
 if __name__ == "__main__":
