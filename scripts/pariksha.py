@@ -67,7 +67,7 @@ if __name__ == "__main__":
           matched += 1
         tqdm.write("{0} {1} {2}".format(temp, text[1], text[4]))
       elif agent_name == "tfidfsumscore":
-        temp = tfidfcosinesim(pathto + filePath, processedLicense)
+        temp = tfidfsumscore(pathto + filePath, processedLicense)
         if temp in text[4]:
           matched += 1
         tqdm.write("{0} {1} {2}".format(temp, text[1], text[4]))
