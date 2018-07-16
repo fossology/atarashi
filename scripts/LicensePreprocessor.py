@@ -24,15 +24,16 @@ import time
 import argparse
 from pathlib import Path
 from tqdm import tqdm
+import pandas as pd
 
 from CommentPreprocessor import preprocess
+from getLicenses import fetch_licenses
 
 '''Python Module to preprocess license list
 Input: License list (CSV)
 Output: Preprocessed license list
-Description: Module tokenize the license text, remove all stop words and
-              save the stem using Porter stemmer.
-              python LicensePreprocessor.py <licenseList> <processedLicenseList>
+Description: Module to pre process the license list for further use.
+            python LicensePreprocessor.py <licenseList> <processedLicenseList>
 '''
 
 args = None
@@ -40,15 +41,14 @@ args = None
 def load_licenses(licenseList):
   ''' Fetch license short name and description from the License List (CSV) 
   and preprocess them
+  
+  licenseList -- Path to CSV to read
+  
+  Return pandas.DataFrame with processed fullname, header and text
   '''
-  licenses = []
-  with open(licenseList, 'r') as licenseFile:
-    licenseReader = csv.reader(licenseFile)
-    next(licenseReader, None) # skip headers
-    for row in licenseReader:
-      licenses.append(row[1:5])
-    if args is not None and args.verbose:
-      print("Loaded " + str(len(licenses)) + " licenses")
+  licenses = fetch_licenses(licenseList)
+  if args is not None and args.verbose:
+    print("Loaded " + str(len(licenses)) + " licenses")
   iterator = ""
   if args is not None and args.verbose:
     iterator = tqdm(range(len(licenses)),
@@ -57,27 +57,30 @@ def load_licenses(licenseList):
   else:
     iterator = range(len(licenses))
   for idx in iterator:
-    licenses[idx][1] = preprocess(licenses[idx][1])
-    licenses[idx][2] = preprocess(licenses[idx][2])
-    licenses[idx][3] = preprocess(licenses[idx][3])
+    licenses.at[idx, 'processed_fullname'] = preprocess(str(licenses.at[idx, 'fullname']))
+    licenses.at[idx, 'processed_header']   = preprocess(str(licenses.at[idx, 'license_header']))
+    licenses.at[idx, 'processed_text']     = preprocess(str(licenses.at[idx, 'text']))
   return licenses
 
 def write_csv(licenseList, fileLocation):
   ''' Write the preprocessed license list to a CSV file
+  
+  licenseList  -- pandas.DataFrame to be written
+  fileLocation -- Path where to write the CSV
   '''
-  with open(fileLocation, 'w') as processedCsv:
-    wr = csv.writer(processedCsv, quoting=csv.QUOTE_ALL)
-    wr.writerows(licenseList)
+  licenseList.to_csv(fileLocation, index=False, encoding='utf-8')
 
 def file_is_modified(source, destination):
-  ''' Check if source is modified before destination
+  ''' Check if source is modified before destination.
+  If destination does not exists, create a new file.
   '''
   sourceTime = os.path.getmtime(source)
   destinationFilePath = Path(destination)
   if destinationFilePath.is_file():
     destTime = os.path.getmtime(destination)
   else:
-    open(destination, 'a').close()
+    destinationDir = Path(os.path.dirname(destination))
+    destinationDir.mkdir(parents=True, exist_ok=True)
     destTime = 0
   return sourceTime > destTime
 
@@ -94,8 +97,6 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument("licenseList", help="Specify the license list file which contains licenses")
   parser.add_argument("processedFile", help="Specify the destination to store processed list")
-  parser.add_argument("-s", "--stop-words", help="Set to use stop word filtering",
-                      action="store_true", dest="stopWords")
   parser.add_argument("-v", "--verbose", help="increase output verbosity",
                       action="store_true")
   args = parser.parse_args()

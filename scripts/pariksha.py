@@ -32,13 +32,12 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument("AgentName", choices=['DLD', 'tfidfcosinesim', 'tfidfsumscore'],
                       help="Name of the agent that needs to be run")
-  parser.add_argument("LicenseList", help="Specify the processed license list file which contains licenses")
-  parser.add_argument("-s", "--stop-words", help="Set to use stop word filtering",
-                      action="store_true", dest="stopWords")
+  parser.add_argument("ProcessedLicenseList",
+                      help="Specify the processed license list file which contains licenses")
   parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
   args = parser.parse_args()
   agent_name = args.AgentName
-  processedLicense = args.LicenseList
+  processedLicense = args.ProcessedLicenseList
 
   pathname = os.path.dirname(sys.argv[0])
   pathto = os.path.abspath(pathname) + '/../tests/'
@@ -68,7 +67,7 @@ if __name__ == "__main__":
           matched += 1
         tqdm.write("{0} {1} {2}".format(temp, text[1], text[4]))
       elif agent_name == "tfidfsumscore":
-        temp = tfidfcosinesim(pathto + filePath, processedLicense)
+        temp = tfidfsumscore(pathto + filePath, processedLicense)
         if temp in text[4]:
           matched += 1
         tqdm.write("{0} {1} {2}".format(temp, text[1], text[4]))
