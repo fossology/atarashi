@@ -46,6 +46,7 @@ if __name__ == "__main__":
   for subdir, dirs, files in os.walk(pathto):
     for file in files:
       filepath = subdir + os.sep + file
+      print(filepath.split('tests/')[1])
       actual_license = filepath.split('/')[-1].split('.c')[0]
       if agent_name == "DLD":
         result = str(classifyLicenseDameruLevenDist(filepath, processedLicense))
@@ -55,4 +56,4 @@ if __name__ == "__main__":
         result = str(tfidfsumscore(filepath, processedLicense))
       elif agent_name == "Ngram":
         result = str(NgramSim(filepath, processedLicense, "BigramCosineSim"))
-      print(actual_license + " " + result)
+      print("Actual License: " + actual_license + "\nResult: " + result + "\n")
