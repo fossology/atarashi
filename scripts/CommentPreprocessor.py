@@ -37,12 +37,12 @@ args = None
 
 def preprocess(data):
   data = data.lower()
-  data = re.sub(r'copyright|\(c\)', 'copyright', data)
+  data = re.sub(r'copyright|\(c\)|\u00a9', 'copyright', data)
   data = re.sub(r'[{}]'.format(string.punctuation), ' ', data)
   words = word_tokenize(data)
   data = " ".join(words)
   data = re.sub(
-    r'[\u2013, \u2014, \u2015, \u2018, \u2019, \u201a, \u201b, \u201c, \u201d, \u201e, \u2026, \u2032, \u2033, \u00a9]',
+    r'[\u2013, \u2014, \u2015, \u2018, \u2019, \u201a, \u201b, \u201c, \u201d, \u201e, \u2026, \u2032, \u2033]',
     '', data)
   return data
 
