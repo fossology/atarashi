@@ -60,7 +60,7 @@ def wordFrequency(arr):
 
 def Ngram_guess(processedData):
   dir = os.path.dirname(os.path.abspath(__file__))
-  with open(dir + '/../database_keywordsNoStemSPDX1.json', 'r') as file:
+  with open(dir + '/../database_keywordsNoStemSPDX2.json', 'r') as file:
     unique_keywords = json.loads(file.read())
 
   initial_guess = []
@@ -136,7 +136,7 @@ def NgramSim(inputFile, licenseList, simType):
     elif simType == "BigramCosineSim":
       bigram_cosine_sim = cosine_similarity(wordFrequency(bigram_tokenize(license[1])),
                                             wordFrequency(bigram_tokenize(processedData)))
-      if bigram_cosine_sim >= 0.8:
+      if bigram_cosine_sim >= 0.9:
         Bigram_cosine_matches.append({
           'shortname': license[0],
           'sim_type': 'BigramCosineSim',

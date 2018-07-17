@@ -37,15 +37,11 @@ def load_database(licenseList):
   licenses = fetch_licenses(licenseList)
   uniqueNGrams = []
 
-  # print("N-Gram Range is ", ngramrange)
-  # [[['a', ' some info '],['b', 'some info']], ['c','d']]
   cluster_arr = cluster_licenses(licenseList)
   for cluster in cluster_arr:
-    # license_cluster = [['a', ' some info '],['b', 'some info']][0]
-    # license[0] is first license of cluster
     license_text = [license[1] for license in licenses if license[0] == cluster[0]][0]
     ngrams = []
-    ngramrange = [2, 3, 6, 7, 8]
+    ngramrange = [2, 5, 6, 7, 8]
     for x in ngramrange:
       ngrams += list(find_ngrams(license_text.split(), x))
     obj = {
@@ -53,26 +49,12 @@ def load_database(licenseList):
       'ngrams': ngrams
     }
     uniqueNGrams.append(obj)
-    # print(obj)
-
-  # for license in licenses:
-  #   obj = {}
-  #   ngrams = []
-  #   # if license[0] == "AAL":
-  #   #   print(len(license[1]))
-  #   ngramrange = [2,3,6,7,8]
-  #   for x in ngramrange:
-  #     ngrams += list(find_ngrams(license[1].split(), x))
-  #   obj['shortname'] = license[0]
-  #   obj['ngrams'] = ngrams
-  #   uniqueNGrams.append(obj)
   return uniqueNGrams, cluster_arr, licenses
 
 
 def unique_ngrams(uniqueNGram):
   matches = []
-  # idx = uniqueNGram[0]
-  # uniqueNGram = uniqueNGram[1]
+
   for ngram in uniqueNGram['ngrams']:
     find = ' '.join(ngram)
     ismatch = True
@@ -110,7 +92,6 @@ if __name__ == '__main__':
   threads = cpuCount * 2 if threads > cpuCount * 2 else threads
   pool = ThreadPool(threads)
   zip_ngrams = zip(list(range(len(cluster_arr))), uniqueNGrams)
-  # zip_ngrams = zip(list(range(len(cluster_arr))), uniqueNGrams)
 
   for idx, row in enumerate(tqdm(pool.imap_unordered(unique_ngrams, uniqueNGrams),
                                  desc="Licenses processed", total=len(cluster_arr),
@@ -127,7 +108,7 @@ if __name__ == '__main__':
       'ngrams': row
     })
 
-  with open('database_keywordsNoStemSPDX1.json', 'w') as myfile:
+  with open('Ngram_keywords_new.json', 'w') as myfile:
     myfile.write(json.dumps(ngram_keywords))
 
   with open("NGram_DataFrame.csv", 'w') as f:

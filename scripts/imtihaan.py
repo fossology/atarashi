@@ -36,14 +36,16 @@ if __name__ == "__main__":
   parser.add_argument("LicenseList", help="Specify the processed license list file which contains licenses")
   parser.add_argument("AgentName", choices=['DLD', 'tfidfcosinesim', 'tfidfsumscore', 'Ngram'],
                       help="Name of the agent that needs to be run")
+  parser.add_argument("TestFiles", help="Specify the folder path that needs to be tested")
   parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
   args = parser.parse_args()
   agent_name = args.AgentName
   processedLicense = args.LicenseList
+  testFilePath = args.TestFiles
 
   pathname = os.path.dirname(sys.argv[0])
-  pathto = os.path.abspath(pathname) + '/../tests/SPDXTestfiles'
-  for subdir, dirs, files in os.walk(pathto):
+  testFilePath = os.path.abspath(testFilePath)
+  for subdir, dirs, files in os.walk(testFilePath):
     for file in files:
       filepath = subdir + os.sep + file
       print(filepath.split('tests/')[1])
