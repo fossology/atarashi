@@ -23,7 +23,6 @@ import time
 
 import numpy as np
 from getLicenses import fetch_licenses
-from nltk.tokenize import word_tokenize
 
 args = None
 
@@ -77,9 +76,8 @@ def refine_cluster(license_cluster):
     for i in range(len(initial_cluster)):
       if i + 1 < len(initial_cluster):
         for j in range(i + 1, len(initial_cluster)):
-          # dist = textdistance.levenshtein(word_tokenize(initial_cluster[i][1]), word_tokenize(initial_cluster[j][1]))
-          dist = cosine_similarity(wordFrequency(word_tokenize(initial_cluster[i][1])),
-                                   wordFrequency(word_tokenize(initial_cluster[j][1])))
+          dist = cosine_similarity(wordFrequency(initial_cluster[i][1].split(" ")),
+                                   wordFrequency(initial_cluster[j][1].split(" ")))
           if args is not None and args.verbose:
             print(key, initial_cluster[i][0], initial_cluster[j][0], dist)
           max_allowed_distance = 0.97

@@ -39,7 +39,8 @@ def CommentExtract(inputFile):
 
   fileType = inputFile.split('.')[-1]
 
-  supportedFileExtensions = ['c', 'cpp', 'py', 'go', 'php', 'js', 'java', 'h', 'hpp', 'cc', 'css', 'html']
+  supportedFileExtensions = ['c', 'cpp', 'py', 'go', 'php', 'js', 'java', 'h',
+                             'hpp', 'cc', 'css', 'html']
 
   # Remove BOM UTF-8 at the beginning of file and ignore errors
   file = open(inputFile, mode='r', encoding='utf-8-sig', errors='ignore').read()

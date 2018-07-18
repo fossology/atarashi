@@ -17,10 +17,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 __author__ = "Aman Jain"
 
-import csv
-import sys
 import argparse
-from CommentPreprocessor import preprocess
 import pandas as pd
 import numpy as np
 

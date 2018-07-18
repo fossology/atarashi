@@ -20,7 +20,6 @@ __author__ = "Aman Jain"
 from CommentExtractor import CommentExtract
 from CommentPreprocessor import preprocess
 from getLicenses import fetch_licenses
-from nltk.tokenize import word_tokenize
 import itertools
 
 
@@ -30,7 +29,7 @@ def HeadersNgramSim(header, processedData):
   check with the processed data how much are matching
   sim_score = matches/ count of ngrams
   """
-  header = word_tokenize(header)
+  header = header.split(" ")
   ngrams = []
   for i in range(3, 8):
     ngrams += [header[j:j + i] for j in range(len(header) - i + 1)]

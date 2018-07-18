@@ -104,9 +104,3 @@ fi
 echo "Installing Code_comment ..."
 pip install --user -e git+https://github.com/amanjain97/code_comment#egg=code_comment
 pip install --user -r $BASEDIR/../requirements.txt
-echo "Installing NLTK ..."
-echo | python <<EOF
-import nltk
-nltk.download('punkt')
-nltk.download('stopwords')
-EOF

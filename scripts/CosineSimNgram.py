@@ -24,8 +24,7 @@ import os
 import itertools
 
 import textdistance
-from initial_match import initial_match
-from nltk.tokenize import word_tokenize
+from initialmatch import initial_match
 from numpy import dot, unique
 
 args = None
@@ -108,8 +107,8 @@ def NgramSim(inputFile, licenseList, simType):
 
     if simType == "CosineSim":
       # cosine similarity with unigram
-      cosineSim = cosine_similarity(wordFrequency(word_tokenize(license[1])),
-                                    wordFrequency(word_tokenize(processedData)))
+      cosineSim = cosine_similarity(wordFrequency(license[1].split(" ")),
+                                    wordFrequency(processedData.split(" ")))
       if cosineSim >= 0.6:
         Cosine_matches.append({
           'shortname': license[0],
@@ -122,7 +121,7 @@ def NgramSim(inputFile, licenseList, simType):
 
     elif simType == "DiceSim":
       # dice similarity
-      diceSim = textdistance.sorensen(word_tokenize(license[1]), word_tokenize(processedData))
+      diceSim = textdistance.sorensen(license[1].split(" "), processedData.split(" ")
       if diceSim >= 0.6:
         Dice_matches.append({
           'shortname': license[0],

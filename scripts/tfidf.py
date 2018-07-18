@@ -23,11 +23,11 @@ import math
 import time
 
 from initial_match import initial_match
-from nltk.tokenize import word_tokenize
 from numpy import unique, sum, dot
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 args = None
+tokenize = lambda data: data.split(" ")
 
 
 def l2_norm(a):
@@ -47,12 +47,12 @@ def tfidfsumscore(inputFile, licenseList):
   processedData1, licenses, matches = initial_match(inputFile, licenseList)
 
   startTime = time.time()
-  processedData = unique(word_tokenize(processedData1))  # unique words from tokenized input file
+  processedData = unique(processedData1.split(" "))  # unique words from tokenized input file
 
   all_documents = [license[1] for license in licenses]
   all_documents.append(processedData1)
-  sklearn_tfidf = TfidfVectorizer(norm='l2', min_df=0, use_idf=True, smooth_idf=True, sublinear_tf=True,
-                                  tokenizer=word_tokenize, vocabulary=processedData)
+  sklearn_tfidf = TfidfVectorizer(min_df=0, use_idf=True, smooth_idf=True, sublinear_tf=True, tokenizer=tokenize,
+                                  vocabulary=processedData)
 
   sklearn_representation = sklearn_tfidf.fit_transform(all_documents)
 
@@ -80,13 +80,12 @@ def tfidfcosinesim(inputFile, licenseList):
   
   startTime = time.time()
 
-  processedData = unique(word_tokenize(processedData1))  # unique words from tokenized input file
+  processedData = unique(processedData1.split(" "))  # unique words from tokenized input file
   all_documents = [license[1] for license in licenses]
   all_documents.append(processedData1)
   # sklearn_tfidf = TfidfVectorizer(norm='l2', min_df=0, use_idf=True, smooth_idf=True, sublinear_tf=True,
-  #                                 tokenizer=word_tokenize, vocabulary=processedData)
-  sklearn_tfidf = TfidfVectorizer(norm='l2', min_df=0, use_idf=True, smooth_idf=True, sublinear_tf=True,
-                                  tokenizer=word_tokenize)
+  #                                 tokenizer=tokenize, vocabulary=processedData)
+  sklearn_tfidf = TfidfVectorizer(min_df=0, use_idf=True, smooth_idf=True, sublinear_tf=True, tokenizer=tokenize)
 
   sklearn_representation = sklearn_tfidf.fit_transform(all_documents)
 
