@@ -37,11 +37,15 @@ if __name__ == "__main__":
   parser.add_argument("AgentName", choices=['DLD', 'tfidfcosinesim', 'tfidfsumscore', 'Ngram'],
                       help="Name of the agent that needs to be run")
   parser.add_argument("TestFiles", help="Specify the folder path that needs to be tested")
+  parser.add_argument("-s", "--ngram_similarity", required=False, default="BigramCosineSim",
+                      choices=["CosineSim", "DiceSim", "BigramCosineSim"],
+                      help="Specify the Ngram similarity algorithm that you want")
   parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
   args = parser.parse_args()
   agent_name = args.AgentName
   processedLicense = args.LicenseList
   testFilePath = args.TestFiles
+  ngram_similarity = args.ngram_similarity
 
   pathname = os.path.dirname(sys.argv[0])
   testFilePath = os.path.abspath(testFilePath)
@@ -57,5 +61,5 @@ if __name__ == "__main__":
       elif agent_name == "tfidfsumscore":
         result = str(tfidfsumscore(filepath, processedLicense))
       elif agent_name == "Ngram":
-        result = str(NgramSim(filepath, processedLicense, "BigramCosineSim"))
+        result = str(NgramSim(filepath, processedLicense, ngram_similarity))
       print("Actual License: " + actual_license + "\nResult: " + result + "\n")

@@ -17,18 +17,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 __author__ = "Aman Jain"
 
+import argparse
 import json
 import os
-import glob
+from multiprocessing import Pool as ThreadPool
 from pathlib import Path
 from urllib import request
-from tqdm import tqdm
+
 import pandas as pd
-import argparse
-from multiprocessing import Pool as ThreadPool
+from tqdm import tqdm
 
 csvColumns = ["shortname", "fullname", "text", "license_header", "url",
               "depricated", "osi_approved"]
+
 
 def download_license(threads=os.cpu_count(), force=False):
   """
@@ -53,19 +54,19 @@ def download_license(threads=os.cpu_count(), force=False):
     dir = os.path.abspath(dir + "/../licenses")
     Path(dir).mkdir(exist_ok=True)
     filePath = Path(os.path.abspath(dir + "/" + fileName))
-    if (filePath.is_file()):
+    if filePath.is_file():
       if (force):
         filePath.unlink()
       else:
         return str(filePath)
     licenseDataFrame = pd.DataFrame(columns=csvColumns)
     cpuCount = os.cpu_count()
-    threads = cpuCount*2 if threads > cpuCount*2 else threads
+    threads = cpuCount * 2 if threads > cpuCount * 2 else threads
     pool = ThreadPool(threads)
     for row in tqdm(pool.imap_unordered(fetch_license, licenses),
                     desc="Licenses processed", total=len(licenses),
                     unit="license"):
-      licenseDataFrame = pd.concat([licenseDataFrame,row], sort=False, ignore_index=True)
+      licenseDataFrame = pd.concat([licenseDataFrame, row], sort=False, ignore_index=True)
 
     licenseDataFrame = licenseDataFrame.drop_duplicates(subset='shortname')
     licenseDataFrame = licenseDataFrame.sort_values('depricated').drop_duplicates(subset='fullname', keep='first')
@@ -77,11 +78,10 @@ def download_license(threads=os.cpu_count(), force=False):
 
 
 def fetch_license(license):
-  licenseDict = {}
-  licenseDict['shortname'] = license.get('licenseId')
-  licenseDict['fullname'] = license.get('name')
-  licenseDict['osi_approved'] = license.get('isOsiApproved')
-  licenseDict['depricated'] = license.get('isDeprecatedLicenseId')
+  licenseDict = {'shortname': license.get('licenseId'),
+                 'fullname': license.get('name'),
+                 'osi_approved': license.get('isOsiApproved'),
+                 'depricated': license.get('isDeprecatedLicenseId')}
   nextUrl = "https://spdx.org/licenses/{0}.json".format(licenseDict['shortname'])
   licenseData = request.urlopen(nextUrl).read()
   licenseData = json.loads(licenseData.decode('utf-8'))

@@ -59,7 +59,7 @@ def wordFrequency(arr):
 
 def Ngram_guess(processedData):
   dir = os.path.dirname(os.path.abspath(__file__))
-  with open(dir + '/../database_keywordsNoStemSPDX2.json', 'r') as file:
+  with open(dir + '/../Ngram_keywords_new.json', 'r') as file:
     unique_keywords = json.loads(file.read())
 
   initial_guess = []
@@ -121,7 +121,7 @@ def NgramSim(inputFile, licenseList, simType):
 
     elif simType == "DiceSim":
       # dice similarity
-      diceSim = textdistance.sorensen(license[1].split(" "), processedData.split(" ")
+      diceSim = textdistance.sorensen(license[1].split(" "), processedData.split(" "))
       if diceSim >= 0.6:
         Dice_matches.append({
           'shortname': license[0],
@@ -161,16 +161,17 @@ def NgramSim(inputFile, licenseList, simType):
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument("inputFile", help="Specify the input file which needs to be scanned")
-  parser.add_argument("licenseList", help="Specify the license list file which contains licenses")
-  parser.add_argument("Similarity", choices=["CosineSim", "DiceSim", "BigramCosineSim"],
+  parser.add_argument("processedLicenseList", help="Specify the processed license list file")
+  parser.add_argument("-s", "--similarity", required=False, default="BigramCosineSim",
+                      choices=["CosineSim", "DiceSim", "BigramCosineSim"],
                       help="Specify the similarity algorithm that you want")
   parser.add_argument("-v", "--verbose", help="increase output verbosity",
                       action="store_true")
   args = parser.parse_args()
 
   inputFile = args.inputFile
-  licenseList = args.licenseList
-  simType = args.Similarity
+  licenseList = args.processedLicenseList
+  simType = args.similarity
 
   result = NgramSim(inputFile, licenseList, simType)
   if len(result) > 0:

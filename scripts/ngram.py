@@ -73,7 +73,7 @@ def unique_ngrams(uniqueNGram):
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
-  parser.add_argument("licenseList", help="Specify the license list file which contains licenses")
+  parser.add_argument("processedLicenseList", help="Specify the processed license list file")
   parser.add_argument("-t", "--threads", required=False, default=os.cpu_count(),
                       type=int,
                       help="No of threads to use for download. Default: CPU count")
@@ -81,7 +81,7 @@ if __name__ == '__main__':
                       action="store_true")
   args = parser.parse_args()
 
-  licenseList = args.licenseList
+  licenseList = args.processedLicenseList
   threads = args.threads
   uniqueNGrams, cluster_arr, licenses = load_database(licenseList)
   no_keyword_matched = []
@@ -98,9 +98,7 @@ if __name__ == '__main__':
                                  unit="license")):
 
     matched_output.append([str(uniqueNGrams[idx]['shortname']), len(row)])
-    # if args is not None and args.verbose:
     if len(row) == 0:
-      # print('>>>>>', licenses[idx][0], len(matches))
       no_keyword_matched.append(uniqueNGrams[idx]['shortname'])
 
     ngram_keywords.append({

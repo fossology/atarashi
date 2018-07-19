@@ -18,40 +18,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 __author__ = "Aman Jain"
 
 import argparse
-import math
 import time
 
-import numpy as np
+from CosineSimNgram import wordFrequency, cosine_similarity
 from getLicenses import fetch_licenses
 
 args = None
-
-
-def l2_norm(a):
-  a = [value for key, value in a.items()]
-  return math.sqrt(np.dot(a, a))
-
-
-def cosine_similarity(a, b):
-  dot_product = 0
-  for key, count in a.items():
-    if key in b:
-      dot_product += b[key] * count
-  temp = l2_norm(a) * l2_norm(b)
-  if temp == 0:
-    return 0
-  else:
-    return dot_product / temp
-
-
-def wordFrequency(arr):
-  frequency = {}
-  for word in arr:
-    if word in frequency:
-      frequency[word] += 1
-    else:
-      frequency[word] = 1
-  return frequency
+MAX_ALLOWED_DISTANCE = 0.97
 
 
 def union_and_find(arr):
@@ -80,8 +53,7 @@ def refine_cluster(license_cluster):
                                    wordFrequency(initial_cluster[j][1].split(" ")))
           if args is not None and args.verbose:
             print(key, initial_cluster[i][0], initial_cluster[j][0], dist)
-          max_allowed_distance = 0.97
-          if dist > max_allowed_distance:
+          if dist > MAX_ALLOWED_DISTANCE:
             if args is not None and args.verbose:
               print("Pushed in cluster", key, initial_cluster[i][0], initial_cluster[j][0], dist)
             if key in cluster:
@@ -123,12 +95,12 @@ def cluster_licenses(licenseList):
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
-  parser.add_argument("licenseList", help="Specify the license list file which contains licenses")
+  parser.add_argument("processedLicenseList", help="Specify the processed license list file")
   parser.add_argument("-v", "--verbose", help="increase output verbosity",
                       action="store_true")
   args = parser.parse_args()
 
-  licenseList = args.licenseList
+  licenseList = args.processedLicenseList
   start = time.time()
   cluster = cluster_licenses(licenseList)
   print("Time taken is ", str(time.time() - start))

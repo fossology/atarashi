@@ -34,10 +34,14 @@ if __name__ == "__main__":
                       help="Name of the agent that needs to be run")
   parser.add_argument("ProcessedLicenseList",
                       help="Specify the processed license list file which contains licenses")
+  parser.add_argument("-s", "--ngram_similarity", required=False, default="BigramCosineSim",
+                      choices=["CosineSim", "DiceSim", "BigramCosineSim"],
+                      help="Specify the Ngram similarity algorithm that you want")
   parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
   args = parser.parse_args()
   agent_name = args.AgentName
   processedLicense = args.ProcessedLicenseList
+  ngram_similarity = args.ngram_similarity
 
   pathname = os.path.dirname(sys.argv[0])
   pathto = os.path.abspath(pathname) + '/../tests/'
@@ -72,7 +76,7 @@ if __name__ == "__main__":
           matched += 1
         tqdm.write("{0} {1} {2}".format(temp, text[1], text[4]))
       elif agent_name == "Ngram":
-        temp = str(NgramSim(pathto + filePath, processedLicense, "BigramCosineSim"))
+        temp = str(NgramSim(pathto + filePath, processedLicense, ngram_similarity))
         if temp in text[4]:
           matched += 1
         tqdm.write("{0} {1} {2}".format(temp, text[4], text[1]))

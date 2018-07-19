@@ -22,7 +22,7 @@ import itertools
 import math
 import time
 
-from initial_match import initial_match
+from initialmatch import initial_match
 from numpy import unique, sum, dot
 from sklearn.feature_extraction.text import TfidfVectorizer
 

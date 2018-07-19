@@ -21,7 +21,6 @@ import argparse
 import re
 import string
 
-
 """Rules to apply:
 All whitespace should be treated as a single blank space
 All upper case and lower case letters should be treated as lower case letters
@@ -48,9 +47,9 @@ def preprocess(data):
 if __name__ == "__main__":
   print("The file has been run directly")
   parser = argparse.ArgumentParser()
-  parser.add_argument("inputFile", help = "Specify the input file which needs to be scanned")
-  parser.add_argument("-v", "--verbose", help = "increase output verbosity",
-                      action = "store_true")
+  parser.add_argument("inputFile", help="Specify the input file which needs to be scanned")
+  parser.add_argument("-v", "--verbose", help="increase output verbosity",
+                      action="store_true")
   args = parser.parse_args()
   inputFile = args.inputFile
   with open(inputFile) as file:
