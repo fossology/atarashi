@@ -26,6 +26,7 @@ import itertools
 import textdistance
 from initialmatch import initial_match
 from numpy import dot, unique
+from utils import unpack_json_tar
 
 args = None
 
@@ -58,6 +59,7 @@ def wordFrequency(arr):
 
 
 def Ngram_guess(processedData):
+  unpack_json_tar()
   dir = os.path.dirname(os.path.abspath(__file__))
   with open(dir + '/../Ngram_keywords_new.json', 'r') as file:
     unique_keywords = json.loads(file.read())
@@ -103,47 +105,51 @@ def NgramSim(inputFile, licenseList, simType):
   # print(ngram_guesses)
 
   all_guesses = unique([l['shortname'] for l in matches])
-  for license in [x for x in licenses if x[0] in ngram_guesses or x[0] in all_guesses]:
+  licenses = licenses[(licenses.shortname.isin(ngram_guesses)) |
+                      (licenses.shortname.isin(all_guesses))]
+  licenses.sort_values('shortname').reset_index(drop=True)
+
+  for idx in range(len(licenses)):
 
     if simType == "CosineSim":
       # cosine similarity with unigram
-      cosineSim = cosine_similarity(wordFrequency(license[1].split(" ")),
+      cosineSim = cosine_similarity(wordFrequency(licenses.iloc[idx]['processed_text'].split(" ")),
                                     wordFrequency(processedData.split(" ")))
       if cosineSim >= 0.6:
         Cosine_matches.append({
-          'shortname': license[0],
+          'shortname': licenses.iloc[idx]['shortname'],
           'sim_type': 'CosineSim',
           'sim_score': cosineSim,
           'description': ''
         })
       if args is not None and args.verbose:
-        print("Cosine Sim ", str(cosineSim), license[0])
+        print("Cosine Sim ", str(cosineSim), licenses.iloc[idx]['shortname'])
 
     elif simType == "DiceSim":
       # dice similarity
-      diceSim = textdistance.sorensen(license[1].split(" "), processedData.split(" "))
+      diceSim = textdistance.sorensen(licenses.iloc[idx]['processed_text'].split(" "), processedData.split(" "))
       if diceSim >= 0.6:
         Dice_matches.append({
-          'shortname': license[0],
+          'shortname': licenses.iloc[idx]['shortname'],
           'sim_type': 'DiceSim',
           'sim_score': diceSim,
           'description': ''
         })
       if args is not None and args.verbose:
-        print("Dice Sim ", str(diceSim), license[0])
+        print("Dice Sim ", str(diceSim), licenses.iloc[idx]['shortname'])
 
     elif simType == "BigramCosineSim":
-      bigram_cosine_sim = cosine_similarity(wordFrequency(bigram_tokenize(license[1])),
+      bigram_cosine_sim = cosine_similarity(wordFrequency(bigram_tokenize(licenses.iloc[idx]['processed_text'])),
                                             wordFrequency(bigram_tokenize(processedData)))
       if bigram_cosine_sim >= 0.9:
         Bigram_cosine_matches.append({
-          'shortname': license[0],
+          'shortname': licenses.iloc[idx]['shortname'],
           'sim_type': 'BigramCosineSim',
           'sim_score': bigram_cosine_sim,
           'description': ''
         })
       if args is not None and args.verbose:
-        print("Bigram Cosine Sim ", str(bigram_cosine_sim), license[0])
+        print("Bigram Cosine Sim ", str(bigram_cosine_sim), licenses.iloc[idx]['shortname'])
 
   if simType == "CosineSim" and len(Cosine_matches) > 0:
     matches = list(itertools.chain(matches, Cosine_matches))

@@ -13,7 +13,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 """
 
 __author__ = "Aman Jain"
@@ -26,6 +25,7 @@ from tqdm import tqdm
 from getLicenses import fetch_licenses
 from multiprocessing import Pool as ThreadPool
 from license_clustering import cluster_licenses
+from utils import unpack_json_tar
 import csv
 
 
@@ -35,11 +35,14 @@ def find_ngrams(input_list, n):
 
 def load_database(licenseList):
   licenses = fetch_licenses(licenseList)
+  if 'processed_text' not in licenses.columns:
+    raise ValueError('The license list does not contain processed_text column.')
+
   uniqueNGrams = []
 
   cluster_arr = cluster_licenses(licenseList)
   for cluster in cluster_arr:
-    license_text = [license[1] for license in licenses if license[0] == cluster[0]][0]
+    license_text = licenses[licenses['shortname'] == cluster[0]].iloc[0]['processed_text']
     ngrams = []
     ngramrange = [2, 5, 6, 7, 8]
     for x in ngramrange:
@@ -105,6 +108,8 @@ if __name__ == '__main__':
       'shortname': uniqueNGrams[idx]['shortname'],
       'ngrams': row
     })
+
+  unpack_json_tar()
 
   with open('Ngram_keywords_new.json', 'w') as myfile:
     myfile.write(json.dumps(ngram_keywords))

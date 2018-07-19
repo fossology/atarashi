@@ -65,9 +65,9 @@ def classifyLicenseFreqMatch(filename, licenseList):
   processedData, licenses = initialize(filename, licenseList)
   if args is not None and args.verbose:
     print("PROCESSED DATA IS ", processedData)
-    print("LICENSES[0]", str(licenses.loc[0]))
+    print("LICENSES[0]", str(licenses.iloc[0]))
 
-  temp = exactMatcher(processedData, licenseList)
+  temp = exactMatcher(processedData, licenses)
   if temp == -1:
     # create array of frequency array of licenses
     licensesFrequency = []

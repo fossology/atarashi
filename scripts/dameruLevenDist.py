@@ -60,20 +60,21 @@ def classifyLicenseDameruLevenDist(filename, licenseList):
     data = file.read().replace('\n', ' ')
   processedData = preprocess(data)
 
-  temp = exactMatcher(processedData, licenseList)
+  temp = exactMatcher(processedData, licenses)
   if temp == -1:
     # Classify the license with minimum distance with scanned file
     globalDistance = sys.maxsize
     result = 0
     for idx in range(len(licenses)):
-      distance = damerau_levenshtein_distance(processedData.split(" "), licenses[idx][1].split(" "))
+      distance = damerau_levenshtein_distance(processedData.split(" "),
+                                              licenses.iloc[idx]['processed_text'].split(" "))
       if args is not None and args.verbose:
-        print(str(idx) + "  " + licenses.loc[idx]['shortname'] + "  " + str(distance))
+        print(str(idx) + "  " + licenses.iloc[idx]['shortname'] + "  " + str(distance))
       if distance < globalDistance:
         globalDistance = distance
         result = idx
 
-    return str(licenses.loc[result]['shortname'])
+    return str(licenses.iloc[result]['shortname'])
   else:
     return temp[0]
 
