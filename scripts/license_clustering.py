@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Copyright 2018 Aman Jain
+Copyright 2018 Aman Jain (amanjain5221@gmail.com)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -18,6 +18,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 """
 
 __author__ = "Aman Jain"
+__email__ = "amanjain5221@gmail.com"
 
 import argparse
 import time
