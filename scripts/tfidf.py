@@ -49,7 +49,7 @@ def tfidfsumscore(inputFile, licenseList):
   startTime = time.time()
   processedData = unique(processedData1.split(" "))  # unique words from tokenized input file
 
-  all_documents = [license[1] for license in licenses]
+  all_documents = licenses['processed_text'].tolist()
   all_documents.append(processedData1)
   sklearn_tfidf = TfidfVectorizer(min_df=0, use_idf=True, smooth_idf=True, sublinear_tf=True, tokenizer=tokenize,
                                   vocabulary=processedData)
@@ -62,7 +62,7 @@ def tfidfsumscore(inputFile, licenseList):
                                   start=0):
     sim_score = sum(value)
     score_arr.append({
-      'shortname': licenses[result][0],
+      'shortname': licenses.iloc[result]['shortname'],
       'sim_type': "Sum of TF-IDF score",
       'sim_score': sim_score,
       'desc': "Score can be greater than 1 also"
@@ -81,7 +81,7 @@ def tfidfcosinesim(inputFile, licenseList):
   startTime = time.time()
 
   processedData = unique(processedData1.split(" "))  # unique words from tokenized input file
-  all_documents = [license[1] for license in licenses]
+  all_documents = licenses['processed_text'].tolist()
   all_documents.append(processedData1)
   # sklearn_tfidf = TfidfVectorizer(norm='l2', min_df=0, use_idf=True, smooth_idf=True, sublinear_tf=True,
   #                                 tokenizer=tokenize, vocabulary=processedData)
@@ -94,7 +94,7 @@ def tfidfcosinesim(inputFile, licenseList):
     sim_score = cosine_similarity(value, sklearn_representation.toarray()[-1])
     if sim_score >= 0.8:
       matches.append({
-        'shortname': licenses[counter][0],
+        'shortname': licenses.iloc[counter]['shortname'],
         'sim_type': "TF-IDF Cosine Sim",
         'sim_score': sim_score,
         'desc': ''

@@ -49,7 +49,7 @@ def spdx_identifer(data, shortnames):
   Make sure the identifier must be present in Fossology merged license list
   """
   data = data.lower()  # preprocessing of data
-  shortnames = [shortname.lower() for shortname in shortnames]
+  shortnamesLow = [shortname.lower() for shortname in shortnames]
   tokenized_data = data.split('\n')
   possible_spdx = []
   for idx in range(len(tokenized_data)):
@@ -59,9 +59,10 @@ def spdx_identifer(data, shortnames):
   spdx_identifiers = []
   for identifiers in possible_spdx:
     for x in identifiers.split(" "):
-      if x in shortnames:
+      if x in shortnamesLow:
+        shortnameIndex = shortnamesLow.index(x)
         spdx_identifiers.append({
-          'shortname': x,
+          'shortname': shortnames[shortnameIndex],
           'sim_type': 'SPDXIdentifier',
           'sim_score': 1.0,
           'description': ''
@@ -78,20 +79,22 @@ def initial_match(inputFile, licenseList):
   processedData = preprocess(data)
 
   licenses = fetch_licenses(licenseList)
+  if 'processed_text' not in licenses.columns:
+    raise ValueError('The license list does not contain processed_text column.')
 
   # Match SPDX identifiers
-  spdx_identifiers = spdx_identifer(raw_data, [license[0] for license in licenses])
+  spdx_identifiers = spdx_identifer(raw_data, licenses['shortname'])
 
   # match with headers
   # similarity with headers
   exact_match_header = []
   header_sim_match = []
-  for license in licenses:
-    header = license[3]
+  for idx in range(len(licenses)):
+    header = licenses.iloc[idx]['processed_header']
     if len(header) > 0:
       if header in processedData:
         exact_match_header.append({
-          'shortname': license[0],
+          'shortname': licenses.iloc[idx]['shortname'],
           'sim_type': 'ExactHeader',
           'sim_score': 1.0,
           'description': ''
@@ -99,7 +102,7 @@ def initial_match(inputFile, licenseList):
       ngram_sim = HeadersNgramSim(header, processedData)
       if ngram_sim >= 0.7:
         header_sim_match.append({
-          'shortname': license[0],
+          'shortname': licenses.iloc[idx]['shortname'],
           'sim_type': 'HeaderNgramSimilarity',
           'sim_score': ngram_sim,
           'description': ''
@@ -107,11 +110,11 @@ def initial_match(inputFile, licenseList):
 
   # match with full text
   exact_match_fulltext = []
-  for license in licenses:
-    full_text = license[1]
+  for idx in range(len(licenses)):
+    full_text = licenses.iloc[idx]['processed_text']
     if full_text in processedData:
       exact_match_fulltext.append({
-        'shortname': license[0],
+        'shortname': licenses.iloc[idx]['shortname'],
         'sim_type': 'ExactFullText',
         'sim_score': 1.0,
         'description': ''

@@ -49,17 +49,20 @@ def refine_cluster(license_cluster):
     for i in range(len(initial_cluster)):
       if i + 1 < len(initial_cluster):
         for j in range(i + 1, len(initial_cluster)):
-          dist = cosine_similarity(wordFrequency(initial_cluster[i][1].split(" ")),
-                                   wordFrequency(initial_cluster[j][1].split(" ")))
+          dist = cosine_similarity(wordFrequency(initial_cluster[i]['processed_text'].split(" ")),
+                                   wordFrequency(initial_cluster[j]['processed_text'].split(" ")))
           if args is not None and args.verbose:
-            print(key, initial_cluster[i][0], initial_cluster[j][0], dist)
+            print(key, initial_cluster[i]['shortname'], initial_cluster[j]['shortname'], dist)
           if dist > MAX_ALLOWED_DISTANCE:
             if args is not None and args.verbose:
-              print("Pushed in cluster", key, initial_cluster[i][0], initial_cluster[j][0], dist)
+              print("Pushed in cluster", key, initial_cluster[i]['shortname'],
+                    initial_cluster[j]['shortname'], dist)
             if key in cluster:
-              cluster[key].append([initial_cluster[i][0], initial_cluster[j][0]])
+              cluster[key].append([initial_cluster[i]['shortname'],
+                                   initial_cluster[j]['shortname']])
             else:
-              cluster[key] = [[initial_cluster[i][0], initial_cluster[j][0]]]
+              cluster[key] = [[initial_cluster[i]['shortname'],
+                               initial_cluster[j]['shortname']]]
   result = []
   for key, arr in cluster.items():
     cluster[key] = union_and_find(arr)
@@ -72,20 +75,23 @@ def refine_cluster(license_cluster):
 
 def cluster_licenses(licenseList):
   licenses = fetch_licenses(licenseList)
+  if 'processed_text' not in licenses.columns:
+    raise ValueError('The license list does not contain processed_text column.')
+
   initial_cluster = {}
-  for license in licenses:
-    license_initials = license[0].split("-")[0]
+  for idx in range(len(licenses)):
+    license_initials = licenses.iloc[idx]['shortname'].split("-")[0]
     if license_initials not in initial_cluster:
-      initial_cluster[license_initials] = [license]
+      initial_cluster[license_initials] = [licenses.iloc[idx].to_dict()]
     else:
-      initial_cluster[license_initials].append(license)
+      initial_cluster[license_initials].append(licenses.iloc[idx].to_dict())
 
   result = refine_cluster(initial_cluster)
   flatten_result = []
   for arr in result:
     for x in arr:
       flatten_result.append(x)
-  unclustered_licenses = [license[0] for license in licenses if license[0] not in flatten_result]
+  unclustered_licenses = licenses[~licenses.shortname.isin(flatten_result)]['shortname']
   for license in unclustered_licenses:
     result.append([license])
   if args is not None and args.verbose:

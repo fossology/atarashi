@@ -41,7 +41,7 @@ def preprocess(data):
       r'[\u2013\u2014\u2015\u2018\u2019\u201a\u201b\u201c\u201d\u201e\u2026\u2032\u2033]',
       '', data)
   data = re.sub(r'\s{2,}', ' ', data)
-  return data
+  return data.strip()
 
 
 if __name__ == "__main__":

@@ -17,10 +17,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 __author__ = "Gaurav Mishra"
 
-import csv
-import sys
 import os
-import time
 import argparse
 from pathlib import Path
 from tqdm import tqdm
