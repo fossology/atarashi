@@ -24,11 +24,12 @@ import os
 import tarfile
 from pathlib import Path
 
-TAR_FILE_NAME = "Ngram-json.tar.gz"
+TAR_FILE_NAME = "Ngram_keywords.json.tar.gz"
+
 
 def unpack_json_tar():
   dir = os.path.dirname(os.path.abspath(__file__))
-  dir = os.path.abspath(dir + "/../")
+  dir = os.path.abspath(dir + "/../data/")
   tarFilePath = Path(os.path.abspath(dir + "/" + TAR_FILE_NAME))
   if tarFilePath.is_file():
     tar = tarfile.open(str(tarFilePath))

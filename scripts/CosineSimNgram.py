@@ -64,7 +64,7 @@ def wordFrequency(arr):
 def Ngram_guess(processedData):
   unpack_json_tar()
   dir = os.path.dirname(os.path.abspath(__file__))
-  with open(dir + '/../Ngram_keywords_new.json', 'r') as file:
+  with open(dir + '/../data/Ngram_keywords.json', 'r') as file:
     unique_keywords = json.loads(file.read())
 
   initial_guess = []
@@ -105,7 +105,6 @@ def NgramSim(inputFile, licenseList, simType):
   for guess in initial_guess:
     for x in guess['shortname']:
       ngram_guesses.append(x)
-  # print(ngram_guesses)
 
   all_guesses = unique([l['shortname'] for l in matches])
   licenses = licenses[(licenses.shortname.isin(ngram_guesses)) |
@@ -151,8 +150,8 @@ def NgramSim(inputFile, licenseList, simType):
           'sim_score': bigram_cosine_sim,
           'description': ''
         })
-      if args is not None and args.verbose:
-        print("Bigram Cosine Sim ", str(bigram_cosine_sim), licenses.iloc[idx]['shortname'])
+        if args is not None and args.verbose:
+          print("Bigram Cosine Sim ", str(bigram_cosine_sim), licenses.iloc[idx]['shortname'])
 
   if simType == "CosineSim" and len(Cosine_matches) > 0:
     matches = list(itertools.chain(matches, Cosine_matches))

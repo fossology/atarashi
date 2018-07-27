@@ -114,10 +114,13 @@ if __name__ == '__main__':
 
   unpack_json_tar()
 
-  with open('Ngram_keywords_new.json', 'w') as myfile:
+  dir = os.path.dirname(os.path.abspath(__file__))
+  dir = os.path.abspath(dir + "/../data/")
+
+  with open(dir + '/Ngram_keywords.json', 'w') as myfile:
     myfile.write(json.dumps(ngram_keywords))
 
-  with open("NGram_DataFrame.csv", 'w') as f:
+  with open(dir + "/NGram_DataFrame.csv", 'w') as f:
     wr = csv.writer(f, quoting=csv.QUOTE_ALL)
     wr.writerows(matched_output)
 
