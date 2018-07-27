@@ -21,14 +21,15 @@ __author__ = "Aman Jain"
 __email__ = "amanjain5221@gmail.com"
 
 import argparse
-import pandas as pd
-from tqdm import tqdm
-from pathlib import Path
 import os
 import sys
+from pathlib import Path
+
+import pandas as pd
+from tqdm import tqdm
+
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)) + '/../scripts/')
 from getLicenses import fetch_licenses
-from CommentPreprocessor import preprocess
 
 args = None
 
@@ -64,7 +65,7 @@ def license_merger(licenseList, requiredlicenseList):
     print("Licenses to Merge", len(licenses_merge))
 
   csvColumns = ["shortname", "fullname", "text", "license_header", "url",
-                "depricated", "osi_approved"]
+                "deprecated", "osi_approved"]
 
   iterator = tqdm(range(len(licenses_merge)),
                   desc="Licenses merged",
@@ -74,7 +75,7 @@ def license_merger(licenseList, requiredlicenseList):
     licenseDict['shortname'] = licenses_merge.loc[i,'shortname']
     licenseDict['fullname'] = licenses_merge.loc[i,'fullname']
     licenseDict['osi_approved'] = False
-    licenseDict['depricated'] = True
+    licenseDict['deprecated'] = True
     licenseDict['text'] = licenses_merge.loc[i,'text']
     licenseDict['url'] = licenses_merge.loc[i,'url']
     licenseDict['license_header'] = ['']
@@ -86,12 +87,13 @@ def license_merger(licenseList, requiredlicenseList):
       drop=True)
   indexesToDrop = []
   for idx, row in requiredlicenses.iterrows():
-    if len(requiredlicenses.loc[requiredlicenses['shortname'] == row['shortname']+'-only']['depricated'] == True) > 0:
+    if len(requiredlicenses.loc[requiredlicenses['shortname'] == row['shortname']+'-only']['deprecated'] == True) > 0:
       indexesToDrop.append(idx)
   requiredlicenses.drop(indexesToDrop, inplace=True)
   requiredlicenses.to_csv(str(requiredlicenseList), index=False, encoding='utf-8')
 
   return str(Path(os.path.abspath(requiredlicenseList)))
+
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()

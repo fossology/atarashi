@@ -31,7 +31,7 @@ import pandas as pd
 from tqdm import tqdm
 
 csvColumns = ["shortname", "fullname", "text", "license_header", "url",
-              "depricated", "osi_approved", "isException"]
+              "deprecated", "osi_approved", "isException"]
 
 
 def download_license(threads=os.cpu_count(), force=False):
@@ -42,7 +42,7 @@ def download_license(threads=os.cpu_count(), force=False):
   the version is already loaded. If the data already exists, simply skip
   else create a new CSV. CSV file names are created as
   <releaseDate>_<version>.csv. For each license, shortname, fullname, text,
-  url, depricated, osi_approved are collected.
+  url, deprecated, osi_approved are collected.
 
   Returns file path if success, None otherwise.
   """
@@ -83,7 +83,7 @@ def download_license(threads=os.cpu_count(), force=False):
 
 
     licenseDataFrame = licenseDataFrame.drop_duplicates(subset='shortname')
-    licenseDataFrame = licenseDataFrame.sort_values('depricated').drop_duplicates(subset='fullname', keep='first')
+    licenseDataFrame = licenseDataFrame.sort_values('deprecated').drop_duplicates(subset='fullname', keep='first')
     licenseDataFrame = licenseDataFrame.sort_values('shortname').reset_index(drop=True)
     licenseDataFrame.to_csv(str(filePath), index=False, encoding='utf-8')
     return str(filePath)
@@ -95,7 +95,7 @@ def fetch_license(license):
   licenseDict = {'shortname': license.get('licenseId'),
                  'fullname': license.get('name'),
                  'osi_approved': license.get('isOsiApproved'),
-                 'depricated': license.get('isDeprecatedLicenseId'),
+                 'deprecated': license.get('isDeprecatedLicenseId'),
                  'isException': False}
   nextUrl = "https://spdx.org/licenses/{0}.json".format(licenseDict['shortname'])
   licenseData = request.urlopen(nextUrl).read()
@@ -112,7 +112,7 @@ def fetch_exceptional_license(license):
   licenseDict = {'shortname': license.get('licenseExceptionId'),
                  'fullname': license.get('name'),
                  'osi_approved': False,
-                 'depricated': license.get('isDeprecatedLicenseId'),
+                 'deprecated': license.get('isDeprecatedLicenseId'),
                  'isException': True}
   nextUrl = "https://spdx.org/licenses/{0}.json".format(licenseDict['shortname'])
   licenseData = request.urlopen(nextUrl).read()
