@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 """
+Copyright 2018 Gaurav Mishra (gmishx@gmail.com)
+
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 version 2 as published by the Free Software Foundation.
@@ -16,11 +18,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 """
 
 __author__ = "Gaurav Mishra"
+__email__ = "gmishx@gmail.com"
 
-import csv
-import sys
 import os
-import time
 import argparse
 from pathlib import Path
 from tqdm import tqdm

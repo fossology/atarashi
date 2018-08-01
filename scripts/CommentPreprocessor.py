@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 """
+Copyright 2018 Aman Jain (amanjain5221@gmail.com)
+
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 version 2 as published by the Free Software Foundation.
@@ -16,13 +18,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 """
 
 __author__ = "Aman Jain"
+__email__ = "amanjain5221@gmail.com"
 
 import argparse
 import re
 import string
-
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
 
 """Rules to apply:
 All whitespace should be treated as a single blank space
@@ -35,6 +35,7 @@ Ignore the list item for matching purposes (eg. bullets, numbered lists)
 
 args = None
 
+
 def preprocess(data):
   data = data.lower()
   data = re.sub(r'copyright|\(c\)|\u00a9', 'copyright', data)
@@ -42,17 +43,16 @@ def preprocess(data):
   data = re.sub(
       r'[\u2013\u2014\u2015\u2018\u2019\u201a\u201b\u201c\u201d\u201e\u2026\u2032\u2033]',
       '', data)
-  words = word_tokenize(data)
-  data = " ".join(words)
-  return data
+  data = re.sub(r'\s{2,}', ' ', data)
+  return data.strip()
 
 
 if __name__ == "__main__":
   print("The file has been run directly")
   parser = argparse.ArgumentParser()
-  parser.add_argument("inputFile", help = "Specify the input file which needs to be scanned")
-  parser.add_argument("-v", "--verbose", help = "increase output verbosity",
-                      action = "store_true")
+  parser.add_argument("inputFile", help="Specify the input file which needs to be scanned")
+  parser.add_argument("-v", "--verbose", help="increase output verbosity",
+                      action="store_true")
   args = parser.parse_args()
   inputFile = args.inputFile
   with open(inputFile) as file:

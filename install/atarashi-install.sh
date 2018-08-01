@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Copyright 2018 Aman Jain (amanjain5221@gmail.com)
+
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # version 2 as published by the Free Software Foundation.
@@ -104,9 +106,3 @@ fi
 echo "Installing Code_comment ..."
 pip install --user -e git+https://github.com/amanjain97/code_comment#egg=code_comment
 pip install --user -r $BASEDIR/../requirements.txt
-echo "Installing NLTK ..."
-echo | python <<EOF
-import nltk
-nltk.download('punkt')
-nltk.download('stopwords')
-EOF

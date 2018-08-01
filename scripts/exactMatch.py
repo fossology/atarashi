@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 """
+Copyright 2018 Aman Jain (amanjain5221@gmail.com)
+
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 version 2 as published by the Free Software Foundation.
@@ -16,24 +18,24 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 """
 
 __author__ = "Aman Jain"
+__email__ = "amanjain5221@gmail.com"
 
 """
-Input: processed input text, processed license text 
+Input: processed input text, processed license DataFrame
 Output: license short name if exact match is found else -1 if no match
 """
 
 from getLicenses import fetch_licenses
 
 
-def exactMatcher(licenseText, licenseList):
+def exactMatcher(licenseText, licenses):
   output = []
-  licenses = fetch_licenses(licenseList)
   if 'processed_text' not in licenses.columns:
     raise ValueError('The license list does not contain processed_text column.')
 
   for idx in range(len(licenses)):
-    if licenses.loc[idx][1] in licenseText and licenses.loc[idx]['shortname'] != 'Void':
-      output.append(licenses.loc[idx]['shortname'])
+    if licenses.iloc[idx]['processed_text'] in licenseText and licenses.iloc[idx]['shortname'] != 'Void':
+      output.append(licenses.iloc[idx]['shortname'])
   if not output:
     return -1
   return output

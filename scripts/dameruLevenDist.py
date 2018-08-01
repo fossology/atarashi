@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 """
+Copyright 2018 Aman Jain (amanjain5221@gmail.com)
+
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 version 2 as published by the Free Software Foundation.
@@ -13,10 +15,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 """
 
 __author__ = "Aman Jain"
+__email__ = "amanjain5221@gmail.com"
 
 import argparse
 import sys
@@ -26,8 +28,6 @@ from CommentExtractor import CommentExtract
 from CommentPreprocessor import preprocess
 from getLicenses import fetch_licenses
 from exactMatch import exactMatcher
-from nltk.tokenize import word_tokenize
-import pandas as pd
 
 '''Python Module to classify license using Damerau Levenshtein distance algorithm
 Input: File from which license needs to be scanned and processed license list (CSV)
@@ -62,21 +62,21 @@ def classifyLicenseDameruLevenDist(filename, licenseList):
     data = file.read().replace('\n', ' ')
   processedData = preprocess(data)
 
-  temp = exactMatcher(processedData, licenseList)
+  temp = exactMatcher(processedData, licenses)
   if temp == -1:
     # Classify the license with minimum distance with scanned file
     globalDistance = sys.maxsize
     result = 0
     for idx in range(len(licenses)):
-      distance = damerau_levenshtein_distance(word_tokenize(processedData),
-                                              word_tokenize(licenses.loc[idx]['processed_text']))
+      distance = damerau_levenshtein_distance(processedData.split(" "),
+                                              licenses.iloc[idx]['processed_text'].split(" "))
       if args is not None and args.verbose:
-        print(str(idx) + "  " + licenses.loc[idx]['shortname'] + "  " + str(distance))
+        print(str(idx) + "  " + licenses.iloc[idx]['shortname'] + "  " + str(distance))
       if distance < globalDistance:
         globalDistance = distance
         result = idx
 
-    return str(licenses.loc[result]['shortname'])
+    return str(licenses.iloc[result]['shortname'])
   else:
     return temp[0]
 
