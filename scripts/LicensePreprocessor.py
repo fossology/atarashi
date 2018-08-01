@@ -20,14 +20,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 __author__ = "Gaurav Mishra"
 __email__ = "gmishx@gmail.com"
 
-import os
 import argparse
+import os
 from pathlib import Path
-from tqdm import tqdm
-import pandas as pd
 
 from CommentPreprocessor import preprocess
 from getLicenses import fetch_licenses
+from tqdm import tqdm
 
 '''Python Module to preprocess license list
 Input: License list (CSV)
@@ -37,6 +36,7 @@ Description: Module to pre process the license list for further use.
 '''
 
 args = None
+
 
 def load_licenses(licenseList):
   ''' Fetch license short name and description from the License List (CSV) 
@@ -49,18 +49,17 @@ def load_licenses(licenseList):
   licenses = fetch_licenses(licenseList)
   if args is not None and args.verbose:
     print("Loaded " + str(len(licenses)) + " licenses")
-  iterator = ""
-  if args is not None and args.verbose:
     iterator = tqdm(range(len(licenses)),
-                  desc = "Licenses processed:",
-                  total = len(licenses), unit = "license")
+                    desc="Licenses processed:",
+                    total=len(licenses), unit="license")
   else:
     iterator = range(len(licenses))
   for idx in iterator:
     licenses.at[idx, 'processed_fullname'] = preprocess(str(licenses.at[idx, 'fullname']))
-    licenses.at[idx, 'processed_header']   = preprocess(str(licenses.at[idx, 'license_header']))
-    licenses.at[idx, 'processed_text']     = preprocess(str(licenses.at[idx, 'text']))
+    licenses.at[idx, 'processed_header'] = preprocess(str(licenses.at[idx, 'license_header']))
+    licenses.at[idx, 'processed_text'] = preprocess(str(licenses.at[idx, 'text']))
   return licenses
+
 
 def write_csv(licenseList, fileLocation):
   ''' Write the preprocessed license list to a CSV file
@@ -69,6 +68,7 @@ def write_csv(licenseList, fileLocation):
   fileLocation -- Path where to write the CSV
   '''
   licenseList.to_csv(fileLocation, index=False, encoding='utf-8')
+
 
 def file_is_modified(source, destination):
   ''' Check if source is modified before destination.
@@ -84,6 +84,7 @@ def file_is_modified(source, destination):
     destTime = 0
   return sourceTime > destTime
 
+
 def create_processed_file(licenseList, processedFile):
   ''' Drop in for __main__'''
   licenseList = os.path.abspath(licenseList)
@@ -92,6 +93,7 @@ def create_processed_file(licenseList, processedFile):
     processedList = load_licenses(licenseList)
     write_csv(processedList, processedFile)
   return processedFile
+
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()

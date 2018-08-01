@@ -23,6 +23,8 @@ __email__ = "amanjain5221@gmail.com"
 import argparse
 import pandas as pd
 import numpy as np
+import os
+import sys
 
 args = None
 
@@ -40,8 +42,11 @@ def fetch_licenses(licenseList):  # common
 
 if __name__ == "__main__":
   print("The file has been run directly")
+  curr_file_dir = os.path.abspath(os.path.dirname(sys.argv[0]))
+  default_processed_license = curr_file_dir + '/../licenses/processedLicenses.csv'
   parser = argparse.ArgumentParser()
-  parser.add_argument("processedLicenseList", help="Specify the processed license list file")
+  parser.add_argument("-p", "--processedLicenseList", required=False, default=default_processed_license,
+                      help="Specify the processed license list file")
   parser.add_argument("-v", "--verbose", help="increase output verbosity",
                       action="store_true")
   args = parser.parse_args()

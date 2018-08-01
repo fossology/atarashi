@@ -26,6 +26,7 @@ import os
 from multiprocessing import Pool as ThreadPool
 from pathlib import Path
 from urllib import request
+import sys
 
 import pandas as pd
 from tqdm import tqdm
@@ -80,8 +81,6 @@ def download_license(threads=os.cpu_count(), force=False):
                     unit="license"):
       licenseDataFrame = pd.concat([licenseDataFrame, row], sort=False, ignore_index=True)
 
-
-
     licenseDataFrame = licenseDataFrame.drop_duplicates(subset='shortname')
     licenseDataFrame = licenseDataFrame.sort_values('deprecated').drop_duplicates(subset='fullname', keep='first')
     licenseDataFrame = licenseDataFrame.sort_values('shortname').reset_index(drop=True)
@@ -135,4 +134,9 @@ if __name__ == "__main__":
   args = parser.parse_args()
   threads = args.threads
   force = args.force
-  print(download_license(threads, force))
+  result = download_license(threads, force)
+  if result is not None:
+    print(result)
+    sys.exit(0)
+  else:
+    sys.exit(1)

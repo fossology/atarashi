@@ -23,6 +23,7 @@ __email__ = "amanjain5221@gmail.com"
 import argparse
 import sys
 from pyxdameraulevenshtein import damerau_levenshtein_distance
+import os
 
 from CommentExtractor import CommentExtract
 from CommentPreprocessor import preprocess
@@ -82,10 +83,11 @@ def classifyLicenseDameruLevenDist(filename, licenseList):
 
 
 if __name__ == "__main__":
-  print("The file has been run directly")
+  curr_file_dir = os.path.abspath(os.path.dirname(sys.argv[0]))
+  default_processed_license = curr_file_dir + '/../licenses/processedLicenses.csv'
   parser = argparse.ArgumentParser()
   parser.add_argument("inputFile", help="Specify the input file which needs to be scanned")
-  parser.add_argument("processedLicenseList",
+  parser.add_argument("-p", "--processedLicenseList", required=False, default=default_processed_license,
                       help="Specify the processed license list file which contains licenses")
   parser.add_argument("-v", "--verbose", help="increase output verbosity",
                       action="store_true")

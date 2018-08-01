@@ -25,6 +25,7 @@ import json
 import math
 import os
 import itertools
+import sys
 
 import textdistance
 from initialmatch import initial_match
@@ -167,9 +168,12 @@ def NgramSim(inputFile, licenseList, simType):
 
 
 if __name__ == "__main__":
+  curr_file_dir = os.path.abspath(os.path.dirname(sys.argv[0]))
+  default_processed_license = curr_file_dir + '/../licenses/processedLicenses.csv'
   parser = argparse.ArgumentParser()
   parser.add_argument("inputFile", help="Specify the input file which needs to be scanned")
-  parser.add_argument("processedLicenseList", help="Specify the processed license list file")
+  parser.add_argument("-p", "--processedLicenseList", required=False, default=default_processed_license,
+                      help="Specify the processed license list file")
   parser.add_argument("-s", "--similarity", required=False, default="BigramCosineSim",
                       choices=["CosineSim", "DiceSim", "BigramCosineSim"],
                       help="Specify the similarity algorithm that you want")
