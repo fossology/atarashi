@@ -36,7 +36,7 @@ if __name__ == "__main__":
   expected output is the name 
   """
   parser = argparse.ArgumentParser()
-  parser.add_argument("LicenseList", help="Specify the processed license list file which contains licenses")
+  parser.add_argument("processedLicenseList", help="Specify the processed license list file which contains licenses")
   parser.add_argument("AgentName", choices=['DLD', 'tfidfcosinesim', 'tfidfsumscore', 'Ngram'],
                       help="Name of the agent that needs to be run")
   parser.add_argument("TestFiles", help="Specify the folder path that needs to be tested")
@@ -46,7 +46,7 @@ if __name__ == "__main__":
   parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
   args = parser.parse_args()
   agent_name = args.AgentName
-  processedLicense = args.LicenseList
+  processedLicense = args.processedLicenseList
   testFilePath = args.TestFiles
   ngram_similarity = args.ngram_similarity
 
