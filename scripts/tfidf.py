@@ -24,6 +24,8 @@ import argparse
 import itertools
 import math
 import time
+import os
+import sys
 
 from initialmatch import initial_match
 from numpy import unique, sum, dot
@@ -110,10 +112,12 @@ def tfidfcosinesim(inputFile, licenseList):
 
 if __name__ == "__main__":
   print("The main file is called")
+  curr_file_dir = os.path.abspath(os.path.dirname(sys.argv[0]))
+  default_processed_license = curr_file_dir + '/../licenses/processedLicenses.csv'
   parser = argparse.ArgumentParser()
   parser.add_argument("inputFile", help="Specify the input file which needs to be scanned")
-  parser.add_argument("processedLicenseList",
-                      help="Specify the processed license list file which contains licenses")
+  parser.add_argument("-p", "--processedLicenseList", required=False, default=default_processed_license,
+                      help="Specify the processed license list file")
   parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
   args = parser.parse_args()
 

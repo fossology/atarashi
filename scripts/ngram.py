@@ -24,6 +24,8 @@ import argparse
 import os
 import json
 from tqdm import tqdm
+import sys
+from pathlib import Path
 
 from getLicenses import fetch_licenses
 from multiprocessing import Pool as ThreadPool
@@ -78,8 +80,12 @@ def unique_ngrams(uniqueNGram):
 
 
 if __name__ == '__main__':
+  curr_file_dir = os.path.abspath(os.path.dirname(sys.argv[0]))
+  default_processed_license = curr_file_dir + '/../licenses/processedLicenses.csv'
+
   parser = argparse.ArgumentParser()
-  parser.add_argument("processedLicenseList", help="Specify the processed license list file")
+  parser.add_argument("-p", "--processedLicenseList", required=False, default=default_processed_license,
+                      help="Specify the processed license list file")
   parser.add_argument("-t", "--threads", required=False, default=os.cpu_count(),
                       type=int,
                       help="No of threads to use for download. Default: CPU count")
@@ -116,7 +122,7 @@ if __name__ == '__main__':
 
   dir = os.path.dirname(os.path.abspath(__file__))
   dir = os.path.abspath(dir + "/../data/")
-
+  Path(dir).mkdir(exist_ok=True)
   with open(dir + '/Ngram_keywords.json', 'w') as myfile:
     myfile.write(json.dumps(ngram_keywords))
 

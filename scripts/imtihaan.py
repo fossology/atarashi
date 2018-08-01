@@ -35,8 +35,11 @@ if __name__ == "__main__":
   Iterate on all files in directory 
   expected output is the name 
   """
+  curr_file_dir = os.path.abspath(os.path.dirname(sys.argv[0]))
+  default_processed_license = curr_file_dir + '/../licenses/processedLicenses.csv'
   parser = argparse.ArgumentParser()
-  parser.add_argument("processedLicenseList", help="Specify the processed license list file which contains licenses")
+  parser.add_argument("-p", "--processedLicenseList", required=False, default=default_processed_license,
+                      help="Specify the processed license list file")
   parser.add_argument("AgentName", choices=['DLD', 'tfidfcosinesim', 'tfidfsumscore', 'Ngram'],
                       help="Name of the agent that needs to be run")
   parser.add_argument("TestFiles", help="Specify the folder path that needs to be tested")
@@ -55,7 +58,6 @@ if __name__ == "__main__":
   for subdir, dirs, files in os.walk(testFilePath):
     for file in files:
       filepath = subdir + os.sep + file
-      print(filepath.split('tests/')[1])
       actual_license = filepath.split('/')[-1].split('.c')[0]
       if agent_name == "DLD":
         result = str(classifyLicenseDameruLevenDist(filepath, processedLicense))
