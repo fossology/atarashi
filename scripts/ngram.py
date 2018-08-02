@@ -24,7 +24,6 @@ import argparse
 import os
 import json
 from tqdm import tqdm
-import sys
 from pathlib import Path
 
 from getLicenses import fetch_licenses
@@ -35,10 +34,18 @@ import csv
 
 
 def find_ngrams(input_list, n):
+  '''
+  :return: Zip ngrams of given length n from Input list
+  '''
   return zip(*[input_list[i:] for i in range(n)])
 
 
 def load_database(licenseList):
+  '''
+  Store the unique n-grams N=[2,5,6,7,8] for each license cluster
+  :param licenseList: Processed License List path
+  :return: Return uniqueNgrams array, license cluster array, licenses array
+  '''
   licenses = fetch_licenses(licenseList)
   if 'processed_text' not in licenses.columns:
     raise ValueError('The license list does not contain processed_text column.')
@@ -61,6 +68,10 @@ def load_database(licenseList):
 
 
 def unique_ngrams(uniqueNGram):
+  '''
+  :param uniqueNGram: List of all ngrams of a cluster
+  :return: List/ Array of n-grams that uniquely identify the license cluster
+  '''
   matches = []
 
   for ngram in uniqueNGram['ngrams']:
@@ -75,12 +86,14 @@ def unique_ngrams(uniqueNGram):
 
     if ismatch:
       matches.append(find)
-  # print("Matches", matches)
   return matches
 
 
 if __name__ == '__main__':
-  curr_file_dir = os.path.abspath(os.path.dirname(sys.argv[0]))
+  '''
+  Creates a Ngram_keywords.json in __file__/licenses/ that contains unique ngrams for each license cluster
+  '''
+  curr_file_dir = os.path.abspath(os.path.dirname(__file__))
   default_processed_license = curr_file_dir + '/../licenses/processedLicenses.csv'
 
   parser = argparse.ArgumentParser()

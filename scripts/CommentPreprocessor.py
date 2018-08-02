@@ -24,19 +24,20 @@ import argparse
 import re
 import string
 
-"""Rules to apply:
-All whitespace should be treated as a single blank space
-All upper case and lower case letters should be treated as lower case letters
-"(c)", or "Copyright" should be considered equivalent and interchangeable
-Any hyphen, dash, en dash, em dash, or other variation should be considered equivalent. 
-Ignore the list item for matching purposes (eg. bullets, numbered lists)
-
-"""
-
 args = None
 
 
 def preprocess(data):
+  '''
+  - All whitespace should be treated as a single blank space
+  - All upper case and lower case letters should be treated as lower case letters "(c)", or "Copyright" should be
+  considered equivalent and interchangeable
+  - Any hyphen, dash, en dash, em dash, or other variation should be considered equivalent.
+  - Ignore the list item for matching purposes (eg. bullets, numbered lists)
+
+  :param data: Input file in string format
+  :return: Preprocess the data according to the rules mentioned above
+  '''
   data = data.lower()
   data = re.sub(r'copyright|\(c\)|\u00a9', 'copyright', data)
   data = re.sub(r'[{}]'.format(string.punctuation), ' ', data)
@@ -48,7 +49,6 @@ def preprocess(data):
 
 
 if __name__ == "__main__":
-  print("The file has been run directly")
   parser = argparse.ArgumentParser()
   parser.add_argument("inputFile", help="Specify the input file which needs to be scanned")
   parser.add_argument("-v", "--verbose", help="increase output verbosity",

@@ -25,7 +25,6 @@ import itertools
 import math
 import time
 import os
-import sys
 
 from initialmatch import initial_match
 from numpy import unique, sum, dot
@@ -36,10 +35,17 @@ tokenize = lambda data: data.split(" ")
 
 
 def l2_norm(a):
+  '''
+  :return: Scalar value of word frequency array (vector)
+  '''
   return math.sqrt(dot(a, a))
 
 
 def cosine_similarity(a, b):
+  '''
+  `https://blog.nishtahir.com/2015/09/19/fuzzy-string-matching-using-cosine-similarity/`
+  :return: Cosine similarity value of two word frequency arrays
+  '''
   dot_product = dot(a, b)
   temp = l2_norm(a) * l2_norm(b)
   if temp == 0:
@@ -49,6 +55,12 @@ def cosine_similarity(a, b):
 
 
 def tfidfsumscore(inputFile, licenseList):
+  '''
+  TF-IDF Sum Score Algorithm. Used TfidfVectorizer to implement it.
+  :param inputFile: Input file path
+  :param licenseList: Processed License List
+  :return: Sorted array of JSON of scanner results with sim_type as tfidfsumscore
+  '''
   processedData1, licenses, matches = initial_match(inputFile, licenseList)
 
   startTime = time.time()
@@ -81,6 +93,12 @@ def tfidfsumscore(inputFile, licenseList):
 
 
 def tfidfcosinesim(inputFile, licenseList):
+  '''
+  TF-IDF Cosine Similarity Algorithm. Used TfidfVectorizer to implement it.
+  :param inputFile: Input file path
+  :param licenseList: Processed License List
+  :return: Sorted array of JSON of scanner results with sim_type as tfidfcosinesim
+  '''
   processedData1, licenses, matches = initial_match(inputFile, licenseList)
   
   startTime = time.time()
@@ -112,7 +130,7 @@ def tfidfcosinesim(inputFile, licenseList):
 
 if __name__ == "__main__":
   print("The main file is called")
-  curr_file_dir = os.path.abspath(os.path.dirname(sys.argv[0]))
+  curr_file_dir = os.path.abspath(os.path.dirname(__file__))
   default_processed_license = curr_file_dir + '/../licenses/processedLicenses.csv'
   parser = argparse.ArgumentParser()
   parser.add_argument("inputFile", help="Specify the input file which needs to be scanned")

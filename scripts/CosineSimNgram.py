@@ -25,7 +25,6 @@ import json
 import math
 import os
 import itertools
-import sys
 
 import textdistance
 from initialmatch import initial_match
@@ -36,11 +35,18 @@ args = None
 
 
 def l2_norm(a):
+  '''
+  :return: Scalar value of word frequency array (vector)
+  '''
   a = [value for key, value in a.items()]
   return math.sqrt(dot(a, a))
 
 
 def cosine_similarity(a, b):
+  '''
+  `https://blog.nishtahir.com/2015/09/19/fuzzy-string-matching-using-cosine-similarity/`
+  :return: Cosine similarity value of two word frequency arrays
+  '''
   dot_product = 0
   for key, count in a.items():
     if key in b:
@@ -53,6 +59,10 @@ def cosine_similarity(a, b):
 
 
 def wordFrequency(arr):
+  '''
+  Input: Array of words
+  :return: Word Frequency array
+  '''
   frequency = {}
   for word in arr:
     if word in frequency:
@@ -63,6 +73,10 @@ def wordFrequency(arr):
 
 
 def Ngram_guess(processedData):
+  '''
+  :param processedData: Processed Data form input file
+  :return: Returns possible licenses contained in the input file based on matching unique N-grams from Ngram_keywords.json
+  '''
   unpack_json_tar()
   dir = os.path.dirname(os.path.abspath(__file__))
   with open(dir + '/../data/Ngram_keywords.json', 'r') as file:
@@ -89,11 +103,31 @@ def Ngram_guess(processedData):
   return initial_guess
 
 
-def bigram_tokenize(s):
-  return [s[i:i + 2] for i in range(len(s) - 1)]
+def bigram_tokenize(string):
+  '''
+  :param string: Input string to create tokens
+  :return: Array of bi-gram tokens
+  '''
+  return [string[i:i + 2] for i in range(len(string) - 1)]
 
 
 def NgramSim(inputFile, licenseList, simType):
+  '''
+  :param inputFile: Input file path that needs to be scanned
+  :param licenseList: Processed License List from which licenses needs to be classified
+  :param simType: Specify the type of similarity to use ["CosineSim", "DiceSim", "BigramCosineSim"]
+  :return: Array of JSON with the output of scan of the file.
+  +------------+-----------------------------------------------------------+
+  | shortname  | Short name of the license                                 |
+  +------------+-----------------------------------------------------------+
+  | sim_type   | Type of similarity from which the result is generated     |
+  +------------+-----------------------------------------------------------+
+  | sim_score  | Similarity score for the algorithm used mentioned above   |
+  +------------+-----------------------------------------------------------+
+  | desc       | Description/ comments for the similarity measure          |
+  +------------+-----------------------------------------------------------+
+
+  '''
   processedData, licenses, matches = initial_match(inputFile, licenseList)
 
   # Full text Bi-gram Cosine Similarity Match
@@ -168,7 +202,7 @@ def NgramSim(inputFile, licenseList, simType):
 
 
 if __name__ == "__main__":
-  curr_file_dir = os.path.abspath(os.path.dirname(sys.argv[0]))
+  curr_file_dir = os.path.abspath(os.path.dirname(__file__))
   default_processed_license = curr_file_dir + '/../licenses/processedLicenses.csv'
   parser = argparse.ArgumentParser()
   parser.add_argument("inputFile", help="Specify the input file which needs to be scanned")

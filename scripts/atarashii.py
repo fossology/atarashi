@@ -22,7 +22,6 @@ __email__ = "amanjain5221@gmail.com"
 
 import argparse
 import os
-import sys
 
 from CosineSimNgram import NgramSim
 from dameruLevenDist import classifyLicenseDameruLevenDist
@@ -32,7 +31,7 @@ from wordFrequencySimilarity import classifyLicenseFreqMatch
 args = None
 
 if __name__ == "__main__":
-  curr_file_dir = os.path.abspath(os.path.dirname(sys.argv[0]))
+  curr_file_dir = os.path.abspath(os.path.dirname(__file__))
   default_processed_license = curr_file_dir + '/../licenses/processedLicenses.csv'
   parser = argparse.ArgumentParser()
   parser.add_argument("inputFile", help="Specify the input file path to scan")

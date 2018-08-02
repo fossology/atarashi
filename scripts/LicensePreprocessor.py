@@ -39,12 +39,12 @@ args = None
 
 
 def load_licenses(licenseList):
-  ''' Fetch license short name and description from the License List (CSV) 
+  '''
+  Fetch license short name and description from the License List (CSV)
   and preprocess them
-  
-  licenseList -- Path to CSV to read
-  
-  Return pandas.DataFrame with processed fullname, header and text
+
+  :param licenseList: Processed License List Path
+  :return: Return pandas.DataFrame with processed fullname, header and text
   '''
   licenses = fetch_licenses(licenseList)
   if args is not None and args.verbose:
@@ -62,10 +62,12 @@ def load_licenses(licenseList):
 
 
 def write_csv(licenseList, fileLocation):
-  ''' Write the preprocessed license list to a CSV file
-  
-  licenseList  -- pandas.DataFrame to be written
-  fileLocation -- Path where to write the CSV
+  '''
+  Write the preprocessed license list to a CSV file
+
+  :param licenseList: pandas.DataFrame to be written
+  :param fileLocation: Path where to write the CSV
+  :return:
   '''
   licenseList.to_csv(fileLocation, index=False, encoding='utf-8')
 

@@ -21,7 +21,6 @@ __author__ = "Aman Jain"
 __email__ = "amanjain5221@gmail.com"
 
 import os
-import sys
 import argparse
 
 from CosineSimNgram import NgramSim
@@ -33,9 +32,9 @@ args = None
 if __name__ == "__main__":
   """
   Iterate on all files in directory 
-  expected output is the name 
+  :return: Array of JSON with scan results 
   """
-  curr_file_dir = os.path.abspath(os.path.dirname(sys.argv[0]))
+  curr_file_dir = os.path.abspath(os.path.dirname(__file__))
   default_processed_license = curr_file_dir + '/../licenses/processedLicenses.csv'
   parser = argparse.ArgumentParser()
   parser.add_argument("-p", "--processedLicenseList", required=False, default=default_processed_license,
@@ -53,7 +52,7 @@ if __name__ == "__main__":
   testFilePath = args.TestFiles
   ngram_similarity = args.ngram_similarity
 
-  pathname = os.path.dirname(sys.argv[0])
+  pathname = os.path.dirname(__file__)
   testFilePath = os.path.abspath(testFilePath)
   for subdir, dirs, files in os.walk(testFilePath):
     for file in files:

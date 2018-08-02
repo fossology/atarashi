@@ -123,7 +123,6 @@ if [[ $? = 0 ]]; then
     python $BASEDIR/../scripts/LicensePreprocessor.py $spdxLicenseList $BASEDIR/../licenses/processedLicenses.csv
 
     echo "Setting up NGram.json ..."
-    read -p "Enter number of threads that you want to use (must be atleast 1 or Press Enter to use default): " THREADS
     if [[ ${THREADS} = '' ]]; then
         python $BASEDIR/../scripts/ngram.py
     else

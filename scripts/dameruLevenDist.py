@@ -30,15 +30,6 @@ from CommentPreprocessor import preprocess
 from getLicenses import fetch_licenses
 from exactMatch import exactMatcher
 
-'''Python Module to classify license using Damerau Levenshtein distance algorithm
-Input: File from which license needs to be scanned and processed license list (CSV)
-Output: License which is contained in the file.
-Description: It extract comments from the file and after preprocessing,
-              it calculates the damerau_levenshtein_distance and then classify
-              by finding the leadt distance.
-              python dameruLevenDist.py <filename> <processedLicenseList>
-'''
-
 args = None
 
 
@@ -47,12 +38,10 @@ def classifyLicenseDameruLevenDist(filename, licenseList):
   Read the content content of filename, extract the comments and preprocess them.
   Find the Damerau Levenshtein distance between the preprocessed file content
   and the license text.
-  
-  Arguments:
-  filename    -- path of the file to scan
-  licenseList -- path of the preprocessed license list (CSV)
-  
-  Returns the license's shortname
+
+  :param filename: path of the file to scan
+  :param licenseList: path of the preprocessed license list (CSV)
+  :return: Returns the license's short name with least damerau levenshtien distance
   '''
   licenses = fetch_licenses(licenseList)
   if 'processed_text' not in licenses.columns:
@@ -83,7 +72,7 @@ def classifyLicenseDameruLevenDist(filename, licenseList):
 
 
 if __name__ == "__main__":
-  curr_file_dir = os.path.abspath(os.path.dirname(sys.argv[0]))
+  curr_file_dir = os.path.abspath(os.path.dirname(__file__))
   default_processed_license = curr_file_dir + '/../licenses/processedLicenses.csv'
   parser = argparse.ArgumentParser()
   parser.add_argument("inputFile", help="Specify the input file which needs to be scanned")

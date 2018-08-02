@@ -36,8 +36,7 @@ csvColumns = ["shortname", "fullname", "text", "license_header", "url",
 
 
 def download_license(threads=os.cpu_count(), force=False):
-  """
-  Downloads license data from spdx.org.
+  """Downloads license data from spdx.org.
 
   Lists data from https://spdx.org/licenses/licenses.json and check if
   the version is already loaded. If the data already exists, simply skip
@@ -45,7 +44,9 @@ def download_license(threads=os.cpu_count(), force=False):
   <releaseDate>_<version>.csv. For each license, shortname, fullname, text,
   url, deprecated, osi_approved are collected.
 
-  Returns file path if success, None otherwise.
+  :param threads: Number of CPU to be used for downloading. This is done to speed up the process
+  :param force: Bool value if licenses needs to be downloaded forcefully
+  :return: File path if success, None otherwise.
   """
   jsonData = request.urlopen('https://spdx.org/licenses/licenses.json').read()
   jsonData = json.loads(jsonData.decode('utf-8'))

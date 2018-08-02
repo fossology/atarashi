@@ -25,10 +25,13 @@ Input: processed input text, processed license DataFrame
 Output: license short name if exact match is found else -1 if no match
 """
 
-from getLicenses import fetch_licenses
-
 
 def exactMatcher(licenseText, licenses):
+  '''
+  :param licenseText: Processed Input File text
+  :param licenses: Processed License List array
+  :return: License Shortname if exact match found otherwise -1
+  '''
   output = []
   if 'processed_text' not in licenses.columns:
     raise ValueError('The license list does not contain processed_text column.')

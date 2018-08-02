@@ -35,6 +35,11 @@ args = None
 
 
 def license_merger(licenseList, requiredlicenseList):
+  '''
+  :param licenseList: Fossology License List that needs to be merged to requiredlicenseList
+  :param requiredlicenseList: SPDX License List in which Fossology licenses will be merged
+  :return: Path to merged list
+  '''
   my_file = Path(licenseList)
   if not my_file.is_file() or not Path(requiredlicenseList).is_file():
     raise ValueError("Files donot exist. Please check the file paths")
