@@ -31,9 +31,12 @@ from wordFrequencySimilarity import classifyLicenseFreqMatch
 args = None
 
 if __name__ == "__main__":
+  curr_file_dir = os.path.abspath(os.path.dirname(__file__))
+  default_processed_license = curr_file_dir + '/../licenses/processedLicenses.csv'
   parser = argparse.ArgumentParser()
   parser.add_argument("inputFile", help="Specify the input file path to scan")
-  parser.add_argument("processedLicenseList", help="Specify the processed license list file")
+  parser.add_argument("-p", "--processedLicenseList", required=False, default=default_processed_license,
+                      help="Specify the processed license list file")
   parser.add_argument("-a", "--agent_name", required=True,
                       choices=['wordFrequencySimilarity', 'DLD', 'tfidfcosinesim', 'tfidfsumscore', 'Ngram'],
                       help="Name of the agent that needs to be run")

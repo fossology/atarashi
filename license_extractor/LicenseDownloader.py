@@ -26,6 +26,7 @@ import os
 from multiprocessing import Pool as ThreadPool
 from pathlib import Path
 from urllib import request
+import sys
 
 import pandas as pd
 from tqdm import tqdm
@@ -35,8 +36,7 @@ csvColumns = ["shortname", "fullname", "text", "license_header", "url",
 
 
 def download_license(threads=os.cpu_count(), force=False):
-  """
-  Downloads license data from spdx.org.
+  """Downloads license data from spdx.org.
 
   Lists data from https://spdx.org/licenses/licenses.json and check if
   the version is already loaded. If the data already exists, simply skip
@@ -44,7 +44,9 @@ def download_license(threads=os.cpu_count(), force=False):
   <releaseDate>_<version>.csv. For each license, shortname, fullname, text,
   url, deprecated, osi_approved are collected.
 
-  Returns file path if success, None otherwise.
+  :param threads: Number of CPU to be used for downloading. This is done to speed up the process
+  :param force: Bool value if licenses needs to be downloaded forcefully
+  :return: File path if success, None otherwise.
   """
   jsonData = request.urlopen('https://spdx.org/licenses/licenses.json').read()
   jsonData = json.loads(jsonData.decode('utf-8'))
@@ -79,8 +81,6 @@ def download_license(threads=os.cpu_count(), force=False):
                     desc="Licenses processed", total=len(licenses),
                     unit="license"):
       licenseDataFrame = pd.concat([licenseDataFrame, row], sort=False, ignore_index=True)
-
-
 
     licenseDataFrame = licenseDataFrame.drop_duplicates(subset='shortname')
     licenseDataFrame = licenseDataFrame.sort_values('deprecated').drop_duplicates(subset='fullname', keep='first')
@@ -135,4 +135,9 @@ if __name__ == "__main__":
   args = parser.parse_args()
   threads = args.threads
   force = args.force
-  print(download_license(threads, force))
+  result = download_license(threads, force)
+  if result is not None:
+    print(result)
+    sys.exit(0)
+  else:
+    sys.exit(1)

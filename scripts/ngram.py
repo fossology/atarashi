@@ -24,6 +24,7 @@ import argparse
 import os
 import json
 from tqdm import tqdm
+from pathlib import Path
 
 from getLicenses import fetch_licenses
 from multiprocessing import Pool as ThreadPool
@@ -33,10 +34,18 @@ import csv
 
 
 def find_ngrams(input_list, n):
+  '''
+  :return: Zip ngrams of given length n from Input list
+  '''
   return zip(*[input_list[i:] for i in range(n)])
 
 
 def load_database(licenseList):
+  '''
+  Store the unique n-grams N=[2,5,6,7,8] for each license cluster
+  :param licenseList: Processed License List path
+  :return: Return uniqueNgrams array, license cluster array, licenses array
+  '''
   licenses = fetch_licenses(licenseList)
   if 'processed_text' not in licenses.columns:
     raise ValueError('The license list does not contain processed_text column.')
@@ -59,6 +68,10 @@ def load_database(licenseList):
 
 
 def unique_ngrams(uniqueNGram):
+  '''
+  :param uniqueNGram: List of all ngrams of a cluster
+  :return: List/ Array of n-grams that uniquely identify the license cluster
+  '''
   matches = []
 
   for ngram in uniqueNGram['ngrams']:
@@ -73,13 +86,19 @@ def unique_ngrams(uniqueNGram):
 
     if ismatch:
       matches.append(find)
-  # print("Matches", matches)
   return matches
 
 
 if __name__ == '__main__':
+  '''
+  Creates a Ngram_keywords.json in __file__/licenses/ that contains unique ngrams for each license cluster
+  '''
+  curr_file_dir = os.path.abspath(os.path.dirname(__file__))
+  default_processed_license = curr_file_dir + '/../licenses/processedLicenses.csv'
+
   parser = argparse.ArgumentParser()
-  parser.add_argument("processedLicenseList", help="Specify the processed license list file")
+  parser.add_argument("-p", "--processedLicenseList", required=False, default=default_processed_license,
+                      help="Specify the processed license list file")
   parser.add_argument("-t", "--threads", required=False, default=os.cpu_count(),
                       type=int,
                       help="No of threads to use for download. Default: CPU count")
@@ -116,7 +135,7 @@ if __name__ == '__main__':
 
   dir = os.path.dirname(os.path.abspath(__file__))
   dir = os.path.abspath(dir + "/../data/")
-
+  Path(dir).mkdir(exist_ok=True)
   with open(dir + '/Ngram_keywords.json', 'w') as myfile:
     myfile.write(json.dumps(ngram_keywords))
 

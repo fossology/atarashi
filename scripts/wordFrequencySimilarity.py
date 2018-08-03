@@ -23,6 +23,7 @@ __email__ = "amanjain5221@gmail.com"
 import argparse
 import re
 from collections import Counter
+import os
 
 from CommentExtractor import CommentExtract
 from CommentPreprocessor import preprocess
@@ -56,6 +57,10 @@ def initialize(filename, licenseList):
 
 
 def wordFrequency(data):
+  '''
+  Calculates the frequency of each unique word in the file
+  :return: Word frequency Dictionary
+  '''
   # Find word frequency
   match_pattern = re.findall(r'\b[a-z]{3,15}\b', data)
   frequency = Counter()
@@ -65,6 +70,11 @@ def wordFrequency(data):
 
 
 def classifyLicenseFreqMatch(filename, licenseList):
+  '''
+  :param filename: Input file path
+  :param licenseList: Processed License List path
+  :return: License short name with maximum intersection with word frequency of licenses
+  '''
   processedData, licenses = initialize(filename, licenseList)
   if args is not None and args.verbose:
     print("PROCESSED DATA IS ", processedData)
@@ -94,13 +104,13 @@ def classifyLicenseFreqMatch(filename, licenseList):
         if min(licenseWordFreq, processedLicenseWordFreq) > 0:
           tempCount = tempCount + min(licenseWordFreq, processedLicenseWordFreq)
       if args is not None and args.verbose:
-        print(idx, licenses.at[idx,'shortname'], tempCount)
+        print(idx, licenses.at[idx, 'shortname'], tempCount)
       if globalCount < tempCount:
         result = idx
         globalCount = tempCount
     if args is not None and args.verbose:
       print("Result is license with ID", result)
-    return str(licenses.at[result,'shortname'])
+    return str(licenses.at[result, 'shortname'])
 
   else:
     return temp
@@ -108,14 +118,16 @@ def classifyLicenseFreqMatch(filename, licenseList):
 
 if __name__ == "__main__":
   print("The file has been called from main")
+  curr_file_dir = os.path.abspath(os.path.dirname(__file__))
+  default_processed_license = curr_file_dir + '/../licenses/processedLicenses.csv'
   parser = argparse.ArgumentParser()
   parser.add_argument("inputFile", help="Specify the input file which needs to be scanned")
-  parser.add_argument("processedLicenseList",
-                      help="Specify the processed license list file which contains licenses")
+  parser.add_argument("-p", "--processedLicenseList", required=False, default=default_processed_license,
+                      help="Specify the processed license list file")
   parser.add_argument("-v", "--verbose", help="increase output verbosity",
                       action="store_true")
   args = parser.parse_args()
 
   filename = args.inputFile
   licenseList = args.processedLicenseList
-  print("The result from Histogram similarity algo is ", classifyLicenseFreqMatch(filename, licenseList))
+  print("The result from Histogram similarity algorithm is", classifyLicenseFreqMatch(filename, licenseList))

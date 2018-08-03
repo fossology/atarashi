@@ -28,6 +28,9 @@ TAR_FILE_NAME = "Ngram_keywords.json.tar.gz"
 
 
 def unpack_json_tar():
+  '''
+  Unzip the ngram file
+  '''
   dir = os.path.dirname(os.path.abspath(__file__))
   dir = os.path.abspath(dir + "/../data/")
   tarFilePath = Path(os.path.abspath(dir + "/" + TAR_FILE_NAME))

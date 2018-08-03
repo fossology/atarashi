@@ -25,18 +25,16 @@ import os
 import code_comment  # https://github.com/amanjain97/code_comment/
 import tempfile
 
-'''
-Input: filePath in arguments
-Output: temporary file
-Description: This reads all comments from the files types c, cpp, py, go, php, js
-              and put in a temporary file in users OS.
-              python CommentExtractor.py <filePath>
-'''
-
 args = None
 
 
 def CommentExtract(inputFile):
+  '''Extract comments from given input file and return a temp file stored in OS.
+  This reads all comments from the different files types.
+
+  :param inputFile: Location of Input file from which comments needs to be extracted
+  :return: Temp file path from the OS
+  '''
   # output file
   fd, outputFile = tempfile.mkstemp()
 

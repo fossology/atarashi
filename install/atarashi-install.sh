@@ -106,3 +106,31 @@ fi
 echo "Installing Code_comment ..."
 pip install --user -e git+https://github.com/amanjain97/code_comment#egg=code_comment
 pip install --user -r $BASEDIR/../requirements.txt
+
+echo "Downloading Licenses from SPDX ..."
+read -p "Enter number of threads that you want to use (must be atleast 1 or Press Enter to use default): " THREADS
+if [[ ${THREADS} = '' ]]; then
+    spdxLicenseList=$(python $BASEDIR/../license_extractor/LicenseDownloader.py)
+else
+    spdxLicenseList=$(python $BASEDIR/../license_extractor/LicenseDownloader.py -t ${THREADS})
+fi
+if [[ $? = 0 ]]; then
+    echo "Downloaded successfully: ${spdxLicenseList}"
+    echo "Merging Licenses to Fossology License List"
+    python $BASEDIR/../license_extractor/license_merger.py $BASEDIR/../licenses/licenseList.csv $spdxLicenseList
+
+    echo "Creating a preprocessed license list ... "
+    python $BASEDIR/../scripts/LicensePreprocessor.py $spdxLicenseList $BASEDIR/../licenses/processedLicenses.csv
+
+    echo "Setting up NGram.json ..."
+    if [[ ${THREADS} = '' ]]; then
+        python $BASEDIR/../scripts/ngram.py
+    else
+        python $BASEDIR/../scripts/ngram.py -t $THREADS
+    fi
+
+    echo "You are now setup. Please refer to documentation for \"how to use\" or use -h or --help with any module"
+else
+    echo "Failed Downloading"
+fi
+

@@ -22,6 +22,7 @@ __email__ = "amanjain5221@gmail.com"
 
 import argparse
 import time
+import os
 
 from CosineSimNgram import wordFrequency, cosine_similarity
 from getLicenses import fetch_licenses
@@ -31,6 +32,11 @@ MAX_ALLOWED_DISTANCE = 0.97
 
 
 def union_and_find(arr):
+  '''
+  Implememt Union and find algorithm (Graph Algorithm)
+  :param arr: Array of pairs of licenses that should be in same cluster
+  :return: Nested Array of License clusters
+  '''
   arr = map(set, arr)
   unions = []
   for item in arr:
@@ -46,6 +52,10 @@ def union_and_find(arr):
 
 
 def refine_cluster(license_cluster):
+  '''
+  :param license_cluster: Initial license cluster based on the same root license name
+  :return: Refined license cluster array using cosine similarity >= MAX_ALLOWED_DISTANCE (0.97)
+  '''
   cluster = {}
   for key, initial_cluster in license_cluster.items():
     # for every initial_cluster, call cosine sim and union find
@@ -77,6 +87,10 @@ def refine_cluster(license_cluster):
 
 
 def cluster_licenses(licenseList):
+  '''
+  :param licenseList: Processed License List path
+  :return: Array of license short names cluster
+  '''
   licenses = fetch_licenses(licenseList)
   if 'processed_text' not in licenses.columns:
     raise ValueError('The license list does not contain processed_text column.')
@@ -103,8 +117,11 @@ def cluster_licenses(licenseList):
 
 
 if __name__ == "__main__":
+  curr_file_dir = os.path.abspath(os.path.dirname(__file__))
+  default_processed_license = curr_file_dir + '/../licenses/processedLicenses.csv'
   parser = argparse.ArgumentParser()
-  parser.add_argument("processedLicenseList", help="Specify the processed license list file")
+  parser.add_argument("-p", "--processedLicenseList", required=False, default=default_processed_license,
+                      help="Specify the processed license list file")
   parser.add_argument("-v", "--verbose", help="increase output verbosity",
                       action="store_true")
   args = parser.parse_args()
