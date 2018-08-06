@@ -29,9 +29,8 @@ class LicenseLoader(object):
   @staticmethod
   def fetch_licenses(licenseList):  # common
     '''
-    Fetch the CSV contents as padnas.DataFrame and return it
-    
-    licenseList Path to the license csv
+    :param licenseList: Path to license list (CSV)
+    :return: Return the CSV contents as padnas.DataFrame
     '''
     licenseDataFrame = pd.read_csv(licenseList)
     licenseDataFrame = licenseDataFrame.replace(np.nan, '', regex = True)

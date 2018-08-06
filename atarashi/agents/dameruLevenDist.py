@@ -27,15 +27,6 @@ from atarashi.agents.atarashiAgent import AtarashiAgent, exactMatcher
 __author__ = "Aman Jain"
 __email__ = "amanjain5221@gmail.com"
 
-'''Python Module to classify license using Damerau Levenshtein distance algorithm
-Input: File from which license needs to be scanned and processed license list (CSV)
-Output: License which is contained in the file.
-Description: It extract comments from the file and after preprocessing,
-              it calculates the damerau_levenshtein_distance and then classify
-              by finding the leadt distance.
-              python dameruLevenDist.py <filename> <processedLicenseList>
-'''
-
 
 class DameruLevenDist(AtarashiAgent):
 
@@ -44,12 +35,8 @@ class DameruLevenDist(AtarashiAgent):
     Read the content content of filename, extract the comments and preprocess them.
     Find the Damerau Levenshtein distance between the preprocessed file content
     and the license text.
-
-    Arguments:
-    filename    -- path of the file to scan
-    licenseList -- path of the preprocessed license list (CSV)
-
-    Returns the license's shortname
+    :param filePath: Path of the file to scan
+    :return: Returns the license's short name with least damerau levenshtien distance
     '''
     processedData = super().loadFile(filePath)
 
@@ -75,15 +62,15 @@ class DameruLevenDist(AtarashiAgent):
 if __name__ == "__main__":
   print("The file has been run directly")
   parser = argparse.ArgumentParser()
-  parser.add_argument("inputFile", help = "Specify the input file which needs to be scanned")
+  parser.add_argument("inputFile", help="Specify the input file which needs to be scanned")
   parser.add_argument("processedLicenseList",
-                      help = "Specify the processed license list file which contains licenses")
-  parser.add_argument("-v", "--verbose", help = "increase output verbosity",
-                      action = "count", default = 0)
+                      help="Specify the processed license list file which contains licenses")
+  parser.add_argument("-v", "--verbose", help="increase output verbosity",
+                      action="count", default=0)
   args = parser.parse_args()
   filename = args.inputFile
   licenseList = args.processedLicenseList
   verbose = args.verbose
 
-  scanner = DameruLevenDist(licenseList, verbose = verbose)
+  scanner = DameruLevenDist(licenseList, verbose=verbose)
   print("License Detected using Dameru Leven Distance: " + str(scanner.scan(filename)))

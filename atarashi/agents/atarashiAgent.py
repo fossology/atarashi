@@ -29,7 +29,7 @@ from atarashi.license.licenseLoader import LicenseLoader
 class AtarashiAgent(object):
   __metaclass__ = ABCMeta
 
-  def __init__(self, licenseList, verbose = 0):
+  def __init__(self, licenseList, verbose=0):
     if isinstance(licenseList, str):
       self.licenseList = LicenseLoader.fetch_licenses(licenseList)
     else:
@@ -56,10 +56,11 @@ class AtarashiAgent(object):
 
 
 def exactMatcher(licenseText, licenses):
-  """
-  Input: processed input text, processed license DataFrame
-  Output: license short name if exact match is found else -1 if no match
-  """
+  '''
+  :param licenseText: Processed and extracted input text
+  :param licenses: Processed licenses pandas data frame
+  :return: License short name if exact match is found else -1 if no match
+  '''
   output = []
   if 'processed_text' not in licenses.columns:
     raise ValueError('The license list does not contain processed_text column.')

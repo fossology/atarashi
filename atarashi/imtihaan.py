@@ -17,15 +17,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """
 import argparse
-import json
 import os
-from sys import exit
 import sys
+from sys import exit
 
 from atarashi.agents.cosineSimNgram import NgramAgent
 from atarashi.agents.dameruLevenDist import DameruLevenDist
 from atarashi.agents.tfidf import TFIDF
-from atarashi.license.licenseLoader import LicenseLoader
 
 __author__ = "Aman Jain"
 __email__ = "amanjain5221@gmail.com"
@@ -33,35 +31,24 @@ __email__ = "amanjain5221@gmail.com"
 args = None
 
 if __name__ == "__main__":
-  """
-  Iterate on all files in directory 
-  expected output is the name 
-  """
   parser = argparse.ArgumentParser()
-  parser.add_argument("processedLicenseList", help = "Specify the processed license list file which contains licenses")
-  parser.add_argument("AgentName", choices = ['DLD', 'tfidf', 'Ngram'],
-                      help = "Name of the agent that needs to be run")
-  parser.add_argument("TestFiles", help = "Specify the folder path that needs to be tested")
-  parser.add_argument("-s", "--similarity", required = False, default = "CosineSim",
-                      choices = ["ScoreSim", "CosineSim", "DiceSim", "BigramCosineSim"],
-                      help = "Specify the similarity algorithm that you want."
-                      " First 2 are for TFIDF and last 3 are for Ngram")
-  parser.add_argument("-j", "--ngram_json", required = False,
-                      help = "Specify the location of Ngram JSON (for Ngram agent only)")
-  parser.add_argument("-v", "--verbose", help = "increase output verbosity", action = "store_true")
+  parser.add_argument("processedLicenseList", help="Specify the processed license list file which contains licenses")
+  parser.add_argument("AgentName", choices=['DLD', 'tfidf', 'Ngram'],
+                      help="Name of the agent that needs to be run")
+  parser.add_argument("TestFiles", help="Specify the folder path that needs to be tested")
+  parser.add_argument("-s", "--similarity", required=False, default="CosineSim",
+                      choices=["ScoreSim", "CosineSim", "DiceSim", "BigramCosineSim"],
+                      help="Specify the similarity algorithm that you want."
+                           " First 2 are for TFIDF and last 3 are for Ngram")
+  parser.add_argument("-j", "--ngram_json", required=False,
+                      help="Specify the location of Ngram JSON (for Ngram agent only)")
+  parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
   args = parser.parse_args()
   agent_name = args.AgentName
   processedLicense = args.processedLicenseList
   testFilePath = args.TestFiles
   similarity = args.similarity
   ngram_json = args.ngram_json
-
-#   if isinstance(processedLicense, str):
-#     processedLicense = LicenseLoader.fetch_licenses(processedLicense)
-#
-#   if isinstance(ngram_json, str):
-#     with open(os.path.abspath(ngram_json), 'r') as file:
-#       ngram_json = json.load(file)
 
   pathname = os.path.dirname(sys.argv[0])
   testFilePath = os.path.abspath(testFilePath)
@@ -79,7 +66,7 @@ if __name__ == "__main__":
       print("Please choose similarity from {CosineSim,ScoreSim}")
       exit(-1)
   elif agent_name == "Ngram":
-    scanner = NgramAgent(processedLicense, ngramJson = ngram_json)
+    scanner = NgramAgent(processedLicense, ngramJson=ngram_json)
     if similarity == "CosineSim":
       scanner.setSimAlgo(NgramAgent.NgramAlgo.cosineSim)
     elif similarity == "DiceSim":
@@ -95,5 +82,5 @@ if __name__ == "__main__":
       filepath = subdir + os.sep + file
       print(filepath.split('tests/')[1])
       actual_license = filepath.split('/')[-1].split('.c')[0]
-      result = str(scanner.scan(filepath))
-      print("Actual License: " + actual_license + "\nResult: " + result + "\n")
+      result = scanner.scan(filepath)
+      print("Actual License: " + actual_license + "\nResult: " + str(result) + "\n")

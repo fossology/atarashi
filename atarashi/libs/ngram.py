@@ -34,10 +34,16 @@ globalLicenseList = ""
 
 
 def find_ngrams(input_list, n):
+  '''Zip ngrams of given length n from Input list'''
   return zip(*[input_list[i:] for i in range(n)])
 
 
-def load_database(licenseList, verbose = 0):
+def load_database(licenseList, verbose=0):
+  '''
+  Store the unique n-grams N=[2,5,6,7,8] for each license cluster
+  :param licenseList: Processed License List path
+  :return: Return uniqueNgrams array, license cluster array, licenses array
+  '''
   if isinstance(licenseList, str):
     licenses = LicenseLoader.fetch_licenses(licenseList)
     if 'processed_text' not in licenses.columns:
@@ -63,6 +69,10 @@ def load_database(licenseList, verbose = 0):
 
 
 def unique_ngrams(uniqueNGram):
+  '''
+  :param uniqueNGram: List of all ngrams of a cluster
+  :return: List/ Array of n-grams that uniquely identify the license cluster
+  '''
   matches = []
 
   filtered = [x for x in globalLicenseList if x[0] not in uniqueNGram['shortname']]
@@ -77,12 +87,22 @@ def unique_ngrams(uniqueNGram):
 
     if ismatch:
       matches.append(find)
-  # print("Matches", matches)
   return matches
 
 
-def createNgrams(licenseList, ngramJsonLoc, threads = os.cpu_count(),
-                 verbose = 0):
+def createNgrams(licenseList, ngramJsonLoc, threads=os.cpu_count(), verbose=0):
+  '''
+  Creates a Ngram_keywords.json in location specified by user that contains unique ngrams for each license cluster
+
+  :param licenseList: Processed License List (CSV)
+  :param ngramJsonLoc: Specify N-Gram Json File location
+  :param threads: Number of CPU to be used for creating n-grams. This is done to speed up the process.
+  :param verbose: Specify if verbose mode is on or not (Default is Off/ None)
+  :return: Returns
+    - n-gram json file location,
+    - Array - matched_output (Licenses that has non-zero unique n-gram identifiers)
+    - Array - no_keyword_matched (licenses woth zero unique n-gram identifiers)
+  '''
   uniqueNGrams, cluster_arr, licenses = load_database(licenseList, verbose)
   no_keyword_matched = []
   matched_output = []
@@ -91,12 +111,10 @@ def createNgrams(licenseList, ngramJsonLoc, threads = os.cpu_count(),
   cpuCount = os.cpu_count()
   threads = cpuCount * 2 if threads > cpuCount * 2 else threads
   pool = ThreadPool(threads)
-  zip_ngrams = zip(list(range(len(cluster_arr))), uniqueNGrams)
 
-  globalLicenseList = licenseList
   for idx, row in enumerate(tqdm(pool.imap_unordered(unique_ngrams, uniqueNGrams),
-                                 desc = "Licenses processed", total = len(cluster_arr),
-                                 unit = "license")):
+                                 desc="Licenses processed", total=len(cluster_arr),
+                                 unit="license")):
 
     matched_output.append([str(uniqueNGrams[idx]['shortname']), len(row)])
     if len(row) == 0:
@@ -110,7 +128,7 @@ def createNgrams(licenseList, ngramJsonLoc, threads = os.cpu_count(),
   ngramJsonLoc = os.path.abspath(ngramJsonLoc)
   folder = os.path.dirname(ngramJsonLoc)
 
-  Path(folder).mkdir(exist_ok = True)
+  Path(folder).mkdir(exist_ok=True)
   with open(ngramJsonLoc, 'w') as myfile:
     myfile.write(json.dumps(ngram_keywords))
   return ngramJsonLoc, matched_output, no_keyword_matched
@@ -118,14 +136,14 @@ def createNgrams(licenseList, ngramJsonLoc, threads = os.cpu_count(),
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
-  parser.add_argument("processedLicenseList", help = "Specify the processed license list file")
-  parser.add_argument("ngramJson", help = "Specify the location to store "
-                      "NGRAM JSON")
-  parser.add_argument("-t", "--threads", required = False, default = os.cpu_count(),
-                      type = int,
-                      help = "No of threads to use for download. Default: CPU count")
-  parser.add_argument("-v", "--verbose", help = "increase output verbosity",
-                      action = "count", default = 0)
+  parser.add_argument("processedLicenseList", help="Specify the processed license list file")
+  parser.add_argument("ngramJson", help="Specify the location to store "
+                                        "NGRAM JSON")
+  parser.add_argument("-t", "--threads", required=False, default=os.cpu_count(),
+                      type=int,
+                      help="No of threads to use for download. Default: CPU count")
+  parser.add_argument("-v", "--verbose", help="increase output verbosity",
+                      action="count", default=0)
   args = parser.parse_args()
 
   licenseList = args.processedLicenseList
@@ -133,7 +151,7 @@ if __name__ == '__main__':
   ngramJsonLoc = args.ngramJson
   verbose = args.verbose
 
-  createNgrams(licenseList, ngramJsonLoc, threads, verbose = verbose)
+  createNgrams(licenseList, ngramJsonLoc, threads, verbose=verbose)
   if verbose > 0:
     print(matched_output)
     print("licenses with no unique keywords")

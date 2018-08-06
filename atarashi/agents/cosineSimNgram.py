@@ -34,13 +34,12 @@ __email__ = "amanjain5221@gmail.com"
 
 
 class NgramAgent(AtarashiAgent):
-
   class NgramAlgo(Enum):
     cosineSim = 1
     diceSim = 2
     bigramCosineSim = 3
 
-  def __init__(self, licenseList, ngramJson, algo = NgramAlgo.bigramCosineSim):
+  def __init__(self, licenseList, ngramJson, algo=NgramAlgo.bigramCosineSim):
     super().__init__(licenseList)
     self.simType = algo
     if isinstance(ngramJson, str):
@@ -52,6 +51,11 @@ class NgramAgent(AtarashiAgent):
       raise ValueError("Set the ngramJson as either file path or json object")
 
   def __Ngram_guess(self, processedData):
+    '''
+    :param processedData: Processed Data form input file
+    :return: Returns possible licenses contained in the input file based
+              on matching unique N-grams from Ngram_keywords.json
+    '''
     initial_guess = []
 
     for keywords in self.ngramJson:
@@ -68,14 +72,31 @@ class NgramAgent(AtarashiAgent):
         })
     if self.verbose > 0:
       print("Length of guess using ngram identifers ", len(initial_guess))
-      initial_guess.sort(key = lambda x: x['sim_score'], reverse = True)
+      initial_guess.sort(key=lambda x: x['sim_score'], reverse=True)
       print("INITIAL GUESS WITH NGRAM IDENTIFIER", initial_guess)
     return initial_guess
 
   def __bigram_tokenize(self, s):
+    '''
+    :param string: Input string to create tokens
+    :return: Array of bi-gram tokens
+    '''
     return [s[i:i + 2] for i in range(len(s) - 1)]
 
   def scan(self, inputFile):
+    '''
+    :param inputFile: Input file path that needs to be scanned
+    :return: Array of JSON with the output of scan of the file.
+      +------------+-----------------------------------------------------------+
+      | shortname  | Short name of the license                                 |
+      +------------+-----------------------------------------------------------+
+      | sim_type   | Type of similarity from which the result is generated     |
+      +------------+-----------------------------------------------------------+
+      | sim_score  | Similarity score for the algorithm used mentioned above   |
+      +------------+-----------------------------------------------------------+
+      | desc       | Description/ comments for the similarity measure          |
+      +------------+-----------------------------------------------------------+
+    '''
     processedData = super().loadFile(inputFile)
     matches = initial_match(self.commentFile, processedData, self.licenseList)
 
@@ -93,15 +114,15 @@ class NgramAgent(AtarashiAgent):
     all_guesses = unique([l['shortname'] for l in matches])
     self.licenseList = self.licenseList[(self.licenseList.shortname.isin(ngram_guesses)) |
                                         (self.licenseList.shortname.isin(all_guesses))]
-    self.licenseList.sort_values('shortname').reset_index(drop = True)
+    self.licenseList.sort_values('shortname').reset_index(drop=True)
 
     for idx in range(len(self.licenseList)):
 
       if self.simType == self.NgramAlgo.cosineSim:
         # cosine similarity with unigram
         cosineSim = cosine_similarity(
-          wordFrequency(self.licenseList.iloc[idx]['processed_text'].split(" ")),
-          wordFrequency(processedData.split(" ")))
+            wordFrequency(self.licenseList.iloc[idx]['processed_text'].split(" ")),
+            wordFrequency(processedData.split(" ")))
         if cosineSim >= 0.6:
           Cosine_matches.append({
             'shortname': self.licenseList.iloc[idx]['shortname'],
@@ -114,7 +135,8 @@ class NgramAgent(AtarashiAgent):
 
       elif self.simType == self.NgramAlgo.diceSim:
         # dice similarity
-        diceSim = textdistance.sorensen(self.licenseList.iloc[idx]['processed_text'].split(" "), processedData.split(" "))
+        diceSim = textdistance.sorensen(self.licenseList.iloc[idx]['processed_text'].split(" "),
+                                        processedData.split(" "))
         if diceSim >= 0.6:
           Dice_matches.append({
             'shortname': self.licenseList.iloc[idx]['shortname'],
@@ -127,8 +149,8 @@ class NgramAgent(AtarashiAgent):
 
       elif self.simType == self.NgramAlgo.bigramCosineSim:
         bigram_cosine_sim = cosine_similarity(
-          wordFrequency(self.__bigram_tokenize(self.licenseList.iloc[idx]['processed_text'])),
-          wordFrequency(self.__bigram_tokenize(processedData)))
+            wordFrequency(self.__bigram_tokenize(self.licenseList.iloc[idx]['processed_text'])),
+            wordFrequency(self.__bigram_tokenize(processedData)))
         if bigram_cosine_sim >= 0.9:
           Bigram_cosine_matches.append({
             'shortname': self.licenseList.iloc[idx]['shortname'],
@@ -137,7 +159,7 @@ class NgramAgent(AtarashiAgent):
             'description': ''
           })
           if self.verbose > 0:
-            print("Bigram Cosine Sim ", str(bigram_cosine_sim), licenses.iloc[idx]['shortname'])
+            print("Bigram Cosine Sim ", str(bigram_cosine_sim), self.licenseList.iloc[idx]['shortname'])
 
     if self.simType == self.NgramAlgo.cosineSim and len(Cosine_matches) > 0:
       matches = list(itertools.chain(matches, Cosine_matches))
@@ -148,7 +170,7 @@ class NgramAgent(AtarashiAgent):
     if self.simType == self.NgramAlgo.bigramCosineSim and len(Bigram_cosine_matches) > 0:
       matches = list(itertools.chain(matches, Bigram_cosine_matches))
 
-    matches.sort(key = lambda x: x['sim_score'], reverse = True)
+    matches.sort(key=lambda x: x['sim_score'], reverse=True)
     return matches
 
   def getSimAlgo(self):
@@ -161,14 +183,14 @@ class NgramAgent(AtarashiAgent):
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
-  parser.add_argument("processedLicenseList", help = "Specify the processed license list file")
-  parser.add_argument("ngramJson", help = "Specify the location of NGRAM JSON")
-  parser.add_argument("inputFile", help = "Specify the input file which needs to be scanned")
-  parser.add_argument("-s", "--similarity", required = False, default = "BigramCosineSim",
-                      choices = ["CosineSim", "DiceSim", "BigramCosineSim"],
-                      help = "Specify the similarity algorithm that you want")
-  parser.add_argument("-v", "--verbose", help = "increase output verbosity",
-                      action = 'count', default = 0)
+  parser.add_argument("processedLicenseList", help="Specify the processed license list file")
+  parser.add_argument("ngramJson", help="Specify the location of NGRAM JSON")
+  parser.add_argument("inputFile", help="Specify the input file which needs to be scanned")
+  parser.add_argument("-s", "--similarity", required=False, default="BigramCosineSim",
+                      choices=["CosineSim", "DiceSim", "BigramCosineSim"],
+                      help="Specify the similarity algorithm that you want")
+  parser.add_argument("-v", "--verbose", help="increase output verbosity",
+                      action='count', default=0)
   args = parser.parse_args()
 
   licenseList = args.processedLicenseList
@@ -177,7 +199,7 @@ if __name__ == "__main__":
   simType = args.similarity
   verbose = args.verbose
 
-  scanner = NgramAgent(licenseList, ngramJson = ngramJsonLoc, verbose = verbose)
+  scanner = NgramAgent(licenseList, ngramJson=ngramJsonLoc, verbose=verbose)
   if simType == "CosineSim":
     scanner.setSimAlgo(NgramAgent.NgramAlgo.cosineSim)
   elif simType == "DiceSim":

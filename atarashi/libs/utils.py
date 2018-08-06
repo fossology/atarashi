@@ -31,6 +31,9 @@ TAR_FILE_NAME = "Ngram_keywords.json.tar.gz"
 
 
 def unpack_json_tar():
+  '''
+  Unzip the ngram file
+  '''
   dir = os.path.dirname(os.path.abspath(__file__))
   dir = os.path.abspath(dir + "/../data/")
   tarFilePath = Path(os.path.abspath(dir + "/" + TAR_FILE_NAME))
@@ -42,6 +45,11 @@ def unpack_json_tar():
 
 
 def wordFrequency(data):
+  '''
+  Calculates the frequency of each unique word in the file
+  :param data: Processed and Extracted text from the input file
+  :return: Word frequency Dictionary
+  '''
   frequency = Counter()
   for word in data:
     frequency[word] += 1
@@ -49,15 +57,21 @@ def wordFrequency(data):
 
 
 def l2_norm(a):
+  ''' Scalar value of word frequency array (vector)'''
   return math.sqrt(dot(a, a))
 
 
 def ngram_l2_norm(a):
+  ''' Scalar value of word frequency dictionary'''
   a = [value for key, value in a.items()]
   return l2_norm(a)
 
 
 def cosine_similarity(a, b):
+  '''
+  `https://blog.nishtahir.com/2015/09/19/fuzzy-string-matching-using-cosine-similarity/`
+  :return: Cosine similarity value of two word frequency dictionaries
+  '''
   dot_product = 0
   for key, count in a.items():
     if key in b:

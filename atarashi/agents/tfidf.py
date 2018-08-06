@@ -42,11 +42,15 @@ class TFIDF(AtarashiAgent):
     scoreSim = 1
     cosineSim = 2
 
-  def __init__(self, licenseList, algo = TfidfAlgo.cosineSim):
+  def __init__(self, licenseList, algo=TfidfAlgo.cosineSim):
     super().__init__(licenseList)
     self.algo = algo
 
   def __cosine_similarity(self, a, b):
+    '''
+    `https://blog.nishtahir.com/2015/09/19/fuzzy-string-matching-using-cosine-similarity/`
+    :return: Cosine similarity value of two word frequency arrays
+    '''
     dot_product = dot(a, b)
     temp = l2_norm(a) * l2_norm(b)
     if temp == 0:
@@ -55,6 +59,11 @@ class TFIDF(AtarashiAgent):
       return dot_product / temp
 
   def __tfidfsumscore(self, inputFile):
+    '''
+    TF-IDF Sum Score Algorithm. Used TfidfVectorizer to implement it.
+    :param inputFile: Input file path
+    :return: Sorted array of JSON of scanner results with sim_type as __tfidfsumscore
+    '''
     processedData1 = super().loadFile(inputFile)
     matches = initial_match(self.commentFile, processedData1, self.licenseList)
 
@@ -65,16 +74,16 @@ class TFIDF(AtarashiAgent):
 
     all_documents = self.licenseList['processed_text'].tolist()
     all_documents.append(processedData1)
-    sklearn_tfidf = TfidfVectorizer(min_df = 0, use_idf = True, smooth_idf = True,
-                                    sublinear_tf = True, tokenizer = tokenize,
-                                    vocabulary = processedData)
+    sklearn_tfidf = TfidfVectorizer(min_df=0, use_idf=True, smooth_idf=True,
+                                    sublinear_tf=True, tokenizer=tokenize,
+                                    vocabulary=processedData)
 
     sklearn_representation = sklearn_tfidf.fit_transform(all_documents)
 
     score_arr = []
     result = 0
     for counter, value in enumerate(sklearn_representation.toarray()[:len(sklearn_representation.toarray()) - 1],
-                                    start = 0):
+                                    start=0):
       sim_score = sum(value)
       score_arr.append({
         'shortname': self.licenseList.iloc[result]['shortname'],
@@ -82,14 +91,19 @@ class TFIDF(AtarashiAgent):
         'sim_score': sim_score,
         'desc': "Score can be greater than 1 also"
       })
-    score_arr.sort(key = lambda x: x['sim_score'], reverse = True)
+    score_arr.sort(key=lambda x: x['sim_score'], reverse=True)
     matches = list(itertools.chain(matches, score_arr[:5]))
-    matches.sort(key = lambda x: x['sim_score'], reverse = True)
+    matches.sort(key=lambda x: x['sim_score'], reverse=True)
     if self.verbose > 0:
       print("time taken is " + str(time.time() - startTime) + " sec")
     return matches
 
   def __tfidfcosinesim(self, inputFile):
+    '''
+    TF-IDF Cosine Similarity Algorithm. Used TfidfVectorizer to implement it.
+    :param inputFile: Input file path
+    :return: Sorted array of JSON of scanner results with sim_type as __tfidfcosinesim
+    '''
     processedData1 = super().loadFile(inputFile)
     matches = initial_match(self.commentFile, processedData1, self.licenseList)
 
@@ -97,12 +111,12 @@ class TFIDF(AtarashiAgent):
 
     all_documents = self.licenseList['processed_text'].tolist()
     all_documents.append(processedData1)
-    sklearn_tfidf = TfidfVectorizer(min_df = 0, use_idf = True, smooth_idf = True, sublinear_tf = True, tokenizer = tokenize)
+    sklearn_tfidf = TfidfVectorizer(min_df=0, use_idf=True, smooth_idf=True, sublinear_tf=True, tokenizer=tokenize)
 
     sklearn_representation = sklearn_tfidf.fit_transform(all_documents)
 
     for counter, value in enumerate(sklearn_representation.toarray()[:len(sklearn_representation.toarray()) - 1],
-                                    start = 0):
+                                    start=0):
       sim_score = self.__cosine_similarity(value, sklearn_representation.toarray()[-1])
       if sim_score >= 0.8:
         matches.append({
@@ -111,7 +125,7 @@ class TFIDF(AtarashiAgent):
           'sim_score': sim_score,
           'desc': ''
         })
-    matches.sort(key = lambda x: x['sim_score'], reverse = True)
+    matches.sort(key=lambda x: x['sim_score'], reverse=True)
     if self.verbose > 0:
       print("time taken is " + str(time.time() - startTime) + " sec")
     return matches
@@ -133,17 +147,16 @@ class TFIDF(AtarashiAgent):
 
 
 if __name__ == "__main__":
-  print("The main file is called")
   parser = argparse.ArgumentParser()
-  parser.add_argument("-s", "--tfidf_similarity", required = False,
-                      default = "ScoreSim",
-                      choices = ["CosineSim", "ScoreSim"],
-                      help = "Specify the similarity algorithm that you want")
-  parser.add_argument("inputFile", help = "Specify the input file which needs to be scanned")
+  parser.add_argument("-s", "--tfidf_similarity", required=False,
+                      default="ScoreSim",
+                      choices=["CosineSim", "ScoreSim"],
+                      help="Specify the similarity algorithm that you want")
+  parser.add_argument("inputFile", help="Specify the input file which needs to be scanned")
   parser.add_argument("processedLicenseList",
-                      help = "Specify the processed license list file which contains licenses")
-  parser.add_argument("-v", "--verbose", help = "increase output verbosity",
-                      action = "count", default = 0)
+                      help="Specify the processed license list file which contains licenses")
+  parser.add_argument("-v", "--verbose", help="increase output verbosity",
+                      action="count", default=0)
   args = parser.parse_args()
 
   tfidf_similarity = args.tfidf_similarity
@@ -151,7 +164,7 @@ if __name__ == "__main__":
   licenseList = args.processedLicenseList
   verbose = args.verbose
 
-  scanner = TFIDF(licenseList, verbose = verbose)
+  scanner = TFIDF(licenseList, verbose=verbose)
   if tfidf_similarity == "CosineSim":
     scanner.setSimAlgo(TFIDF.TfidfAlgo.cosineSim)
     print("License Detected using TF-IDF algorithm + cosine similarity " + str(scanner.scan(filename)))

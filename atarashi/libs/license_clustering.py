@@ -30,6 +30,11 @@ MAX_ALLOWED_DISTANCE = 0.97
 
 
 def union_and_find(arr):
+  '''
+  Implememt Union and find algorithm (Graph Algorithm)
+  :param arr: Array of pairs of licenses that should be in same cluster
+  :return: Nested Array of License clusters
+  '''
   arr = map(set, arr)
   unions = []
   for item in arr:
@@ -44,7 +49,11 @@ def union_and_find(arr):
   return unions
 
 
-def refine_cluster(license_cluster, verbose = 0):
+def refine_cluster(license_cluster, verbose=0):
+  '''
+  :param license_cluster: Initial license cluster based on the same root license name
+  :return: Refined license cluster array using cosine similarity >= MAX_ALLOWED_DISTANCE (0.97)
+  '''
   cluster = {}
   for key, initial_cluster in license_cluster.items():
     # for every initial_cluster, call cosine sim and union find
@@ -75,7 +84,11 @@ def refine_cluster(license_cluster, verbose = 0):
   return result
 
 
-def cluster_licenses(licenseList, verbose = 0):
+def cluster_licenses(licenseList, verbose=0):
+  '''
+  :param licenseList: Processed License List path
+  :return: Array of license short names cluster
+  '''
   if isinstance(licenseList, str):
     licenses = LicenseLoader.fetch_licenses(licenseList)
     if 'processed_text' not in licenses.columns:
@@ -106,9 +119,9 @@ def cluster_licenses(licenseList, verbose = 0):
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
-  parser.add_argument("processedLicenseList", help = "Specify the processed license list file")
-  parser.add_argument("-v", "--verbose", help = "increase output verbosity",
-                      action = "count", default = 0)
+  parser.add_argument("processedLicenseList", help="Specify the processed license list file")
+  parser.add_argument("-v", "--verbose", help="increase output verbosity",
+                      action="count", default=0)
   args = parser.parse_args()
 
   licenseList = args.processedLicenseList

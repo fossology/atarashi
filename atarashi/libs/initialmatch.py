@@ -24,11 +24,15 @@ import itertools
 
 
 def HeadersNgramSim(header, processedData):
-  """
-  make array of ngrams
-  check with the processed data how much are matching
+  '''
+  Creates array of ngrams
+  Check with the processed data how much are matching
   sim_score = matches/ count of ngrams
-  """
+
+  :param header: License Header
+  :param processedData: Input file extracted and processed data
+  :return: Array of JSON with scanning results
+  '''
   header = header.split(" ")
   ngrams = []
   for i in range(3, 8):
@@ -44,10 +48,13 @@ def HeadersNgramSim(header, processedData):
 
 
 def spdx_identifer(data, shortnames):
-  """
+  '''
   Identify SPDX-License-Identifier
   Make sure the identifier must be present in Fossology merged license list
-  """
+  :param data: Input File data
+  :param shortnames: Array of shortnames (SPDX-ID)
+  :return: Array of JSON with scanning results
+  '''
   data = data.lower()  # preprocessing of data
   shortnamesLow = [shortname.lower() for shortname in shortnames]
   tokenized_data = data.split('\n')
@@ -72,8 +79,15 @@ def spdx_identifer(data, shortnames):
 
 
 def initial_match(filePath, processedData, licenses):
+  '''
+  :param inputFile: Input file path
+  :param licenseList: Processed License List path
+  :return: Array of JSON with scanning results from spdx_identifer and HeadersNgramSim
+  '''
+
   with open(filePath) as file:
     raw_data = file.read()
+
   # Match SPDX identifiers
   spdx_identifiers = spdx_identifer(raw_data, licenses['shortname'])
 

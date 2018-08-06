@@ -26,19 +26,15 @@ import re
 from atarashi.agents.atarashiAgent import AtarashiAgent, exactMatcher
 from atarashi.libs.utils import wordFrequency
 
-'''Python Module to classify license using histogram similarity algorithm
-Input: File from which license needs to be scanned and license list (CSV)
-Output: License which is contained in the file.
-Description: It extract comments from the file and after preprocessing,
-              it creates a frequency array of words and then classify it
-              by finding the best match.
-              python wordFrequencySimilarity.py <filename> <licenseList>
-'''
-
 
 class WordFrequencySimilarity(AtarashiAgent):
 
   def scan(self, filePath):
+    '''
+    Python Module to classify license using histogram similarity algorithm
+    :param filePath: Input file path that needs to be scanned
+    :return: License short name with maximum intersection with word frequency of licenses
+    '''
     processedData = super().loadFile(filePath)
     if self.verbose > 0:
       print("PROCESSED DATA IS ", processedData)

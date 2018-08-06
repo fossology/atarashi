@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """
+
 import argparse
 import code_comment  # https://github.com/amanjain97/code_comment/
 import os
@@ -26,16 +27,6 @@ import tempfile
 __author__ = "Aman Jain"
 __email__ = "amanjain5221@gmail.com"
 
-"""Rules to apply:
-All whitespace should be treated as a single blank space
-All upper case and lower case letters should be treated as lower case letters
-"(c)", or "Copyright" should be considered equivalent and interchangeable
-Any hyphen, dash, en dash, em dash, or other variation should be considered
-equivalent.
-Ignore the list item for matching purposes (eg. bullets, numbered lists)
-
-"""
-
 args = None
 
 
@@ -43,6 +34,16 @@ class CommentPreprocessor(object):
 
   @staticmethod
   def preprocess(data):
+    '''
+    - All whitespace should be treated as a single blank space
+    - All upper case and lower case letters should be treated as lower case letters "(c)", or "Copyright" should be
+      considered equivalent and interchangeable
+    - Any hyphen, dash, en dash, em dash, or other variation should be considered equivalent.
+    - Remove the exceptional characters
+
+    :param data: Input file in string format
+    :return: Pre-process the data according to the rules mentioned above
+    '''
     data = data.lower()
     data = re.sub(r'copyright|\(c\)|\u00a9', 'copyright', data)
     data = re.sub(r'[{}]'.format(string.punctuation), ' ', data)
@@ -54,7 +55,12 @@ class CommentPreprocessor(object):
 
   @staticmethod
   def extract(inputFile):
-    # output file
+    '''
+    Extract comments from given input file and return a temp file stored in OS.
+    This reads all comments from the different files types.
+    :param inputFile: Location of Input file from which comments needs to be extracted
+    :return: Temp file path from the OS
+    '''
     fd, outputFile = tempfile.mkstemp()
 
     fileType = inputFile.split('.')[-1]
@@ -63,8 +69,8 @@ class CommentPreprocessor(object):
                                'hpp', 'cc', 'css', 'html']
 
     # Remove BOM UTF-8 at the beginning of file and ignore errors
-    file = open(inputFile, mode = 'r', encoding = 'utf-8-sig', errors = 'ignore').read()
-    open(inputFile, mode = 'w', encoding = 'utf-8').write(file)
+    file = open(inputFile, mode='r', encoding='utf-8-sig', errors='ignore').read()
+    open(inputFile, mode='w', encoding='utf-8').write(file)
 
     with open(outputFile, 'w') as outFile:
       # if the file extension is supported
@@ -89,12 +95,12 @@ class CommentPreprocessor(object):
 if __name__ == "__main__":
   print("The file has been run directly")
   parser = argparse.ArgumentParser()
-  parser.add_argument("-p", "--process", required = True,
-                      choices = ['preprocess', 'extract'],
-                      help = "Which process you want to run")
-  parser.add_argument("inputFile", help = "Specify the input file which needs to be processed")
-  parser.add_argument("-v", "--verbose", help = "increase output verbosity",
-                      action = "count", default = 0)
+  parser.add_argument("-p", "--process", required=True,
+                      choices=['preprocess', 'extract'],
+                      help="Which process you want to run")
+  parser.add_argument("inputFile", help="Specify the input file which needs to be processed")
+  parser.add_argument("-v", "--verbose", help="increase output verbosity",
+                      action="count", default=0)
   args = parser.parse_args()
   process = args.process
   inputFile = args.inputFile
