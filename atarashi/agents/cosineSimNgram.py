@@ -87,15 +87,16 @@ class NgramAgent(AtarashiAgent):
     '''
     :param inputFile: Input file path that needs to be scanned
     :return: Array of JSON with the output of scan of the file.
-      +------------+-----------------------------------------------------------+
-      | shortname  | Short name of the license                                 |
-      +------------+-----------------------------------------------------------+
-      | sim_type   | Type of similarity from which the result is generated     |
-      +------------+-----------------------------------------------------------+
-      | sim_score  | Similarity score for the algorithm used mentioned above   |
-      +------------+-----------------------------------------------------------+
-      | desc       | Description/ comments for the similarity measure          |
-      +------------+-----------------------------------------------------------+
+
+    +------------+-----------------------------------------------------------+
+    | shortname  | Short name of the license                                 |
+    +------------+-----------------------------------------------------------+
+    | sim_type   | Type of similarity from which the result is generated     |
+    +------------+-----------------------------------------------------------+
+    | sim_score  | Similarity score for the algorithm used mentioned above   |
+    +------------+-----------------------------------------------------------+
+    | desc       | Description/ comments for the similarity measure          |
+    +------------+-----------------------------------------------------------+
     '''
     processedData = super().loadFile(inputFile)
     matches = initial_match(self.commentFile, processedData, self.licenseList)

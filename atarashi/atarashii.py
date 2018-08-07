@@ -39,15 +39,16 @@ def atarashii_runner(inputFile, processedLicense, agent_name, similarity="Cosine
   :param ngramJsonLoc: Specify N-Gram Json File location
   :param verbose: Specify if verbose mode is on or not (Default is Off/ None)
   :return: Returns the array of JSON with scan results
-    +------------+-----------------------------------------------------------+
-    | shortname  | Short name of the license                                 |
-    +------------+-----------------------------------------------------------+
-    | sim_type   | Type of similarity from which the result is generated     |
-    +------------+-----------------------------------------------------------+
-    | sim_score  | Similarity score for the algorithm used mentioned above   |
-    +------------+-----------------------------------------------------------+
-    | desc       | Description/ comments for the similarity measure          |
-    +------------+-----------------------------------------------------------+
+
+  +------------+-----------------------------------------------------------+
+  | shortname  | Short name of the license                                 |
+  +------------+-----------------------------------------------------------+
+  | sim_type   | Type of similarity from which the result is generated     |
+  +------------+-----------------------------------------------------------+
+  | sim_score  | Similarity score for the algorithm used mentioned above   |
+  +------------+-----------------------------------------------------------+
+  | desc       | Description/ comments for the similarity measure          |
+  +------------+-----------------------------------------------------------+
   '''
   scanner = ""
   if agent_name == "wordFrequencySimilarity":
