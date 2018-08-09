@@ -41,8 +41,7 @@ https://fossology.github.io/atarashi
 - These files will be placed to their appropriate places by the install script.
 
 ### Installing just dependencies
-
-- `pip install -r requirements.txt`
+- `# pip install -r requirements.txt`
 
 ### Build (optional)
 
@@ -110,16 +109,26 @@ pass the options and path to the file relative to the mounted path.
 
 ## Creating Debian packages
 
-- Install dependencies
+- Install build dependencies from `debian/control`
+- Install dependencies from requirements.txt
+```sh
+# python3 -m pip install -r requirements.txt
 ```
-# apt-get install python3-setuptools python3-all debhelper
-# pip install stdeb
+- Build the orig.tar file manually or get from github (master branch) using uscan.
+```sh
+$ uscan -dd
 ```
-- Create Debian packages
+- Build the packages using your favourite script
+```sh
+$ debuild
 ```
-$ python3 setup.py --command-packages=stdeb.command bdist_deb
+
+## Installing Debian package
+- Install the `.deb` file
+- Install the missing dependencies (`Nirjas`, `textdistance`, `pyxDamerauLevenshtein`)
+```sh
+# python3 -m pip install textdistance>=3.0.3 pyxDamerauLevenshtein>=1.5 Nirjas>=0.0.3
 ```
-- Locate the files under `deb_dist`
 
 ## License
 

@@ -5,12 +5,18 @@ recursive-exclude __pycache__  *.pyc *.pyo *.orig
 
 exclude *.git*
 exclude *.sh
+exclude *.eggs
 exclude *imtihaan.py
+exclude atarashi/evaluator
+exclude .travis.yml
+exclude Dockerfile
 
-include requirements*.*
+include requirements.txt
 include pyproject.toml
 include atarashi/data/licenses/processedLicenses.csv
 include atarashi/data/Ngram_keywords.json
+include *.py
+include LICENSE
 
 prune .git
 prune venv

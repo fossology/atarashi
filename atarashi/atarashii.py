@@ -94,7 +94,8 @@ def main():
   parser = argparse.ArgumentParser()
   parser.add_argument("inputFile", help="Specify the input file path to scan")
   parser.add_argument("-l", "--processedLicenseList", required=False,
-                      help="Specify the location of processed license list file")
+                      help="Specify the location of processed license list file",
+                      default=defaultProcessed)
   parser.add_argument("-a", "--agent_name", required=True,
                       choices=['wordFrequencySimilarity', 'DLD', 'tfidf', 'Ngram'],
                       help="Name of the agent that needs to be run")
@@ -102,7 +103,7 @@ def main():
                       choices=["ScoreSim", "CosineSim", "DiceSim", "BigramCosineSim"],
                       help="Specify the similarity algorithm that you want."
                            " First 2 are for TFIDF and last 3 are for Ngram")
-  parser.add_argument("-j", "--ngram_json", required=False,
+  parser.add_argument("-j", "--ngram_json", required=False, default=defaultJSON,
                       help="Specify the location of Ngram JSON (for Ngram agent only)")
   parser.add_argument("-v", "--verbose", help="increase output verbosity",
                       action="count", default=0)
@@ -114,11 +115,6 @@ def main():
   verbose = args.verbose
   processedLicense = args.processedLicenseList
   ngram_json = args.ngram_json
-
-  if processedLicense is None:
-    processedLicense = defaultProcessed
-  if ngram_json is None:
-    ngram_json = defaultJSON
 
   result = atarashii_runner(inputFile, processedLicense, agent_name, similarity, ngram_json, verbose)
   if agent_name == "wordFrequencySimilarity":
