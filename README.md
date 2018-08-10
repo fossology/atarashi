@@ -117,3 +117,24 @@ See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software Foundation,
 Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
+## How to generate the documentation using sphinx
+
+1. Go to project directory 'atarashi'
+2. export PYTHONPATH=$PYTHONPATH:${PWD}
+    - PYTHONPATH sets the search path for the importing python module.
+3. Install Sphinx `pip install sphinx` (Since this project is based on python so `pip` is already installed)
+4. In the project directory, `sphinx-quickstart`
+    - `Root path for the documentation [.]: docs`
+    - `Separate source and build directories (y/n) [n]: y`
+    - `autodoc: automatically insert docstrings from modules (y/n) [n]: y`
+    -  Else use the default option
+5. Auto-generate the .rst files in docs/source which will be used to generate documentation 
+    - `sphinx-autodoc -o docs/source atarashi/`
+6. `cd docs`
+7. `make html`
+
+This will generate file in docs/build/html. Go to: index.html
+
+You can change the theme of the documentation by changing the config.py file in docs/source folder. You can choose from {'alabaster', 'classic', 'sphinxdoc', 'scrolls', 'agogo', 'traditional', 'nature', 'haiku', 'pyramid', 'bizstyle'} 
+[Reference](http://www.sphinx-doc.org/en/master/theming.html)  
