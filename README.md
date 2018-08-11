@@ -1,3 +1,5 @@
+![4](https://user-images.githubusercontent.com/11582770/43991115-52fcb4dc-9d83-11e8-9e04-b07c89681afd.png)
+
 # Atarashi
 New License Scanner Project Which Should be Integrated with FOSSology but also Work Independently.
 
