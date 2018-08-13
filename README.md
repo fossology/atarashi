@@ -1,4 +1,5 @@
 # Atarashi
+This is a Google Summer of Code Project.  
 New License Scanner Project Which Should be Integrated with FOSSology but also Work Independently.
 
 ### Requirements
