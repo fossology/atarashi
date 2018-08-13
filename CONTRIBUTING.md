@@ -2,15 +2,15 @@
 
 We welcome contributions in several forms, e.g.
 
-*   Improve end user documenting on the [Wiki](https://github.com/siemens/atarashi/wiki)
+*   Improve end user documenting on the [Wiki](https://github.com/fossology/atarashi/wiki)
 
 *   Testing
 
     *   Write unit tests and learn how the code works
 
-*   Verify available [patches (pull requests)](https://github.com/siemens/atarashi/pulls)
+*   Verify available [patches (pull requests)](https://github.com/fossology/atarashi/pulls)
 
-*   Working on [issues](https://github.com/siemens/atarashi/issues)
+*   Working on [issues](https://github.com/fossology/atarashi/issues)
 
     *   Fix a bug
     *   Add a new feature
