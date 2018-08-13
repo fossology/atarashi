@@ -1,4 +1,5 @@
 # Atarashi
+<<<<<<< HEAD
 
 Open source software is licensed using open source licenses. There are many
 of open source licenses around and adding to that, open source software
@@ -18,6 +19,14 @@ http://fossology.github.io/atarashi
 ### Requirements
 
 - Python v3.x
+=======
+This is a Google Summer of Code Project.  
+New License Scanner Project Which Should be Integrated with [FOSSology](https://github.com/fossology/fossology)
+but also Work Independently.
+
+### Requirements
+- Python >= v3.5
+>>>>>>> docs(sphinx): Updated document to create Sphinx docs
 - pip
 
 ## Steps for Installation
@@ -103,23 +112,62 @@ $ python3 setup.py --command-packages=stdeb.command bdist_deb
 
 ## How to generate the documentation using sphinx
 
-1. Go to project directory 'atarashi'
-2. export PYTHONPATH=$PYTHONPATH:${PWD}
-    - PYTHONPATH sets the search path for the importing python module.
-3. Install Sphinx `pip install sphinx` (Since this project is based on python so `pip` is already installed)
-4. In the project directory, `sphinx-quickstart`
-    - `Root path for the documentation [.]: docs`
-    - `Separate source and build directories (y/n) [n]: y`
-    - `autodoc: automatically insert docstrings from modules (y/n) [n]: y`
-    -  Else use the default option
-5. Auto-generate the .rst files in docs/source which will be used to generate documentation 
-    - `sphinx-autodoc -o docs/source atarashi/`
+1. Go to project directory 'atarashi'.
+2. Install Sphinx and m2r `pip install sphinx m2r` (Since this project is based on python so `pip` is already installed).
+3. Initialise `docs/` directory with `sphinx-quickstart`
+
+        ```bash
+        mkdir docs
+        cd docs/
+        sphinx-quickstart
+        ```
+   - `Root path for the documentation [.]: .`
+   - `Separate source and build directories (y/n) [n]: n`
+   - `autodoc: automatically insert docstrings from modules (y/n) [n]: y`
+   - `intersphinx: link between Sphinx documentation of different projects (y/n) [n]: y`
+   - Else use the default option
+4. Setup the `conf.py` and include `README.md`
+   - Enable the following lines and change the insert path:
+
+        ```python
+        import os
+        import sys
+        sys.path.insert(0, os.path.abspath('../'))
+        ```
+   - Enable `m2r` to insert `.md` files in Sphinx documentation:
+
+        ```python
+        [...]
+        extensions = [
+          ...
+          'm2r',
+        ]
+        [...]
+        source_suffix = ['.rst', '.md']
+        ```
+   - Include `README.md` by editing `index.rst`
+
+        ```rst
+        .. toctree::
+            [...]
+            readme
+
+        .. mdinclude:: ../README.md
+        ```
+5. Auto-generate the `.rst` files in `docs/source` which will be used to generate documentation
+
+    ```bash
+    cd docs/
+    sphinx-apidoc -o source/ ../atarashi
+    ```
 6. `cd docs`
 7. `make html`
 
-This will generate file in docs/build/html. Go to: index.html
+This will generate file in `docs/_build/html`. Go to: index.html
 
-You can change the theme of the documentation by changing the config.py file in docs/source folder. You can choose from {'alabaster', 'classic', 'sphinxdoc', 'scrolls', 'agogo', 'traditional', 'nature', 'haiku', 'pyramid', 'bizstyle'} 
+You can change the theme of the documentation by changing `html_theme` in config.py file in `docs/` folder.
+You can choose from {'alabaster', 'classic', 'sphinxdoc', 'scrolls', 'agogo', 'traditional', 'nature', 'haiku', 'pyramid', 'bizstyle'}
+
 [Reference](http://www.sphinx-doc.org/en/master/theming.html)  
 
 ## License
