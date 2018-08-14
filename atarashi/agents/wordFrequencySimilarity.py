@@ -32,6 +32,7 @@ class WordFrequencySimilarity(AtarashiAgent):
   def scan(self, filePath):
     '''
     Python Module to classify license using histogram similarity algorithm
+
     :param filePath: Input file path that needs to be scanned
     :return: License short name with maximum intersection with word frequency of licenses
     '''

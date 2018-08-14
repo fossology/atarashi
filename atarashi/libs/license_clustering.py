@@ -32,6 +32,7 @@ MAX_ALLOWED_DISTANCE = 0.97
 def union_and_find(arr):
   '''
   Implememt Union and find algorithm (Graph Algorithm)
+
   :param arr: Array of pairs of licenses that should be in same cluster
   :return: Nested Array of License clusters
   '''

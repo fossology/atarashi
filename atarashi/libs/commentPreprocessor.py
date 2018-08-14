@@ -58,6 +58,7 @@ class CommentPreprocessor(object):
     '''
     Extract comments from given input file and return a temp file stored in OS.
     This reads all comments from the different files types.
+
     :param inputFile: Location of Input file from which comments needs to be extracted
     :return: Temp file path from the OS
     '''

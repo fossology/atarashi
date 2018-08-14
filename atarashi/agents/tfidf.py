@@ -48,7 +48,8 @@ class TFIDF(AtarashiAgent):
 
   def __cosine_similarity(self, a, b):
     '''
-    `https://blog.nishtahir.com/2015/09/19/fuzzy-string-matching-using-cosine-similarity/`
+    https://blog.nishtahir.com/2015/09/19/fuzzy-string-matching-using-cosine-similarity/
+
     :return: Cosine similarity value of two word frequency arrays
     '''
     dot_product = dot(a, b)
@@ -61,6 +62,7 @@ class TFIDF(AtarashiAgent):
   def __tfidfsumscore(self, inputFile):
     '''
     TF-IDF Sum Score Algorithm. Used TfidfVectorizer to implement it.
+
     :param inputFile: Input file path
     :return: Sorted array of JSON of scanner results with sim_type as __tfidfsumscore
     '''
@@ -101,6 +103,7 @@ class TFIDF(AtarashiAgent):
   def __tfidfcosinesim(self, inputFile):
     '''
     TF-IDF Cosine Similarity Algorithm. Used TfidfVectorizer to implement it.
+
     :param inputFile: Input file path
     :return: Sorted array of JSON of scanner results with sim_type as __tfidfcosinesim
     '''

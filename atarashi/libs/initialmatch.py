@@ -51,6 +51,7 @@ def spdx_identifer(data, shortnames):
   '''
   Identify SPDX-License-Identifier
   Make sure the identifier must be present in Fossology merged license list
+
   :param data: Input File data
   :param shortnames: Array of shortnames (SPDX-ID)
   :return: Array of JSON with scanning results

@@ -41,6 +41,7 @@ def find_ngrams(input_list, n):
 def load_database(licenseList, verbose=0):
   '''
   Store the unique n-grams N=[2,5,6,7,8] for each license cluster
+
   :param licenseList: Processed License List path
   :return: Return uniqueNgrams array, license cluster array, licenses array
   '''
