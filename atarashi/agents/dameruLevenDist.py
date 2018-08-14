@@ -35,6 +35,7 @@ class DameruLevenDist(AtarashiAgent):
     Read the content content of filename, extract the comments and preprocess them.
     Find the Damerau Levenshtein distance between the preprocessed file content
     and the license text.
+
     :param filePath: Path of the file to scan
     :return: Returns the license's short name with least damerau levenshtien distance
     '''
