@@ -82,6 +82,17 @@ Get the help by running `atarashi -h` or `atarashi --help`
     - `atarashi -a DLD -l /path/to/processedList.csv /path/to/file.c`
     - `atarashi -a Ngram -l /path/to/processedList.csv -j /path/to/ngram.json /path/to/file.c`
 
+### Running Docker image
+1. Pull Docker image
+
+    `docker pull fossology/atarashi:latest`
+2. Run the image
+
+    `docker run --rm -v <path/to/scan>:/project atarashi <options> /project/<path/to/file>`
+
+Since docker can not access host fs directly, we mount a volume from the
+directory containing the files to scan to `/project` in the container. Simply
+pass the options and path to the file relative to the mounted path.
 
 ### Test
 
