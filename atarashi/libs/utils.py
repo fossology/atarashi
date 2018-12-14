@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 """
@@ -22,28 +22,11 @@ from collections import Counter
 import math
 import os
 from pathlib import Path
-import tarfile
 
 from numpy import dot
 
 __author__ = "Gaurav Mishra"
 __email__ = "gmishx@gmail.com"
-
-TAR_FILE_NAME = "Ngram_keywords.json.tar.gz"
-
-
-def unpack_json_tar():
-  '''
-  Unzip the ngram file
-  '''
-  dir = os.path.dirname(os.path.abspath(__file__))
-  dir = os.path.abspath(dir + "/../data/")
-  tarFilePath = Path(os.path.abspath(dir + "/" + TAR_FILE_NAME))
-  if tarFilePath.is_file():
-    tar = tarfile.open(str(tarFilePath))
-    tar.extractall(path = dir)
-    tar.close()
-    tarFilePath.unlink()
 
 
 def wordFrequency(data):

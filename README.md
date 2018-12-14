@@ -34,9 +34,10 @@ http://fossology.github.io/atarashi
 ### Install
 
 - `# python setup.py install`
-- In install folder, make the "atarashi-install.sh" executable
-- Run <./atarashi-install.sh>
-- pip install -r <pathto/requirements.txt>
+
+### Installing just dependencies
+
+- `pip install -r requirements.txt`
 
 
 ## How to run

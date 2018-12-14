@@ -5,4 +5,4 @@ scikit-learn>=0.18.1
 scipy>=0.18.1
 textdistance>=3.0.3
 setuptools>=39.2.0
-git+https://github.com/amanjain97/code_comment.git#egg=code_comment-master
+git+https://github.com/amanjain97/code_comment.git#egg=code_comment
