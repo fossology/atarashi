@@ -22,9 +22,28 @@ http://fossology.github.io/atarashi
 
 ## Steps for Installation
 
+### Installing dependencies
+
+Dependencies are required before building Atarashi. You can install them in
+following ways:
+
+- `pip install -r requirements.txt`
+
+OR
+
+- `# python setup.py install_deps`
+
+However, the dependencies are installed while installing Atarashi (running
+[install command](#install))
+
 ### Build (optional)
 
-- `$ python setup.py build`
+- Install the dependencies:
+
+    `$ pip install -r requirements.txt`
+- Build the package using Setuptools:
+
+    `$ python setup.py build`
 - Build will generate 3 new files in your current directory
     1.  `data/Ngram_keywords.json`
     2.  `licenses/<SPDX-version>.csv`
@@ -34,11 +53,6 @@ http://fossology.github.io/atarashi
 ### Install
 
 - `# python setup.py install`
-
-### Installing just dependencies
-
-- `pip install -r requirements.txt`
-
 
 ## How to run
 

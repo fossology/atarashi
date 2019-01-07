@@ -84,10 +84,12 @@ class InstallAtarashiBuildRequirements(distutils.cmd.Command):
     global install_options
     global build_requirements
     global ext_links
-    if os.geteuid() != 0:
-      install_options += ['--user']
 
-    subprocess.run(install_options + build_requirements, check = True)
+    install_only_user = []
+    if os.geteuid() != 0:
+      install_only_user = ['--user']
+
+    subprocess.run(install_options + install_only_user + build_requirements, check = True)
     for package in ext_links:
       subprocess.run(install_options + ['-e', package], check = True)
 
