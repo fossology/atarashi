@@ -24,7 +24,12 @@ http://fossology.github.io/atarashi
 
 ### Build (optional)
 
-- `$ python setup.py build`
+- Install the dependencies:
+
+    `$ pip install -r requirements.txt`
+- Build the package using Setuptools:
+
+    `$ python setup.py build`
 - Build will generate 3 new files in your current directory
     1.  `data/Ngram_keywords.json`
     2.  `licenses/<SPDX-version>.csv`
