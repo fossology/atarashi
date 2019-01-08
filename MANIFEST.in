@@ -9,6 +9,7 @@ exclude *imtihaan.py
 
 include requirements*.*
 include *.py
+include pyproject.toml
 
 prune .git
 prune venv
