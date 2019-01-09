@@ -42,9 +42,9 @@ The merged CSV is then processesed which is then used to create the Ngrams.
 
 def download_dependencies(threads = os.cpu_count(), verbose = 0):
   currentDir = os.path.dirname(os.path.abspath(__file__))
-  licenseListCsv = currentDir + "/../licenses/licenseList.csv"
-  processedLicenseListCsv = currentDir + "/../licenses/processedLicenses.csv"
-  ngramJsonLoc = currentDir + "/../data/Ngram_keywords.json"
+  licenseListCsv = currentDir + "/data/licenses/licenseList.csv"
+  processedLicenseListCsv = currentDir + "/data/licenses/processedLicenses.csv"
+  ngramJsonLoc = currentDir + "/data/Ngram_keywords.json"
 
   print("** Downloading SPDX licenses **")
   spdxLicenseList = LicenseDownloader.download_license(threads)

@@ -20,7 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 """
 import argparse
 import os
-from pkg_resources import Requirement, resource_filename
+from pkg_resources import resource_filename
 
 from atarashi.agents.cosineSimNgram import NgramAgent
 from atarashi.agents.dameruLevenDist import DameruLevenDist
@@ -88,8 +88,8 @@ def main():
   Calls atarashii_runner for each file in the folder/ repository specified by user
   Prints the Input file path and the JSON output from atarashii_runner
   '''
-  defaultProcessed = resource_filename(Requirement.parse("atarashi"), "/licenses/processedLicenses.csv")
-  defaultJSON = resource_filename(Requirement.parse("atarashi"), "/data/Ngram_keywords.json")
+  defaultProcessed = resource_filename("atarashi", "data/licenses/processedLicenses.csv")
+  defaultJSON = resource_filename("atarashi", "data/Ngram_keywords.json")
   parser = argparse.ArgumentParser()
   parser.add_argument("inputFile", help="Specify the input file path to scan")
   parser.add_argument("-l", "--processedLicenseList", required=False,

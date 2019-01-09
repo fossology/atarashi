@@ -75,8 +75,8 @@ class BuildAtarashiDependencies(distutils.cmd.Command):
   Class to build dependency files for Atarashi.
   Files created:
   1.  data/Ngram_keywords.json
-  2.  licenses/<spdx_license>.csv
-  3.  licenses/processedLicenses.csv
+  2.  data/licenses/<spdx_license>.csv
+  3.  data/licenses/processedLicenses.csv
   """
   description = 'build Atarashi dependency files'
   user_options = [
@@ -138,14 +138,13 @@ metadata = dict(
   setup_requires = build_requirements,
   install_requires = requirements,
   dependency_links = ext_links,
+  include_package_data = True,
   package_data = {
-    'data': ['data/Ngram_keywords.json'],
-    'licenses': ['licenses/licenseList.csv', 'licenses/processedLicenses.csv']
+    'atarashi': [
+      'data/Ngram_keywords.json',
+      'data/licenses/processedLicenses.csv'
+    ]
   },
-  data_files = [
-    ('data', ['data/Ngram_keywords.json']),
-    ('licenses', ['licenses/licenseList.csv', 'licenses/processedLicenses.csv'])
-  ],
   cmdclass = {
     'build_deps': BuildAtarashiDependencies,
     'build_py': BuildAtarashi,

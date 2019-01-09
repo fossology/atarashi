@@ -64,7 +64,7 @@ class LicenseDownloader(object):
     if licenses is not None:
       fileName = releaseDate + '_' + version + '.csv'
       dir = os.path.dirname(os.path.abspath(__file__))
-      dir = os.path.abspath(dir + "/../../licenses")
+      dir = os.path.abspath(dir + "/../data/licenses")
       Path(dir).mkdir(exist_ok=True)
       filePath = Path(os.path.abspath(dir + "/" + fileName))
       if filePath.is_file():
