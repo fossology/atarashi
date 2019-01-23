@@ -25,45 +25,44 @@ __email__ = "gmishx@gmail.com"
 import argparse
 import os
 import sys
-sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)) + '/../')
-
 from atarashi.libs.ngram import createNgrams
 from atarashi.license.licenseDownloader import LicenseDownloader
 from atarashi.license.licensePreprocessor import LicensePreprocessor
 from atarashi.license.license_merger import license_merger
 
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)) + '/../')
 
 """
 Creates required files for Atarashi.
 
 First downloads SPDX licenses, then merge them with FOSSology licenses.
-The merged CSV is then processesed which is then used to create the Ngrams.
+The merged CSV is then processed which is then used to create the Ngrams.
 """
 
 if __name__ == "__main__":
-  parser = argparse.ArgumentParser()
-  parser.add_argument("-t", "--threads", required = False, default = os.cpu_count(),
-                      type = int,
-                      help = "No of threads to use for download. Default: CPU count")
-  parser.add_argument("-v", "--verbose", help = "increase output verbosity",
-                      action = "count", default = 0)
-  args = parser.parse_args()
-  threads = args.threads
-  verbose = args.verbose
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-t", "--threads", required=False, default=os.cpu_count(),
+                        type=int,
+                        help="No of threads to use for download. Default: CPU count")
+    parser.add_argument("-v", "--verbose", help="increase output verbosity",
+                        action="count", default=0)
+    args = parser.parse_args()
+    threads = args.threads
+    verbose = args.verbose
 
-  currentDir = os.path.dirname(os.path.abspath(__file__))
-  licenseListCsv = currentDir + "/../licenses/licenseList.csv"
-  processedLicenseListCsv = currentDir + "/../licenses/processedLicenses.csv"
-  ngramJsonLoc = currentDir + "/../data/Ngram_keywords.json"
+    currentDir = os.path.dirname(os.path.abspath(__file__))
+    licenseListCsv = currentDir + "/../licenses/licenseList.csv"
+    processedLicenseListCsv = currentDir + "/../licenses/processedLicenses.csv"
+    ngramJsonLoc = currentDir + "/../data/Ngram_keywords.json"
 
-  print("** Downloading SPDX licenses **")
-  spdxLicenseList = LicenseDownloader.download_license(threads)
-  print("** Merging SPDX and FOSSology licenses **")
-  spdxLicenseList = license_merger(licenseListCsv, spdxLicenseList)
-  print("** Processing licenses **")
-  processedLicenseListCsv = LicensePreprocessor.create_processed_file(
-    spdxLicenseList,
-    processedLicenseListCsv,
-    verbose = verbose)
-  print("** Generating Ngrams **")
-  createNgrams(processedLicenseListCsv, ngramJsonLoc, threads, verbose)
+    print("** Downloading SPDX licenses **")
+    spdxLicenseList = LicenseDownloader.download_license(threads)
+    print("** Merging SPDX and FOSSology licenses **")
+    spdxLicenseList = license_merger(licenseListCsv, spdxLicenseList)
+    print("** Processing licenses **")
+    processedLicenseListCsv = LicensePreprocessor.create_processed_file(
+        spdxLicenseList,
+        processedLicenseListCsv,
+        verbose=verbose)
+    print("** Generating Ngrams **")
+    createNgrams(processedLicenseListCsv, ngramJsonLoc, threads, verbose)

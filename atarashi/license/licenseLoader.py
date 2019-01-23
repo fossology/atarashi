@@ -28,12 +28,12 @@ import pandas as pd
 
 class LicenseLoader(object):
 
-  @staticmethod
-  def fetch_licenses(licenseList):  # common
-    '''
-    :param licenseList: Path to license list (CSV)
-    :return: Return the CSV contents as padnas.DataFrame
-    '''
-    licenseDataFrame = pd.read_csv(licenseList)
-    licenseDataFrame = licenseDataFrame.replace(np.nan, '', regex = True)
-    return licenseDataFrame
+    @staticmethod
+    def fetch_licenses(licenseList):  # common
+        '''
+        :param licenseList: Path to license list (CSV)
+        :return: Return the CSV contents as padnas.DataFrame
+        '''
+        licenseDataFrame = pd.read_csv(licenseList)
+        licenseDataFrame = licenseDataFrame.replace(np.nan, '', regex = True)
+        return licenseDataFrame

@@ -32,48 +32,48 @@ __email__ = "amanjain5221@gmail.com"
 
 class DameruLevenDist(AtarashiAgent):
 
-  def scan(self, filePath):
-    '''
-    Read the content content of filename, extract the comments and preprocess them.
-    Find the Damerau Levenshtein distance between the preprocessed file content
-    and the license text.
+    def scan(self, filePath):
+        '''
+        Read the content content of filename, extract the comments and preprocess them.
+        Find the Damerau Levenshtein distance between the preprocessed file content
+        and the license text.
 
-    :param filePath: Path of the file to scan
-    :return: Returns the license's short name with least damerau levenshtien distance
-    '''
-    processedData = super().loadFile(filePath)
+        :param filePath: Path of the file to scan
+        :return: Returns the license's short name with least damerau levenshtien distance
+        '''
+        processedData = super().loadFile(filePath)
 
-    temp = exactMatcher(processedData, self.licenseList)
-    if temp == -1:
-      # Classify the license with minimum distance with scanned file
-      globalDistance = sys.maxsize
-      result = 0
-      for idx in range(len(self.licenseList)):
-        distance = damerau_levenshtein_distance(processedData.split(" "),
-                                                self.licenseList.iloc[idx]['processed_text'].split(" "))
-        if self.verbose > 0:
-          print(str(idx) + "  " + self.licenseList.iloc[idx]['shortname'] + "  " + str(distance))
-        if distance < globalDistance:
-          globalDistance = distance
-          result = idx
+        temp = exactMatcher(processedData, self.licenseList)
+        if temp == -1:
+            # Classify the license with minimum distance with scanned file
+            globalDistance = sys.maxsize
+            result = 0
+            for idx in range(len(self.licenseList)):
+                distance = damerau_levenshtein_distance(processedData.split(" "),
+                                                        self.licenseList.iloc[idx]['processed_text'].split(" "))
+                if self.verbose > 0:
+                    print(str(idx) + "  " + self.licenseList.iloc[idx]['shortname'] + "  " + str(distance))
+                if distance < globalDistance:
+                    globalDistance = distance
+                    result = idx
 
-      return str(self.licenseList.iloc[result]['shortname'])
-    else:
-      return temp[0]
+            return str(self.licenseList.iloc[result]['shortname'])
+        else:
+            return temp[0]
 
 
 if __name__ == "__main__":
-  print("The file has been run directly")
-  parser = argparse.ArgumentParser()
-  parser.add_argument("inputFile", help="Specify the input file which needs to be scanned")
-  parser.add_argument("processedLicenseList",
-                      help="Specify the processed license list file which contains licenses")
-  parser.add_argument("-v", "--verbose", help="increase output verbosity",
-                      action="count", default=0)
-  args = parser.parse_args()
-  filename = args.inputFile
-  licenseList = args.processedLicenseList
-  verbose = args.verbose
+    print("The file has been run directly")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("inputFile", help="Specify the input file which needs to be scanned")
+    parser.add_argument("processedLicenseList",
+                        help="Specify the processed license list file which contains licenses")
+    parser.add_argument("-v", "--verbose", help="increase output verbosity",
+                        action="count", default=0)
+    args = parser.parse_args()
+    filename = args.inputFile
+    licenseList = args.processedLicenseList
+    verbose = args.verbose
 
-  scanner = DameruLevenDist(licenseList, verbose=verbose)
-  print("License Detected using Dameru Leven Distance: " + str(scanner.scan(filename)))
+    scanner = DameruLevenDist(licenseList, verbose=verbose)
+    print("License Detected using Dameru Leven Distance: " + str(scanner.scan(filename)))

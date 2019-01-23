@@ -34,87 +34,87 @@ args = None
 
 class CommentPreprocessor(object):
 
-  @staticmethod
-  def preprocess(data):
-    '''
-    - All whitespace should be treated as a single blank space
-    - All upper case and lower case letters should be treated as lower case letters "(c)", or "Copyright" should be
-      considered equivalent and interchangeable
-    - Any hyphen, dash, en dash, em dash, or other variation should be considered equivalent.
-    - Remove the exceptional characters
+    @staticmethod
+    def preprocess(data):
+        '''
+        - All whitespace should be treated as a single blank space
+        - All upper case and lower case letters should be treated as lower case letters "(c)", or "Copyright" should be
+          considered equivalent and interchangeable
+        - Any hyphen, dash, en dash, em dash, or other variation should be considered equivalent.
+        - Remove the exceptional characters
 
-    :param data: Input file in string format
-    :return: Pre-process the data according to the rules mentioned above
-    '''
-    data = data.lower()
-    data = re.sub(r'copyright|\(c\)|\u00a9', 'copyright', data)
-    data = re.sub(r'[{}]'.format(string.punctuation), ' ', data)
-    data = re.sub(
-        r'[\u2013\u2014\u2015\u2018\u2019\u201a\u201b\u201c\u201d\u201e\u2026\u2032\u2033]',
-        '', data)
-    data = re.sub(r'\s{2,}', ' ', data)
-    return data.strip()
+        :param data: Input file in string format
+        :return: Pre-process the data according to the rules mentioned above
+        '''
+        data = data.lower()
+        data = re.sub(r'copyright|\(c\)|\u00a9', 'copyright', data)
+        data = re.sub(r'[{}]'.format(string.punctuation), ' ', data)
+        data = re.sub(
+            r'[\u2013\u2014\u2015\u2018\u2019\u201a\u201b\u201c\u201d\u201e\u2026\u2032\u2033]',
+            '', data)
+        data = re.sub(r'\s{2,}', ' ', data)
+        return data.strip()
 
-  @staticmethod
-  def extract(inputFile):
-    '''
-    Extract comments from given input file and return a temp file stored in OS.
-    This reads all comments from the different files types.
+    @staticmethod
+    def extract(inputFile):
+        '''
+        Extract comments from given input file and return a temp file stored in OS.
+        This reads all comments from the different files types.
 
-    :param inputFile: Location of Input file from which comments needs to be extracted
-    :return: Temp file path from the OS
-    '''
-    fd, outputFile = tempfile.mkstemp()
+        :param inputFile: Location of Input file from which comments needs to be extracted
+        :return: Temp file path from the OS
+        '''
+        fd, outputFile = tempfile.mkstemp()
 
-    fileType = inputFile.split('.')[-1]
+        fileType = inputFile.split('.')[-1]
 
-    supportedFileExtensions = ['c', 'cpp', 'py', 'go', 'php', 'js', 'java', 'h',
-                               'hpp', 'cc', 'css', 'html']
+        supportedFileExtensions = ['c', 'cpp', 'py', 'go', 'php', 'js', 'java', 'h',
+                                   'hpp', 'cc', 'css', 'html']
 
-    # Remove BOM UTF-8 at the beginning of file and ignore errors
-    file = open(inputFile, mode='r', encoding='utf-8-sig', errors='ignore').read()
-    open(inputFile, mode='w', encoding='utf-8').write(file)
+        # Remove BOM UTF-8 at the beginning of file and ignore errors
+        file = open(inputFile, mode='r', encoding='utf-8-sig', errors='ignore').read()
+        open(inputFile, mode='w', encoding='utf-8').write(file)
 
-    with open(outputFile, 'w') as outFile:
-      # if the file extension is supported
-      if fileType in supportedFileExtensions:
-        for comment in code_comment.extract(inputFile):
-          if comment.is_multiline:
-            outFile.write('\n'.join(comment._body))
-          else:
-            outFile.write(''.join(comment._body))
-          outFile.write('\n')
-      else:
-        # if file extension is not supported
-        with open(inputFile) as inFile:
-          lines = inFile.read().split('\n')
-          for line in lines:
-            outFile.write(line + '\n')
+        with open(outputFile, 'w') as outFile:
+            # if the file extension is supported
+            if fileType in supportedFileExtensions:
+                for comment in code_comment.extract(inputFile):
+                    if comment.is_multiline:
+                        outFile.write('\n'.join(comment._body))
+                    else:
+                        outFile.write(''.join(comment._body))
+                    outFile.write('\n')
+            else:
+                # if file extension is not supported
+                with open(inputFile) as inFile:
+                    lines = inFile.read().split('\n')
+                    for line in lines:
+                        outFile.write(line + '\n')
 
-    os.close(fd)
-    return outputFile
+        os.close(fd)
+        return outputFile
 
 
 if __name__ == "__main__":
-  print("The file has been run directly")
-  parser = argparse.ArgumentParser()
-  parser.add_argument("-p", "--process", required=True,
-                      choices=['preprocess', 'extract'],
-                      help="Which process you want to run")
-  parser.add_argument("inputFile", help="Specify the input file which needs to be processed")
-  parser.add_argument("-v", "--verbose", help="increase output verbosity",
-                      action="count", default=0)
-  args = parser.parse_args()
-  process = args.process
-  inputFile = args.inputFile
-  verbose = args.verbose
+    print("The file has been run directly")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-p", "--process", required=True,
+                        choices=['preprocess', 'extract'],
+                        help="Which process you want to run")
+    parser.add_argument("inputFile", help="Specify the input file which needs to be processed")
+    parser.add_argument("-v", "--verbose", help="increase output verbosity",
+                        action="count", default=0)
+    args = parser.parse_args()
+    process = args.process
+    inputFile = args.inputFile
+    verbose = args.verbose
 
-  if process == "extract":
-    tempLoc = str(CommentPreprocessor.extract(inputFile))
-    print("Temporary output file path: ", tempLoc)
-    if verbose > 0:
-      print(open(tempLoc, 'r').read())
-  else:
-    with open(inputFile) as file:
-      data = file.read().replace('\n', ' ')
-      print("Preprocessed data is: ", str(CommentPreprocessor.preprocess(data)))
+    if process == "extract":
+        tempLoc = str(CommentPreprocessor.extract(inputFile))
+        print("Temporary output file path: ", tempLoc)
+        if verbose > 0:
+            print(open(tempLoc, 'r').read())
+    else:
+        with open(inputFile) as file:
+            data = file.read().replace('\n', ' ')
+            print("Preprocessed data is: ", str(CommentPreprocessor.preprocess(data)))
