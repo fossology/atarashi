@@ -25,6 +25,10 @@ import setuptools.command.build_py
 import subprocess
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+
+from atarashi.build_deps import download_dependencies
+
 __author__ = "Gaurav Mishra"
 __email__ = "gmishx@gmail.com"
 
@@ -47,7 +51,8 @@ build_requirements = [
   'setuptools>=39.2.0',
   'numpy>=1.15.1',
   'tqdm>=4.23.4',
-  'pandas>=0.23.1']
+  'pandas>=0.23.1'
+]
 
 requirements = [
   'setuptools>=39.2.0',
@@ -57,52 +62,25 @@ requirements = [
   'scikit-learn>=0.18.1',
   'scipy>=0.18.1',
   'textdistance>=3.0.3',
-  'pyxDamerauLevenshtein>=1.5']
-
-ext_links = [
-  'git+https://github.com/amanjain97/code_comment#egg=code_comment'
+  'pyxDamerauLevenshtein>=1.5',
+  'code_comment@git+https://github.com/amanjain97/code_comment@master#egg=code_comment'
 ]
 
-install_options = [sys.executable, '-m', 'pip', 'install', '--upgrade', '--ignore-installed']
-
-
-class InstallAtarashiBuildRequirements(distutils.cmd.Command):
-  """
-  Class to install build time dependencies for Atarashi.
-  """
-  description = 'install Atarashi build time dependencies'
-  user_options = []
-
-  def initialize_options(self):
-    pass
-
-  def finalize_options(self):
-    pass
-
-  def run(self):
-    """Install build time dependencies using PIP"""
-    global install_options
-    global build_requirements
-    global ext_links
-    if os.geteuid() != 0:
-      install_options += ['--user']
-
-    subprocess.run(install_options + build_requirements, check = True)
-    for package in ext_links:
-      subprocess.run(install_options + ['-e', package], check = True)
-
+ext_links = [
+  'git+https://github.com/amanjain97/code_comment.git@master#egg=code_comment'
+]
 
 class BuildAtarashiDependencies(distutils.cmd.Command):
   """
   Class to build dependency files for Atarashi.
   Files created:
   1.  data/Ngram_keywords.json
-  2.  licenses/<spdx_license>.csv
-  3.  licenses/processedLicenses.csv
+  2.  data/licenses/<spdx_license>.csv
+  3.  data/licenses/processedLicenses.csv
   """
   description = 'build Atarashi dependency files'
   user_options = [
-      ('threads=', 't', 'Number of threads to use')
+    ('threads=', 't', 'Number of threads to use')
   ]
 
   def initialize_options(self):
@@ -117,11 +95,7 @@ class BuildAtarashiDependencies(distutils.cmd.Command):
 
   def run(self):
     """Run atarashi/build_deps.py"""
-    subprocess.run([
-        sys.executable,
-        "atarashi/build_deps.py",
-        "-t", str(self.threads),
-      ], check = True)
+    download_dependencies(self.threads)
 
 
 class BuildAtarashi(setuptools.command.build_py.build_py):
@@ -131,7 +105,6 @@ class BuildAtarashi(setuptools.command.build_py.build_py):
 
   def run(self):
     """Run `build_deps` target."""
-    self.run_command('install_deps')
     self.run_command('build_deps')
     setuptools.command.build_py.build_py.run(self)
 
@@ -165,23 +138,17 @@ metadata = dict(
   setup_requires = build_requirements,
   install_requires = requirements,
   dependency_links = ext_links,
+  include_package_data = True,
   package_data = {
-    'data': ['data/Ngram_keywords.json'],
-    'licenses': ['licenses/licenseList.csv', 'licenses/processedLicenses.csv']
+    'atarashi': [
+      'data/Ngram_keywords.json',
+      'data/licenses/processedLicenses.csv'
+    ]
   },
-  data_files = [
-    ('data', ['data/Ngram_keywords.json']),
-    ('licenses', ['licenses/licenseList.csv', 'licenses/processedLicenses.csv'])
-  ],
   cmdclass = {
-    'install_deps': InstallAtarashiBuildRequirements,
     'build_deps': BuildAtarashiDependencies,
     'build_py': BuildAtarashi,
   },
 )
 
-if len(sys.argv) >= 2 and sys.argv[1] == 'install':
-  subprocess.run(install_options + ['pyxDamerauLevenshtein>=1.5'], check = True)
-  for package in ext_links:
-    subprocess.run(install_options + ['-e', package], check = True)
 setup(**metadata)

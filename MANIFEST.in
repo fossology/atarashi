@@ -8,7 +8,9 @@ exclude *.sh
 exclude *imtihaan.py
 
 include requirements*.*
-include *.py
+include pyproject.toml
+include atarashi/data/licenses/processedLicenses.csv
+include atarashi/data/Ngram_keywords.json
 
 prune .git
 prune venv

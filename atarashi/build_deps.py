@@ -40,21 +40,11 @@ First downloads SPDX licenses, then merge them with FOSSology licenses.
 The merged CSV is then processesed which is then used to create the Ngrams.
 """
 
-if __name__ == "__main__":
-  parser = argparse.ArgumentParser()
-  parser.add_argument("-t", "--threads", required = False, default = os.cpu_count(),
-                      type = int,
-                      help = "No of threads to use for download. Default: CPU count")
-  parser.add_argument("-v", "--verbose", help = "increase output verbosity",
-                      action = "count", default = 0)
-  args = parser.parse_args()
-  threads = args.threads
-  verbose = args.verbose
-
+def download_dependencies(threads = os.cpu_count(), verbose = 0):
   currentDir = os.path.dirname(os.path.abspath(__file__))
-  licenseListCsv = currentDir + "/../licenses/licenseList.csv"
-  processedLicenseListCsv = currentDir + "/../licenses/processedLicenses.csv"
-  ngramJsonLoc = currentDir + "/../data/Ngram_keywords.json"
+  licenseListCsv = currentDir + "/data/licenses/licenseList.csv"
+  processedLicenseListCsv = currentDir + "/data/licenses/processedLicenses.csv"
+  ngramJsonLoc = currentDir + "/data/Ngram_keywords.json"
 
   print("** Downloading SPDX licenses **")
   spdxLicenseList = LicenseDownloader.download_license(threads)
@@ -67,3 +57,16 @@ if __name__ == "__main__":
     verbose = verbose)
   print("** Generating Ngrams **")
   createNgrams(processedLicenseListCsv, ngramJsonLoc, threads, verbose)
+
+if __name__ == "__main__":
+  parser = argparse.ArgumentParser()
+  parser.add_argument("-t", "--threads", required = False, default = os.cpu_count(),
+                      type = int,
+                      help = "No of threads to use for download. Default: CPU count")
+  parser.add_argument("-v", "--verbose", help = "increase output verbosity",
+                      action = "count", default = 0)
+  args = parser.parse_args()
+  threads = args.threads
+  verbose = args.verbose
+
+  download_dependencies(threads, verbose)

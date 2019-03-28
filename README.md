@@ -18,27 +18,27 @@ http://fossology.github.io/atarashi
 ### Requirements
 
 - Python >= v3.5
-- pip
+- pip >= 18.1
 
 ## Steps for Installation
 
-### Build (optional)
+### Install
 
-- `$ python setup.py build`
+- `pip install .`
+- It will download all dependencies required and trigger build as well.
 - Build will generate 3 new files in your current directory
     1.  `data/Ngram_keywords.json`
     2.  `licenses/<SPDX-version>.csv`
     3.  `licenses/processedList.csv`
 - These files will be placed to their appropriate places by the install script.
 
-### Install
-
-- `# python setup.py install`
-
 ### Installing just dependencies
 
 - `pip install -r requirements.txt`
 
+### Build (optional)
+
+- `$ python3 setup.py build`
 
 ## How to run
 
