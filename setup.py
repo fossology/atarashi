@@ -20,14 +20,16 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 """
 import distutils.cmd
 import os
-from setuptools import setup, find_packages
-import setuptools.command.build_py
 import subprocess
 import sys
 
+from atarashi.build_deps import download_dependencies
+from setuptools import setup, find_packages
+import setuptools.command.build_py
+
+
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 
-from atarashi.build_deps import download_dependencies
 
 __author__ = "Gaurav Mishra"
 __email__ = "gmishx@gmail.com"
@@ -49,21 +51,23 @@ def read(fname):
 
 build_requirements = [
   'setuptools>=39.2.0',
-  'numpy>=1.15.1',
+  'numpy>=1.16.0',
   'tqdm>=4.23.4',
-  'pandas>=0.23.1'
+  'pandas>=0.23.1',
+  'urllib3>=1.24.1'
 ]
 
 requirements = [
   'setuptools>=39.2.0',
-  'numpy>=1.15.1',
+  'numpy>=1.16.0',
   'tqdm>=4.23.4',
   'pandas>=0.23.1',
   'scikit-learn>=0.18.1',
   'scipy>=0.18.1',
   'textdistance>=3.0.3',
   'pyxDamerauLevenshtein>=1.5',
-  'code_comment@git+https://github.com/amanjain97/code_comment@master#egg=code_comment'
+  'code_comment@git+https://github.com/amanjain97/code_comment@master#egg=code_comment',
+  'urllib3>=1.24.1'
 ]
 
 ext_links = [
