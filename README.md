@@ -1,5 +1,7 @@
 # Atarashi
 
+[![Build Status](https://travis-ci.com/fossology/atarashi.svg?branch=master)](https://travis-ci.com/fossology/atarashi)
+
 Open source software is licensed using open source licenses. There are many
 of open source licenses around and adding to that, open source software
 packages involve sometimes multiple licenses for different files.
