@@ -19,22 +19,51 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """
 import argparse
+from builtins import staticmethod
 import json
-import os
 from multiprocessing import Pool as ThreadPool
+import os
 from pathlib import Path
-from urllib import request
+
+from tqdm import tqdm
+import urllib3
 
 import pandas as pd
-from tqdm import tqdm
+
 
 __author__ = "Aman Jain"
 __email__ = "amanjain5221@gmail.com"
 
 csvColumns = ["shortname", "fullname", "text", "license_header", "url", "deprecated", "osi_approved", "isException"]
+MAX_RETRIES = 5
 
+def _get_http_pool():
+  """
+  Get the HTTP connection pool. Check if the user sets `http_proxy` environment
+  variable. If the proxy is set, use proxy manager, else use default manager.
+  :return: HTTP Pool Manager
+  """
+  proxy_val = os.environ.get('http_proxy', False)
+  if proxy_val:
+    return urllib3.ProxyManager(proxy_val)
+  else:
+    return urllib3.PoolManager()
 
 class LicenseDownloader(object):
+
+  _http = _get_http_pool()
+
+  @staticmethod
+  def _download_json(url):
+    """
+    Send a GET request to a URL and raise an exception if the response is NOT OK (200).
+    On a success, return the JSON.
+
+    :param url: URL containing the required JSON.
+    :return: JSON from the URL
+    """
+    response = LicenseDownloader._http.request('GET', url, retries = MAX_RETRIES)
+    return json.loads(response.data.decode('utf-8'))
 
   @staticmethod
   def download_license(threads=os.cpu_count(), force=False):
@@ -51,22 +80,18 @@ class LicenseDownloader(object):
     :param force: Bool value if licenses needs to be downloaded forcefully
     :return: File path if success, None otherwise.
     """
-    jsonData = request.urlopen('https://spdx.org/licenses/licenses.json').read()
-    jsonData = json.loads(jsonData.decode('utf-8'))
+    jsonData = LicenseDownloader._download_json('https://spdx.org/licenses/licenses.json')
+    license_exceptions = LicenseDownloader._download_json('https://spdx.org/licenses/exceptions.json').get('exceptions')
     licenses = jsonData.get('licenses')
-
-    jsonData_exceptions = request.urlopen('https://spdx.org/licenses/exceptions.json').read()
-    jsonData_exceptions = json.loads(jsonData_exceptions.decode('utf-8'))
-    license_exceptions = jsonData_exceptions.get('exceptions')
 
     version = jsonData.get('licenseListVersion').replace(".", "_")
     releaseDate = jsonData.get('releaseDate')
     if licenses is not None:
       fileName = releaseDate + '_' + version + '.csv'
-      dir = os.path.dirname(os.path.abspath(__file__))
-      dir = os.path.abspath(dir + "/../data/licenses")
-      Path(dir).mkdir(exist_ok=True)
-      filePath = Path(os.path.abspath(dir + "/" + fileName))
+      directory = os.path.dirname(os.path.abspath(__file__))
+      directory = os.path.abspath(directory + "/../data/licenses")
+      Path(directory).mkdir(exist_ok=True)
+      filePath = Path(os.path.abspath(directory + "/" + fileName))
       if filePath.is_file():
         if (force):
           filePath.unlink()
@@ -107,8 +132,7 @@ class LicenseDownloader(object):
                    'deprecated': license.get('isDeprecatedLicenseId'),
                    'isException': False}
     nextUrl = "https://spdx.org/licenses/{0}.json".format(licenseDict['shortname'])
-    licenseData = request.urlopen(nextUrl).read()
-    licenseData = json.loads(licenseData.decode('utf-8'))
+    licenseData = LicenseDownloader._download_json(nextUrl)
     licenseDict['text'] = licenseData.get('licenseText')
     licenseDict['url'] = licenseData.get('seeAlso')
     licenseDict['license_header'] = licenseData.get('standardLicenseHeader', '')
@@ -129,8 +153,7 @@ class LicenseDownloader(object):
                    'deprecated': license.get('isDeprecatedLicenseId'),
                    'isException': True}
     nextUrl = "https://spdx.org/licenses/{0}.json".format(licenseDict['shortname'])
-    licenseData = request.urlopen(nextUrl).read()
-    licenseData = json.loads(licenseData.decode('utf-8'))
+    licenseData = LicenseDownloader._download_json(nextUrl)
     licenseDict['text'] = licenseData.get('licenseExceptionText')
     licenseDict['url'] = licenseData.get('seeAlso')
     licenseDict['license_header'] = licenseData.get('standardLicenseHeader', '')
