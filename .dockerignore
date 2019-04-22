@@ -1,0 +1,17 @@
+/bin/
+
+# Compiled python modules.
+*.pyc
+*__pycache__*
+
+# Setuptools distribution folder.
+/dist/
+
+# Python egg metadata, regenerated from source files by setuptools.
+/*.egg-info
+/*.egg
+
+# Eclipse files
+*.project
+*.pydevproject
+*.settings*
