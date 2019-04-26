@@ -37,17 +37,23 @@ __email__ = "amanjain5221@gmail.com"
 csvColumns = ["shortname", "fullname", "text", "license_header", "url", "deprecated", "osi_approved", "isException"]
 MAX_RETRIES = 5
 
+# Ignore warnings for insecure HTTPS connections as we are disabling
+# certification verification
+urllib3.disable_warnings(category=urllib3.exceptions.InsecureRequestWarning)
+
 def _get_http_pool():
   """
   Get the HTTP connection pool. Check if the user sets `http_proxy` environment
   variable. If the proxy is set, use proxy manager, else use default manager.
+  Ignoring the SSL verification as to avoid errors and the source is trusted.
   :return: HTTP Pool Manager
   """
   proxy_val = os.environ.get('http_proxy', False)
   if proxy_val:
-    return urllib3.ProxyManager(proxy_val)
+    return urllib3.ProxyManager(proxy_val, cert_reqs='CERT_NONE',
+                                assert_hostname=False)
   else:
-    return urllib3.PoolManager()
+    return urllib3.PoolManager(cert_reqs='CERT_NONE', assert_hostname=False)
 
 class LicenseDownloader(object):
 

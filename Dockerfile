@@ -18,15 +18,26 @@
 #
 # Description: Docker container image recipe
 
+FROM python:3 as builder
+
+WORKDIR /atarashi
+
+COPY . .
+
+RUN mkdir wheels \
+ && python -m pip wheel --use-pep517 --wheel-dir wheels .
+
 FROM python:3-slim
 
 LABEL maintainer="Fossology <fossology@fossology.org>"
 LABEL Description="Image for Atarashi project"
-COPY . .
 
-RUN apt-get update -q && apt-get install -q -y git gcc
+WORKDIR /atarashi-wheels
 
-RUN pip install .
+COPY --from=builder /atarashi/wheels/ .
+
+RUN python -m pip install *.whl \
+ && rm *.whl
 
 ENTRYPOINT ["atarashi"]
 CMD ["-h"]
