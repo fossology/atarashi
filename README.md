@@ -90,7 +90,7 @@ Get the help by running `atarashi -h` or `atarashi --help`
     `docker pull fossology/atarashi:latest`
 2. Run the image
 
-    `docker run --rm -v <path/to/scan>:/project atarashi <options> /project/<path/to/file>`
+    `docker run --rm -v <path/to/scan>:/project fossology/atarashi:latest <options> /project/<path/to/file>`
 
 Since docker can not access host fs directly, we mount a volume from the
 directory containing the files to scan to `/project` in the container. Simply
