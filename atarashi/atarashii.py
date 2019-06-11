@@ -20,6 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 """
 import argparse
 import os
+import json
 from pkg_resources import resource_filename
 
 from atarashi.agents.cosineSimNgram import NgramAgent
@@ -120,7 +121,24 @@ def main():
     ngram_json = defaultJSON
 
   result = atarashii_runner(inputFile, processedLicense, agent_name, similarity, ngram_json, verbose)
-  print("Input File: " + os.path.abspath(inputFile) + "\nResult: " + str(result) + "\n")
+  if agent_name == "wordFrequencySimilarity":
+    result = [{
+            "shortname": str(result),
+            "sim_score": 1,
+            "sim_type": "wordFrequencySimilarity",
+            "description": ""
+        }]
+  elif agent_name == "DLD":
+    result = [{
+            "shortname": str(result),
+            "sim_score": 1,
+            "sim_type": "dld",
+            "description": ""
+        }]
+  result = list(result)
+  result = {"file": os.path.abspath(inputFile), "results": result}
+  result = json.dumps(result, sort_keys=True, ensure_ascii=False, indent=4)
+  print("\nResult: " + result + "\n")
 
 
 if __name__ == '__main__':
