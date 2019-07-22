@@ -138,7 +138,7 @@ def main():
   result = list(result)
   result = {"file": os.path.abspath(inputFile), "results": result}
   result = json.dumps(result, sort_keys=True, ensure_ascii=False, indent=4)
-  print("\nResult: " + result + "\n")
+  print(result + "\n")
 
 
 if __name__ == '__main__':
