@@ -54,7 +54,8 @@ build_requirements = [
   'numpy>=1.16.0',
   'tqdm>=4.23.4',
   'pandas>=0.23.1',
-  'urllib3>=1.24.1'
+  'urllib3>=1.24.1',
+  'gensim>=3.8.0'
 ]
 
 requirements = [
