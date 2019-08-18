@@ -68,6 +68,7 @@ requirements = [
   'pyxDamerauLevenshtein>=1.5',
   'code_comment@git+https://github.com/amanjain97/code_comment@master#egg=code_comment',
   'urllib3>=1.24.1'
+  'gensim>=3.8.0'
 ]
 
 ext_links = [
