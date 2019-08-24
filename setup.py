@@ -54,7 +54,8 @@ build_requirements = [
   'numpy>=1.16.0',
   'tqdm>=4.23.4',
   'pandas>=0.23.1',
-  'urllib3>=1.24.1'
+  'urllib3>=1.24.1',
+  'gensim>=3.8.0'
 ]
 
 requirements = [
@@ -66,7 +67,9 @@ requirements = [
   'scipy>=0.18.1',
   'textdistance>=3.0.3',
   'pyxDamerauLevenshtein>=1.5',
-  'urllib3>=1.24.1'
+  'code_comment@git+https://github.com/amanjain97/code_comment@master#egg=code_comment',
+  'urllib3>=1.24.1',
+  'gensim>=3.8.0'
 ]
 
 class BuildAtarashiDependencies(distutils.cmd.Command):
