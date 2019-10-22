@@ -30,7 +30,7 @@ from atarashi.agents.wordFrequencySimilarity import WordFrequencySimilarity
 
 __author__ = "Aman Jain"
 __email__ = "amanjain5221@gmail.com"
-__version__ = "0.0.9"
+__version__ = "0.0.10"
 
 
 def atarashii_runner(inputFile, processedLicense, agent_name, similarity="CosineSim", ngramJsonLoc=None, verbose=None):

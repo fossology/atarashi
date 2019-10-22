@@ -21,11 +21,20 @@ http://fossology.github.io/atarashi
 
 - Python >= v3.5
 - pip >= 18.1
+- `code_comments` (See installation bellow)
 
 ## Steps for Installation
 
 ### Install
 
+#### Install from PyPi
+- Install additional depencency code-comment
+    - `pip install code_comment@git+https://github.com/amanjain97/code_comment@master#egg=code_comment`
+- `pip install atarashi`
+
+#### Source install
+- Install additional dependency code-comment
+    - `pip install code_comment@git+https://github.com/amanjain97/code_comment@master#egg=code_comment`
 - `pip install .`
 - It will download all dependencies required and trigger build as well.
 - Build will generate 3 new files in your current directory
@@ -127,7 +136,7 @@ This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 See the GNU General Public License for more details.
- 
+
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software Foundation,
 Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -187,6 +196,6 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 This will generate file in `docs/_build/html`. Go to: index.html
 
-You can change the theme of the documentation by changing `html_theme` in config.py file in `docs/` folder. 
-You can choose from {'alabaster', 'classic', 'sphinxdoc', 'scrolls', 'agogo', 'traditional', 'nature', 'haiku', 'pyramid', 'bizstyle'}  
-[Reference](http://www.sphinx-doc.org/en/master/theming.html)  
+You can change the theme of the documentation by changing `html_theme` in config.py file in `docs/` folder.
+You can choose from {'alabaster', 'classic', 'sphinxdoc', 'scrolls', 'agogo', 'traditional', 'nature', 'haiku', 'pyramid', 'bizstyle'}
+[Reference](http://www.sphinx-doc.org/en/master/theming.html)

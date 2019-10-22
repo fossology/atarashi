@@ -24,8 +24,9 @@ WORKDIR /atarashi
 
 COPY . .
 
-RUN mkdir wheels \
- && python -m pip wheel --use-pep517 --wheel-dir wheels .
+RUN mkdir wheels
+RUN python -m pip wheel --use-pep517 --wheel-dir wheels .
+RUN python -m pip wheel --use-pep517 --wheel-dir wheels code_comment@git+https://github.com/amanjain97/code_comment@master#egg=code_comment
 
 FROM python:3.7-slim
 

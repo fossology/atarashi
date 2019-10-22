@@ -66,12 +66,7 @@ requirements = [
   'scipy>=0.18.1',
   'textdistance>=3.0.3',
   'pyxDamerauLevenshtein>=1.5',
-  'code_comment@git+https://github.com/amanjain97/code_comment@master#egg=code_comment',
   'urllib3>=1.24.1'
-]
-
-ext_links = [
-  'git+https://github.com/amanjain97/code_comment.git@master#egg=code_comment'
 ]
 
 class BuildAtarashiDependencies(distutils.cmd.Command):
@@ -115,17 +110,19 @@ class BuildAtarashi(setuptools.command.build_py.build_py):
 
 metadata = dict(
   name = "atarashi",
-  version = "0.0.9",
+  version = "0.0.10",
   author = "Aman Jain",
   author_email = "amanjain5221@gmail.com",
   description = ("An intelligent license scanner."),
   license = "GPL-2.0-only",
   url = "https://github.com/fossology/atarashi",
   long_description = read('README.md'),
+  long_description_content_type='text/markdown',
   classifiers = [
-    "Development Status ::  Pre-Alpha",
+    "Development Status :: 2 - Pre-Alpha",
     "Topic :: Utilities",
-    "License :: OSI Approved :: GPL v2.0 License",
+    "Intended Audience :: Legal Industry",
+    "License :: OSI Approved :: GNU General Public License v2 (GPLv2)"
   ],
   keywords = [
     "atarashi", "license", "license-scanner", "oss",
@@ -141,7 +138,6 @@ metadata = dict(
   zip_safe = False,
   setup_requires = build_requirements,
   install_requires = requirements,
-  dependency_links = ext_links,
   include_package_data = True,
   package_data = {
     'atarashi': [
