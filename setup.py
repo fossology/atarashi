@@ -21,6 +21,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 import distutils.cmd
 import os
 from setuptools import setup, find_packages
+from sphinx.setup_command import BuildDoc
 import setuptools.command.build_py
 import subprocess
 
@@ -90,11 +91,16 @@ requirements = [
   'scikit-learn>=0.18.1',
   'scipy>=0.18.1',
   'textdistance>=3.0.3',
-  'setuptools>=39.2.0']
+  'setuptools>=39.2.0',
+  'sphinx>=1.7.6',
+  'm2r']
+
+name = "atarashi"
+version = "0.0.9"
 
 setup(
-  name = "atarashi",
-  version = "0.0.9",
+  name = name,
+  version = version,
   author = "Aman Jain",
   author_email = "amanjain5221@gmail.com",
   description = ("An intelligent license scanner."),
@@ -132,6 +138,15 @@ setup(
   cmdclass = {
     'build_deps': BuildAtarashiDependencies,
     'build_py': BuildAtarashi,
+    'build_sphinx': BuildDoc
+  },
+  command_options = {
+    'build_sphinx': {
+      'project': ('setup.py', name),
+      'version': ('setup.py', version),
+      'release': ('setup.py', version),
+      'source_dir': ('setup.py', 'docs')
+    }
   },
 )
 

@@ -101,6 +101,87 @@ $ python3 setup.py --command-packages=stdeb.command bdist_deb
 ```
 - Locate the files under `deb_dist`
 
+## How to generate the documentation manually using sphinx
+
+1. Go to project directory 'atarashi'.
+2. Install Sphinx and m2r `pip install sphinx m2r` (Since this project is based on python so `pip` is already installed).
+3. Initialise `docs/` directory with `sphinx-quickstart`
+
+        ```bash
+        mkdir docs
+        cd docs/
+        sphinx-quickstart
+        ```
+   - `Root path for the documentation [.]: .`
+   - `Separate source and build directories (y/n) [n]: n`
+   - `autodoc: automatically insert docstrings from modules (y/n) [n]: y`
+   - `intersphinx: link between Sphinx documentation of different projects (y/n) [n]: y`
+   - Else use the default option
+4. Setup the `conf.py` and include `README.md`
+   - Enable the following lines and change the insert path:
+
+        ```python
+        import os
+        import sys
+        sys.path.insert(0, os.path.abspath('../'))
+        ```
+   - Enable `m2r` to insert `.md` files in Sphinx documentation:
+
+        ```python
+        [...]
+        extensions = [
+          ...
+          'm2r',
+        ]
+        [...]
+        source_suffix = ['.rst', '.md']
+        ```
+   - Include `README.md` by editing `index.rst`
+
+        ```rst
+        .. toctree::
+            [...]
+            readme
+
+        .. mdinclude:: ../README.md
+        ```
+5. Auto-generate the `.rst` files in `docs/source` which will be used to generate documentation
+
+    ```bash
+    cd docs/
+    sphinx-apidoc -o source/ ../atarashi
+    ```
+6. `cd docs`
+7. `make html`
+
+This will generate file in `docs/_build/html`. Go to: index.html
+
+## How to generate the documentation using setuptools
+1. Build atarashi (or install sphinx using `pip install sphinx m2r`)
+
+    ```bash
+    python3 setup.py build
+    ```
+2. Refresh source `.rst` files
+
+    ```bash
+    sphinx-apidoc -Pe -o source/ ../atarashi
+    ```
+3. Check for new modules files (if any) and add `:private-members:` under your new `.. automodule::`.
+4. Generate the docs
+
+    ```bash
+    python3 setup.py build_sphinx
+    ```
+5. Check `python3 setup.py build_sphinx --help` for more.
+
+You will get the files under `build/sphinx/html`.
+
+You can change the theme of the documentation by changing `html_theme` in `docs/config.py` file.
+You can choose from {'alabaster', 'classic', 'sphinxdoc', 'scrolls', 'agogo', 'traditional', 'nature', 'haiku', 'pyramid', 'bizstyle'}
+
+[Reference](http://www.sphinx-doc.org/en/master/theming.html)
+
 ## License
 
 SPDX-License-Identifier: GPL-2.0
