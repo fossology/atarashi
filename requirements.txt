@@ -7,3 +7,4 @@ textdistance>=3.0.3
 setuptools>=39.2.0
 code_comment@git+https://github.com/amanjain97/code_comment@master#egg=code_comment
 urllib3>=1.24.1
+gensim>=3.8.0
