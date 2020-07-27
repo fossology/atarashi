@@ -17,14 +17,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """
 import subprocess
+import zipfile,os
 import time
 import json
 from tqdm import tqdm
-import os
+import shutil
+import sys
 import argparse
 
 __author__ = "Ayush Bhardwaj"
 __email__ = "classicayush@gmail.com"
+
+with zipfile.ZipFile('TestFiles.zip', 'r') as zip: 
+  zip.extractall()
 
 # To generate colored Text
 def prGreen(text): tqdm.write("\033[92m {}\033[00m" .format(text))
@@ -99,20 +104,23 @@ def evaluate(command):
         runCommand = command + " " + filepath
         tqdm.write('Command Running: ' + runCommand)
         filesScanned += 1
-        output = subprocess.check_output(
-            runCommand, shell=True, stderr=subprocess.STDOUT)
-        output = output.decode("utf-8")
-        temp = json.loads(output)
-        if len(temp['results']) == 0:
-          temp['results'].append({'shortname': 'NULL'})
-        result = temp['results'][0]['shortname']
-        result = result.strip("['']")
-        tqdm.write("The Obtained result by agent is: " + result)
-        prCyan('Total files scanned = ' + str(filesScanned))
+        try:
+          output = subprocess.check_output(
+              runCommand, shell=True, stderr=subprocess.STDOUT)
+          output = output.decode("utf-8")
+          temp = json.loads(output)
+          if len(temp['results']) == 0:
+            temp['results'].append({'shortname': 'NULL'})
+          result = temp['results'][0]['shortname']
+          result = result.strip("['']")
+          tqdm.write("The Obtained result by agent is: " + result)
+          prCyan('Total files scanned = ' + str(filesScanned))
 
-        if filename == result:
-          match += 1
-        prGreen('Successfully matched = ' + str(match) + '\n')
+          if filename == result:
+            match += 1
+          prGreen('Successfully matched = ' + str(match) + '\n')
+        except Exception:
+          continue
   accuracy = match * 100 / filesScanned
   timeElapsed = time.time() - start_time
   return (timeElapsed, accuracy)
@@ -128,6 +136,8 @@ if __name__ == "__main__":
   args = parser.parse_args()
   agent_name = args.agent_name
   similarity = args.similarity
+  
+  
 
   command = getCommand(agent_name, similarity)
   timeElapsed, accuracy = evaluate(command)
@@ -137,3 +147,14 @@ if __name__ == "__main__":
   prGreen("     ---> Accuracy: " + str(round(accuracy, 2)) + "%                     <---")
   print('      ++++++++++++++++++++++++++++++++++++++++++++')
   print('      ++++++++++++++++++++++++++++++++++++++++++++')
+
+
+  zf = zipfile.ZipFile("TestFiles.zip", "w")
+  for dirname, subdirs, files in os.walk("TestFiles"):
+    zf.write(dirname)
+    for filename in files:
+        zf.write(os.path.join(dirname, filename))
+  zf.close()
+
+  shutil.rmtree('TestFiles')
+

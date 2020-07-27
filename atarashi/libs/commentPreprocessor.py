@@ -20,8 +20,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 """
 
 import argparse
-import code_comment  # https://github.com/amanjain97/code_comment/
+from nirjas import extract
+import json
 import os
+import sys
 import re
 import string
 import tempfile
@@ -30,6 +32,53 @@ __author__ = "Aman Jain"
 __email__ = "amanjain5221@gmail.com"
 
 args = None
+
+def licenseComment(data):
+    list = ['source', 'free', 'under','use',  'copyright', 'grant', 'software', 'license','licence', 'agreement', 'distribute', 'redistribution', 'liability', 'rights', 'reserved', 'general', 'public', 'modify', 'modified', 'modification', 'permission','permitted' 'granted', 'distributed', 'notice', 'distribution', 'terms', 'freely', 'licensed', 'merchantibility','redistributed', 'see', 'read', '(c)', 'copying', 'legal', 'licensing', 'spdx']
+
+    MLmapCount, CSLmapCount, SLmapCount = [], [], []
+    comment = ""
+    tempCount = 0
+    for id, item in enumerate(data[0]["multi_line_comment"]):
+        count = 0
+        if 'spdx-license-identifier' in item['comment'].lower():
+            return item['comment']
+
+        for i in list:
+            if i in item['comment'].lower():
+                count+=1
+
+        if count > tempCount:
+            tempCount = count
+            comment = item['comment']
+
+    if "cont_single_line_comment" in data[0]:
+      for id, item in enumerate(data[0]["cont_single_line_comment"]):
+          count = 0
+          if 'spdx-license-identifier' in item['comment'].lower():
+              return item['comment']
+
+          for i in list:
+              if i in item['comment'].lower():
+                  count+=1
+          if count > tempCount:
+              tempCount = count
+              comment = item['comment']
+
+    if "single_line_comment" in data[0]:
+      for id, item in enumerate(data[0]["single_line_comment"]):
+          count = 0
+          if 'spdx-license-identifier' in item['comment'].lower():
+              return item['comment']
+
+          for i in list:
+              if i in item['comment'].lower():
+                  count+=1
+          if count > tempCount:
+              tempCount = count
+              comment = item['comment']
+        
+    return comment
 
 
 class CommentPreprocessor(object):
@@ -64,26 +113,21 @@ class CommentPreprocessor(object):
     :param inputFile: Location of Input file from which comments needs to be extracted
     :return: Temp file path from the OS
     '''
+
+    supportedFileExtensions = ['.py','.m4','.nsi','.c','.h','.cs','.cpp','.sep','.hxx','.cc','.css','.go','.hs','.html',
+                  '.xml','.java','.js','.kt','.kts','.ktm','.m','.php','.pl','.r','.R','.rb','.rs','.sh','.swift','.scala',
+                  '.sc','.txt','.lic','.install','.OSS','.gl']
+    
     fd, outputFile = tempfile.mkstemp()
-
-    fileType = inputFile.split('.')[-1]
-
-    supportedFileExtensions = ['c', 'cpp', 'py', 'go', 'php', 'js', 'java', 'h',
-                               'hpp', 'cc', 'css', 'html']
-
-    # Remove BOM UTF-8 at the beginning of file and ignore errors
-    file = open(inputFile, mode='r', encoding='utf-8-sig', errors='ignore').read()
-    open(inputFile, mode='w', encoding='utf-8').write(file)
+    fileType = os.path.splitext(inputFile)[1]
 
     with open(outputFile, 'w') as outFile:
       # if the file extension is supported
       if fileType in supportedFileExtensions:
-        for comment in code_comment.extract(inputFile):
-          if comment.is_multiline:
-            outFile.write('\n'.join(comment._body))
-          else:
-            outFile.write(''.join(comment._body))
-          outFile.write('\n')
+        data_file = extract(inputFile)
+        data = json.loads(data_file)
+        data1 = licenseComment(data)
+        outFile.write(data1)
       else:
         # if file extension is not supported
         with open(inputFile) as inFile:
