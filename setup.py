@@ -144,7 +144,11 @@ metadata = dict(
   package_data = {
     'atarashi': [
       'data/Ngram_keywords.json',
-      'data/licenses/processedLicenses.csv'
+      'data/licenses/processedLicenses.csv',
+      'data/models/lr_model.pkl',
+      'data/models/nb_model.pkl',
+      'data/models/svc_model.pkl',
+      'data/models/vectorizer.pkl'
     ]
   },
   cmdclass = {

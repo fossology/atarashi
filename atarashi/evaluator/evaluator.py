@@ -51,6 +51,12 @@ def getCommand(agent_name, similarity):
     command = "atarashi -a wordFrequencySimilarity"
   elif agent_name == "DLD":
     command = "atarashi -a DLD"
+  elif agent_name == "lr_classifier":
+    command = "atarashi -a lr_classifier"
+  elif agent_name == "nb_classifier":
+    command = "atarashi -a nb_classifier"
+  elif agent_name == "svc_classifier":
+    command = "atarashi -a svc_classifier"
   elif agent_name == "tfidf":
     command = "atarashi -a tfidf"
     if similarity == "CosineSim":
@@ -129,9 +135,9 @@ def evaluate(command):
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument("-a", "--agent_name", required=True,
-                      choices=['wordFrequencySimilarity', 'DLD', 'tfidf', 'Ngram'], help="Name of the agent that you want to evaluate")
+                      choices=['wordFrequencySimilarity', 'DLD',"lr_classifier","svc_classifier","nb_classifier", 'tfidf', 'Ngram'], help="Name of the agent that you want to evaluate")
   parser.add_argument("-s", "--similarity", required=False,
-                      default=" ", choices=["ScoreSim", "CosineSim", "DiceSim", " ", "BigramCosineSim"], help="Specify the similarity algorithm that you want to evaluate"
+                      default=" ", choices=["ScoreSim", "CosineSim", "DiceSim", "BigramCosineSim"], help="Specify the similarity algorithm that you want to evaluate"
                       " First 2 are for TFIDF and last 3 are for Ngram")
   args = parser.parse_args()
   agent_name = args.agent_name

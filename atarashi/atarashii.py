@@ -27,19 +27,23 @@ from atarashi.agents.cosineSimNgram import NgramAgent
 from atarashi.agents.dameruLevenDist import DameruLevenDist
 from atarashi.agents.tfidf import TFIDF
 from atarashi.agents.wordFrequencySimilarity import WordFrequencySimilarity
+from atarashi.agents.models import Model
 
 __author__ = "Aman Jain"
 __email__ = "amanjain5221@gmail.com"
 __version__ = "0.0.10"
 
 
-def atarashii_runner(inputFile, processedLicense, agent_name, similarity="CosineSim", ngramJsonLoc=None, verbose=None):
+def atarashii_runner(inputFile, processedLicense, agent_name,
+                     similarity="CosineSim", ngramJsonLoc=None, modelsLoc=None,
+                     verbose=None):
   '''
   :param inputFile: Input File for scanning of license
   :param processedLicense: Processed License List (CSV) path (Default path already provided)
   :param agent_name: Specify the agent that you want to use for scanning
   :param similarity: Specify the similarity type to be used for the particular agent
   :param ngramJsonLoc: Specify N-Gram Json File location
+  :param modelsLoc: Specify folder location of trained models
   :param verbose: Specify if verbose mode is on or not (Default is Off/ None)
   :return: Returns the array of JSON with scan results
 
@@ -56,6 +60,9 @@ def atarashii_runner(inputFile, processedLicense, agent_name, similarity="Cosine
   scanner = ""
   if agent_name == "wordFrequencySimilarity":
     scanner = WordFrequencySimilarity(processedLicense)
+  elif agent_name in ("lr_classifier", "svc_classifier", "nb_classifier"):
+    scanner = Model(processedLicense, modelsLoc)
+    scanner.setSimAlgo(agent_name)
   elif agent_name == "DLD":
     scanner = DameruLevenDist(processedLicense)
   elif agent_name == "tfidf":
@@ -91,12 +98,13 @@ def main():
   '''
   defaultProcessed = resource_filename("atarashi", "data/licenses/processedLicenses.csv")
   defaultJSON = resource_filename("atarashi", "data/Ngram_keywords.json")
+  defaultModels = os.path.dirname(resource_filename("atarashi", "data/models/vectorizer.pkl"))
   parser = argparse.ArgumentParser()
   parser.add_argument("inputFile", help="Specify the input file path to scan")
   parser.add_argument("-l", "--processedLicenseList", required=False,
                       help="Specify the location of processed license list file")
   parser.add_argument("-a", "--agent_name", required=True,
-                      choices=['wordFrequencySimilarity', 'DLD', 'tfidf', 'Ngram'],
+                      choices=['wordFrequencySimilarity','lr_classifier','svc_classifier','nb_classifier' ,'DLD', 'tfidf', 'Ngram'],
                       help="Name of the agent that needs to be run")
   parser.add_argument("-s", "--similarity", required=False, default="CosineSim",
                       choices=["ScoreSim", "CosineSim", "DiceSim", "BigramCosineSim"],
@@ -104,6 +112,9 @@ def main():
                            " First 2 are for TFIDF and last 3 are for Ngram")
   parser.add_argument("-j", "--ngram_json", required=False,
                       help="Specify the location of Ngram JSON (for Ngram agent only)")
+  parser.add_argument("-m", "--models", required=False,
+                      help="Specify the location of models folder (for "
+                           "classifier agents only)", default=defaultModels)
   parser.add_argument("-v", "--verbose", help="increase output verbosity",
                       action="count", default=0)
   parser.add_argument('-V', '--version', action='version', version='%(prog)s ' + __version__)
@@ -114,13 +125,17 @@ def main():
   verbose = args.verbose
   processedLicense = args.processedLicenseList
   ngram_json = args.ngram_json
+  models = args.models
 
   if processedLicense is None:
     processedLicense = defaultProcessed
   if ngram_json is None:
     ngram_json = defaultJSON
+  if models is None:
+    models = defaultModels
 
-  result = atarashii_runner(inputFile, processedLicense, agent_name, similarity, ngram_json, verbose)
+  result = atarashii_runner(inputFile, processedLicense, agent_name, similarity,
+                            ngram_json, models, verbose)
   if agent_name == "wordFrequencySimilarity":
     result = [{
             "shortname": str(result),
