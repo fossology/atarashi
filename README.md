@@ -21,20 +21,17 @@ http://fossology.github.io/atarashi
 
 - Python >= v3.5
 - pip >= 18.1
-- `code_comments` (See installation bellow)
 
 ## Steps for Installation
 
 ### Install
 
 #### Install from PyPi
-- Install additional depencency code-comment
-    - `pip install code_comment@git+https://github.com/amanjain97/code_comment@master#egg=code_comment`
+
 - `pip install atarashi`
 
 #### Source install
-- Install additional dependency code-comment
-    - `pip install code_comment@git+https://github.com/amanjain97/code_comment@master#egg=code_comment`
+
 - `pip install .`
 - It will download all dependencies required and trigger build as well.
 - Build will generate 3 new files in your current directory

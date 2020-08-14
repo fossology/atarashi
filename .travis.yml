@@ -15,7 +15,6 @@ before_install:
   - pip -V
 
 install:
-  - pip install code_comment@git+https://github.com/amanjain97/code_comment@master#egg=code_comment
   - pip install .
 
 script:
