@@ -112,7 +112,7 @@ class BuildAtarashi(setuptools.command.build_py.build_py):
 
 metadata = dict(
   name = "atarashi",
-  version = "0.0.10",
+  version = "0.0.11",
   author = "Aman Jain",
   author_email = "amanjain5221@gmail.com",
   description = ("An intelligent license scanner."),
