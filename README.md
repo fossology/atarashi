@@ -15,7 +15,7 @@ Anticipated advantages is an improved precision while offering an as easy
 as possible approach to add new license texts or new license references.
 
 Atarashi is designed to work stand-alone and with FOSSology. More info at
-http://fossology.github.io/atarashi
+https://fossology.github.io/atarashi
 
 ### Requirements
 
@@ -195,4 +195,4 @@ This will generate file in `docs/_build/html`. Go to: index.html
 
 You can change the theme of the documentation by changing `html_theme` in config.py file in `docs/` folder.
 You can choose from {'alabaster', 'classic', 'sphinxdoc', 'scrolls', 'agogo', 'traditional', 'nature', 'haiku', 'pyramid', 'bizstyle'}
-[Reference](http://www.sphinx-doc.org/en/master/theming.html)
+[Reference](https://www.sphinx-doc.org/en/master/usage/theming.html)
