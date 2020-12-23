@@ -24,6 +24,7 @@ from tqdm import tqdm
 import shutil
 import sys
 import argparse
+from multiprocessing import Pool
 
 __author__ = "Ayush Bhardwaj"
 __email__ = "classicayush@gmail.com"
@@ -77,6 +78,43 @@ def getCommand(agent_name, similarity):
       return -1
   return command
 
+filesScanned = 0
+match = 0
+
+def processFile(filepath):
+  '''
+  processFile function runs the agent command on the bash/terminal and gets the result for the given file
+
+  :param filepath: The path of the file to be scanned
+  :param similarity: Similarity type of the agent
+  :return: Returns 1 if the result found by agent is correct and otherwise returns false
+  :rtype: int
+  '''
+  if filepath:
+    # Extract Filename from the Path
+    base = os.path.basename(filepath)
+    filename = os.path.splitext(base)[0]
+    tqdm.write("\n" + " ====> "+'On File: ' + filename)
+    # Run Scanner command from bash
+    runCommand = command + " " + filepath
+    tqdm.write('Command Running: ' + runCommand + '\n')
+    try:
+      output = subprocess.check_output(
+          runCommand, shell=True, stderr=subprocess.STDOUT)
+      output = output.decode("utf-8")
+      temp = json.loads(output)
+      if len(temp['results']) == 0:
+        temp['results'].append({'shortname': 'NULL'})
+      result = temp['results'][0]['shortname']
+      result = result.strip("['']")
+      tqdm.write("The Obtained result by agent is: " + result)
+      prCyan('Scanned the file ' + str(filepath) + '\n')
+      if filename == result:
+        return 1
+      else:
+        return 0
+    except Exception:
+      return 0
 
 def evaluate(command):
   '''
@@ -88,40 +126,20 @@ def evaluate(command):
   :rtype: float, int
   '''
   start_time = time.time()
-  (match, filesScanned) = (0, 0)
+  fileList = []
   for (root, dirs, files) in os.walk("TestFiles", topdown=True):
-    filecounter = 0
     for file in files:
-      filecounter += 1
-    for file in tqdm(files, total=filecounter, unit="files"):
       filepath = root + os.sep + file
-      if filepath:
-        # Extract Filename from the Path
-        base = os.path.basename(filepath)
-        filename = os.path.splitext(base)[0]
-        tqdm.write("\n" + " ====> "+'On File: ' + filename)
-        # Run Scanner command from bash
-        runCommand = command + " " + filepath
-        tqdm.write('Command Running: ' + runCommand)
-        filesScanned += 1
-        try:
-          output = subprocess.check_output(
-              runCommand, shell=True, stderr=subprocess.STDOUT)
-          output = output.decode("utf-8")
-          temp = json.loads(output)
-          if len(temp['results']) == 0:
-            temp['results'].append({'shortname': 'NULL'})
-          result = temp['results'][0]['shortname']
-          result = result.strip("['']")
-          tqdm.write("The Obtained result by agent is: " + result)
-          prCyan('Total files scanned = ' + str(filesScanned))
+      fileList.append(filepath)
 
-          if filename == result:
-            match += 1
-          prGreen('Successfully matched = ' + str(match) + '\n')
-        except Exception:
-          continue
-  accuracy = match * 100 / filesScanned
+  with Pool(os.cpu_count()) as p:
+    result = list(tqdm(p.imap_unordered(processFile, fileList), total=len(fileList), unit="files"))
+
+  # success_count is the count of successfully matched files  
+  success_count = sum(result)
+  accuracy = success_count * 100 / len(result)
+  prCyan('Total files scanned = ' + str(len(fileList)))
+  prGreen('Successfully matched = ' + str(success_count))
   timeElapsed = time.time() - start_time
   return (timeElapsed, accuracy)
 
@@ -136,8 +154,7 @@ if __name__ == "__main__":
   args = parser.parse_args()
   agent_name = args.agent_name
   similarity = args.similarity
-  
-  
+
 
   command = getCommand(agent_name, similarity)
   timeElapsed, accuracy = evaluate(command)
