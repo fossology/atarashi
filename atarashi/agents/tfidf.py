@@ -82,15 +82,15 @@ class TFIDF(AtarashiAgent):
                                     sublinear_tf=True, tokenizer=tokenize,
                                     vocabulary=processedData)
 
-    sklearn_representation = sklearn_tfidf.fit_transform(all_documents)
+    sklearn_representation = sklearn_tfidf.fit_transform(all_documents).toarray()
 
     score_arr = []
     result = 0
-    for counter, value in enumerate(sklearn_representation.toarray()[:len(sklearn_representation.toarray()) - 1],
+    for counter, value in enumerate(sklearn_representation[:len(sklearn_representation) - 1],
                                     start=0):
       sim_score = sum(value)
       score_arr.append({
-        'shortname': self.licenseList.iloc[result]['shortname'],
+        'shortname': self.licenseList.iloc[counter]['shortname'],
         'sim_type': "Sum of TF-IDF score",
         'sim_score': sim_score,
         'desc': "Score can be greater than 1 also"
@@ -115,15 +115,15 @@ class TFIDF(AtarashiAgent):
     startTime = time.time()
 
     all_documents = self.licenseList['processed_text'].tolist()
-    all_documents.append(processedData1)
-    sklearn_tfidf = TfidfVectorizer(min_df=0, use_idf=True, smooth_idf=True, sublinear_tf=True, tokenizer=tokenize)
+    sklearn_tfidf = TfidfVectorizer(min_df=0, use_idf=True, smooth_idf=True,
+                                    sublinear_tf=True, tokenizer=tokenize)
 
-    sklearn_representation = sklearn_tfidf.fit_transform(all_documents)
+    all_documents_matrix = sklearn_tfidf.fit_transform(all_documents).toarray()
+    search_martix = sklearn_tfidf.transform([processedData1]).toarray()[0]
 
-    for counter, value in enumerate(sklearn_representation.toarray()[:len(sklearn_representation.toarray()) - 1],
-                                    start=0):
-      sim_score = self.__cosine_similarity(value, sklearn_representation.toarray()[-1])
-      if sim_score >= 0.8:
+    for counter, value in enumerate(all_documents_matrix, start=0):
+      sim_score = self.__cosine_similarity(value, search_martix)
+      if sim_score >= 0.3:
         matches.append({
           'shortname': self.licenseList.iloc[counter]['shortname'],
           'sim_type': "TF-IDF Cosine Sim",

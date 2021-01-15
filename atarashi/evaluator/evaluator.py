@@ -29,7 +29,7 @@ from multiprocessing import Pool
 __author__ = "Ayush Bhardwaj"
 __email__ = "classicayush@gmail.com"
 
-with zipfile.ZipFile('TestFiles.zip', 'r') as zip: 
+with zipfile.ZipFile('TestFiles.zip', 'r') as zip:
   zip.extractall()
 
 # To generate colored Text
@@ -135,7 +135,7 @@ def evaluate(command):
   with Pool(os.cpu_count()) as p:
     result = list(tqdm(p.imap_unordered(processFile, fileList), total=len(fileList), unit="files"))
 
-  # success_count is the count of successfully matched files  
+  # success_count is the count of successfully matched files
   success_count = sum(result)
   accuracy = success_count * 100 / len(result)
   prCyan('Total files scanned = ' + str(len(fileList)))
