@@ -11,6 +11,7 @@ include requirements*.*
 include pyproject.toml
 include atarashi/data/licenses/processedLicenses.csv
 include atarashi/data/Ngram_keywords.json
+include atarashi/data/models/*
 
 prune .git
 prune venv

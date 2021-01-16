@@ -9,6 +9,7 @@ python:
   - 3.5
   - 3.6
   - 3.7
+  - 3.8
 
 before_install:
   - pip install --upgrade pip
@@ -23,3 +24,6 @@ script:
   - atarashi -a tfidf -s CosineSim ./atarashi/atarashii.py
   - atarashi -a DLD ./atarashi/atarashii.py
   - atarashi -a wordFrequencySimilarity ./atarashi/atarashii.py
+  - atarashi -a lr_classifier ./atarashi/atarashii.py
+  - atarashi -a svc_classifier ./atarashi/atarashii.py
+  - atarashi -a nb_classifier ./atarashi/atarashii.py

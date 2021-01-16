@@ -81,6 +81,22 @@ Get the help by running `atarashi -h` or `atarashi --help`
     - With **Bigram Cosine similarity**
 
         `atarashi -a Ngram -s BigramCosineSim /path/to/file.c`
+- **Classification models**
+    - **Training** (optional)
+        
+        `python3 atarashi/agents/models/train.py`
+    - Running **Classification Models**
+
+
+        - **Logistic Regression**
+
+            `atarashi -a lr_classifier /path/to/file.c`
+        - **Multimomial Naive Bayes**
+
+            `atarashi -a nb_classifier /path/to/file.c`
+        - **Linear SVC** 
+
+            `atarashi -a svc_classifier /path/to/file.c`
 - Running in **verbose** mode
 
     `atarashi -a DLD -v /path/to/file.c`
@@ -89,6 +105,14 @@ Get the help by running `atarashi -h` or `atarashi --help`
     understandable by atarashi.
     - `atarashi -a DLD -l /path/to/processedList.csv /path/to/file.c`
     - `atarashi -a Ngram -l /path/to/processedList.csv -j /path/to/ngram.json /path/to/file.c`
+- Running with a custom folder containing all the binary files
+    - We have introduced a `-m` /`--models` input parameter for providing location for model folder containing all the binary files required.
+     E.g. 
+        
+        ` atarashi -m path/to/custom/model/folder/ -a classifier_name /path/to/file.c`
+    
+    *Note: Providing this parameter is not compulsory, the default folder with binary files will load instead.*
+
 
 ### Running Docker image
 1. Pull Docker image
