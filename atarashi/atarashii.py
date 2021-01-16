@@ -21,6 +21,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 import argparse
 import os
 import json
+import os
+import errno
 from pkg_resources import resource_filename
 
 from atarashi.agents.cosineSimNgram import NgramAgent
@@ -80,8 +82,11 @@ def atarashii_runner(inputFile, processedLicense, agent_name, similarity="Cosine
       return -1
 
   scanner.setVerbose(verbose)
-  result = scanner.scan(inputFile)
-  return result
+  if (os.path.isfile(inputFile)):
+    result = scanner.scan(inputFile)
+    return result
+  else:    
+    raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), inputFile)
 
 
 def main():
@@ -120,25 +125,29 @@ def main():
   if ngram_json is None:
     ngram_json = defaultJSON
 
-  result = atarashii_runner(inputFile, processedLicense, agent_name, similarity, ngram_json, verbose)
-  if agent_name == "wordFrequencySimilarity":
-    result = [{
-            "shortname": str(result),
-            "sim_score": 1,
-            "sim_type": "wordFrequencySimilarity",
-            "description": ""
-        }]
-  elif agent_name == "DLD":
-    result = [{
-            "shortname": str(result),
-            "sim_score": 1,
-            "sim_type": "dld",
-            "description": ""
-        }]
-  result = list(result)
-  result = {"file": os.path.abspath(inputFile), "results": result}
-  result = json.dumps(result, sort_keys=True, ensure_ascii=False, indent=4)
-  print(result + "\n")
+  try:
+    result = atarashii_runner(inputFile, processedLicense, agent_name, similarity, ngram_json, verbose)
+    if result != -1:
+      if agent_name == "wordFrequencySimilarity":
+        result = [{
+                "shortname": str(result),
+                "sim_score": 1,
+                "sim_type": "wordFrequencySimilarity",
+                "description": ""
+            }]
+      elif agent_name == "DLD":
+        result = [{
+                "shortname": str(result),
+                "sim_score": 1,
+                "sim_type": "dld",
+                "description": ""
+            }]
+      result = list(result)
+      result = {"file": os.path.abspath(inputFile), "results": result}
+      result = json.dumps(result, sort_keys=True, ensure_ascii=False, indent=4)
+      print(result + "\n")
+  except FileNotFoundError as e:
+    print("Error: " + e.strerror+ ": '" + e.filename + "'")
 
 
 if __name__ == '__main__':
