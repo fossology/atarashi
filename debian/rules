@@ -1,0 +1,28 @@
+#!/usr/bin/make -f
+
+export PYBUILD_NAME=atarashi
+export DH_VERBOSE=1
+export PYBUILD_SYSTEM=distutils
+#export PYBUILD_DESTDIR_python3=debian/atarashi/
+#export PYBUILD_INSTALL_ARGS=--install-lib=/usr/share/atarashi/ --install-scripts=/usr/share/atarashi/
+PYTHON3_VERSIONS = $(shell py3versions -r)
+
+%:
+	dh $@ --with python3 -v --buildsystem=pybuild #python_distutils
+
+override_dh_auto_clean:
+	dh_auto_clean
+	find . -name \*.pyc -exec rm {} \;
+	rm -rf build
+
+override_dh_auto_build:
+	dh_auto_build
+	set -ex; for python in $(PYTHON3_VERSIONS); do \
+        $$python setup.py build; \
+	done
+
+override_dh_auto_install:
+	dh_auto_install
+	set -ex; for python in $(PYTHON3_VERSIONS); do \
+        $$python setup.py install --root=$(CURDIR)/debian/$(DEB_SOURCE) --no-compile -O0 --install-layout=deb; \
+	done

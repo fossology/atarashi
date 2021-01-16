@@ -1,0 +1,13 @@
+# License data is provided as knowledge base and does not apply on the file
+atarashi binary: license-problem-bad-php-license atarashi/data/licenses/2020-11-25_3_11.csv
+atarashi binary: license-problem-bad-php-license atarashi/data/licenses/licenseList.csv
+atarashi binary: license-problem-bad-php-license atarashi/data/licenses/processedLicenses.csv
+atarashi binary: license-problem-gfdl-invariants atarashi/data/Ngram_keywords.json
+atarashi binary: license-problem-json-evil atarashi/data/licenses/2020-11-25_3_11.csv
+atarashi binary: license-problem-json-evil atarashi/data/licenses/licenseList.csv
+atarashi binary: license-problem-json-evil atarashi/data/licenses/processedLicenses.csv
+atarashi binary: license-problem-json-evil atarashi/data/Ngram_keywords.json
+atarashi binary: license-problem-json-evil atarashi/evaluator/TestFiles/JSON.js
+atarashi binary: license-problem-php-license atarashi/data/licenses/2020-11-25_3_11.csv
+atarashi binary: license-problem-php-license atarashi/data/licenses/licenseList.csv
+atarashi binary: license-problem-php-license atarashi/data/licenses/processedLicenses.csv

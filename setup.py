@@ -23,7 +23,6 @@ import os
 import subprocess
 import sys
 
-from atarashi.build_deps import download_dependencies
 from setuptools import setup, find_packages
 import setuptools.command.build_py
 
@@ -33,7 +32,6 @@ sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 
 __author__ = "Gaurav Mishra"
 __email__ = "gmishx@gmail.com"
-
 
 # Utility function to read the README file.
 # Used for the long_description.  It's nice, because now 1) we have a top level
@@ -55,7 +53,7 @@ build_requirements = [
   'tqdm>=4.23.4',
   'pandas>=0.23.1',
   'urllib3>=1.24.1',
-  'nirjas>=0.0.3'
+  'Nirjas>=0.0.3'
 ]
 
 requirements = [
@@ -68,36 +66,8 @@ requirements = [
   'textdistance>=3.0.3',
   'pyxDamerauLevenshtein>=1.5',
   'urllib3>=1.24.1',
-  'nirjas>=0.0.3'
+  'Nirjas>=0.0.3'
 ]
-
-class BuildAtarashiDependencies(distutils.cmd.Command):
-  """
-  Class to build dependency files for Atarashi.
-  Files created:
-  1.  data/Ngram_keywords.json
-  2.  data/licenses/<spdx_license>.csv
-  3.  data/licenses/processedLicenses.csv
-  """
-  description = 'build Atarashi dependency files'
-  user_options = [
-    ('threads=', 't', 'Number of threads to use')
-  ]
-
-  def initialize_options(self):
-    """Set default values for options."""
-    self.threads = os.cpu_count()
-
-  def finalize_options(self):
-    """Check the values for options."""
-    if self.threads:
-      self.threads = int(self.threads)
-      assert self.threads > 0
-
-  def run(self):
-    """Run atarashi/build_deps.py"""
-    download_dependencies(self.threads)
-
 
 class BuildAtarashi(setuptools.command.build_py.build_py):
   """
@@ -109,6 +79,43 @@ class BuildAtarashi(setuptools.command.build_py.build_py):
     self.run_command('build_deps')
     setuptools.command.build_py.build_py.run(self)
 
+
+command_classes = {}
+
+try:
+  from atarashi.build_deps import download_dependencies
+
+  class BuildAtarashiDependencies(distutils.cmd.Command):
+    """
+    Class to build dependency files for Atarashi.
+    Files created:
+    1.  data/Ngram_keywords.json
+    2.  data/licenses/<spdx_license>.csv
+    3.  data/licenses/processedLicenses.csv
+    """
+    description = 'build Atarashi dependency files'
+    user_options = [
+      ('threads=', 't', 'Number of threads to use')
+    ]
+
+    def initialize_options(self):
+      """Set default values for options."""
+      self.threads = os.cpu_count()
+
+    def finalize_options(self):
+      """Check the values for options."""
+      if self.threads:
+        self.threads = int(self.threads)
+        assert self.threads > 0
+
+    def run(self):
+      """Run atarashi/build_deps.py"""
+      download_dependencies(self.threads)
+
+  command_classes['build_deps'] = BuildAtarashiDependencies
+  command_classes['build_py'] = BuildAtarashi
+except:
+  print ("Not building CSV and JSON")
 
 metadata = dict(
   name = "atarashi",
@@ -147,10 +154,7 @@ metadata = dict(
       'data/licenses/processedLicenses.csv'
     ]
   },
-  cmdclass = {
-    'build_deps': BuildAtarashiDependencies,
-    'build_py': BuildAtarashi,
-  },
+  cmdclass = command_classes
 )
 
 setup(**metadata)

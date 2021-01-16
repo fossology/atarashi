@@ -1,0 +1,62 @@
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: atarashi
+Upstream-Contact: FOSSology <fossology@fossology.org>
+Source: https://github.com/fossology/atarashi
+Disclaimer: This file is offered as-is, without any warranty.
+License: GPL-2.0
+Comment: Created on 2019-10-24T18:17:32Z with FOSSology
+
+
+Files: *
+Copyright: Copyright 2018 Aman Jain <amanjain5221@gmail.com>
+           Copyright 2018 Gaurav Mishra <gmishx@gmail.com>
+           Copyright 2019 Ayush Bhardwaj <classicayush@gmail.com>
+License: GPL-2.0
+
+Files: atarashi/libs/initialmatch.py
+       atarashi/license/licenseDownloader.py
+       LICENSE
+       README.md
+       Dockerfile
+       atarashi/libs/utils.py
+       atarashi/license/licenseLoader.py
+       atarashi/agents/atarashiAgent.py
+       setup.py
+       atarashi/imtihaan.py
+       atarashi/build_deps.py
+       atarashi/agents/wordFrequencySimilarity.py
+       atarashi/evaluator/evaluator.py
+       atarashi/agents/tfidf.py
+       atarashi/atarashii.py
+       atarashi/agents/dameruLevenDist.py
+       atarashi/libs/license_clustering.py
+       atarashi/license/licensePreprocessor.py
+       atarashi/license/license_merger.py
+       atarashi/libs/ngram.py
+       atarashi/agents/cosineSimNgram.py
+       atarashi/libs/commentPreprocessor.py
+       .travis.yml
+Copyright: Copyright 2018 Aman Jain <amanjain5221@gmail.com>
+           Copyright (C) 1989, 1991 Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+           Copyright 2018 Gaurav Mishra <gmishx@gmail.com>
+           Copyright 2019 Ayush Bhardwaj <classicayush@gmail.com>
+           Copyright (C) 2018-2019 Gaurav Mishra <mishra.gaurav@siemens.com>
+           Copyright Siemens AG, 2019
+License: GPL-2.0
+
+License: GPL-2.0
+   This package is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; version 2 dated June, 1991.
+   .
+   This package is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+   .
+   You should have received a copy of the GNU General Public License
+   along with this package; if not, write to the Free Software Foundation,
+   Inc., 51 Franklin St, Fifth Floor, Boston,
+   MA 02110-1301, USA.
+   .
+   See /usr/share/common-licenses/GPL-2 for more information.
