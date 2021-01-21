@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """
-import argparse
+import plac
 import time
 
 from atarashi.libs.utils import cosine_similarity
@@ -120,17 +120,16 @@ def cluster_licenses(licenseList, verbose=0):
   return result
 
 
-if __name__ == "__main__":
-  parser = argparse.ArgumentParser()
-  parser.add_argument("processedLicenseList", help="Specify the processed license list file")
-  parser.add_argument("-v", "--verbose", help="increase output verbosity",
-                      action="count", default=0)
-  args = parser.parse_args()
+@plac.annotations(
+  licenseList = plac.Annotation("Specify the processed license list file", "positional", None, str, metavar="processedLicenseList"),
+  verbose = plac.Annotation("increase output verbosity", "flag", "v")  
+)
 
-  licenseList = args.processedLicenseList
-  verbose = args.verbose
-
+def main(licenseList, verbose=False):
   start = time.time()
   cluster = cluster_licenses(licenseList, verbose)
   print("Time taken is ", str(time.time() - start))
   print(cluster)
+
+if __name__ == "__main__":
+  plac.call(main)

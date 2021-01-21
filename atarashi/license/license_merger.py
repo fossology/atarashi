@@ -22,7 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 __author__ = "Aman Jain"
 __email__ = "amanjain5221@gmail.com"
 
-import argparse
+import plac
 import os
 from pathlib import Path
 
@@ -95,18 +95,18 @@ def license_merger(licenseList, requiredlicenseList, verbose=0):
   return str(Path(os.path.abspath(requiredlicenseList)))
 
 
-if __name__ == "__main__":
-  parser = argparse.ArgumentParser()
-  parser.add_argument("licenseList", help="Specify the license list file of fossology which contains licenses")
-  parser.add_argument("requiredlicenseList", help="Specify the license list file in which you want to merge licenses")
-  parser.add_argument("-v", "--verbose", help="increase output verbosity",
-                      action="count", default=0)
-  args = parser.parse_args()
+@plac.annotations(
+  licenseList = plac.Annotation("Specify the license list file of fossology which contains licenses", "positional"),
+  requiredlicenseList = plac.Annotation("Specify the license list file in which you want to merge licenses", "positional"),
+  verbose = plac.Annotation("increase output verbosity", "flag", "v")  
+)
 
-  licenseList = args.licenseList
-  requiredlicenseList = args.requiredlicenseList
-  verbose = args.verbose
 
+def main(licenseList, requiredlicenseList, verbose=False):
   filePath = license_merger(licenseList, requiredlicenseList, verbose)
   if filePath:
     print("Updated", filePath)
+
+
+if __name__ == "__main__":
+  plac.call(main)

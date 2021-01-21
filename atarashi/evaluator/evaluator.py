@@ -23,8 +23,9 @@ import json
 from tqdm import tqdm
 import shutil
 import sys
-import argparse
-from multiprocessing import Pool
+import plac
+from multiprocessing import Pool, freeze_support
+from functools import partial
 
 __author__ = "Ayush Bhardwaj"
 __email__ = "classicayush@gmail.com"
@@ -78,10 +79,8 @@ def getCommand(agent_name, similarity):
       return -1
   return command
 
-filesScanned = 0
-match = 0
 
-def processFile(filepath):
+def processFile(filepath, command):
   '''
   processFile function runs the agent command on the bash/terminal and gets the result for the given file
 
@@ -115,6 +114,8 @@ def processFile(filepath):
         return 0
     except Exception:
       return 0
+  else:
+    return 0
 
 def evaluate(command):
   '''
@@ -133,7 +134,7 @@ def evaluate(command):
       fileList.append(filepath)
 
   with Pool(os.cpu_count()) as p:
-    result = list(tqdm(p.imap_unordered(processFile, fileList), total=len(fileList), unit="files"))
+    result = list(tqdm(p.imap_unordered(partial(processFile, command=command), fileList), total=len(fileList), unit="files"))
 
   # success_count is the count of successfully matched files
   success_count = sum(result)
@@ -144,27 +145,21 @@ def evaluate(command):
   return (timeElapsed, accuracy)
 
 
-if __name__ == "__main__":
-  parser = argparse.ArgumentParser()
-  parser.add_argument("-a", "--agent_name", required=True,
-                      choices=['wordFrequencySimilarity', 'DLD', 'tfidf', 'Ngram'], help="Name of the agent that you want to evaluate")
-  parser.add_argument("-s", "--similarity", required=False,
-                      default=" ", choices=["ScoreSim", "CosineSim", "DiceSim", " ", "BigramCosineSim"], help="Specify the similarity algorithm that you want to evaluate"
-                      " First 2 are for TFIDF and last 3 are for Ngram")
-  args = parser.parse_args()
-  agent_name = args.agent_name
-  similarity = args.similarity
+@plac.annotations(  
+  similarity = plac.Annotation("Specify the similarity algorithm that you want to evaluate. First 2 are for TFIDF and last 3 are for Ngram", "option", "s", str, ["ScoreSim", "CosineSim", "DiceSim", " ", "BigramCosineSim"], metavar="{ScoreSim,CosineSim,DiceSim, ,BigramCosineSim}"),
+  agent_name = plac.Annotation("Name of the agent that you want to evaluate", "option", "a", str, ["wordFrequencySimilarity", "DLD", "tfidf", "Ngram"], metavar="{wordFrequencySimilarity,DLD,tfidf,Ngram}")
+)
 
-
+def main(similarity, agent_name="wordFrequencySimilarity"):
   command = getCommand(agent_name, similarity)
-  timeElapsed, accuracy = evaluate(command)
-  print('\n' + '      ++++++++++++++++++ Result ++++++++++++++++++')
-  print('      ++++++++++++++++++++++++++++++++++++++++++++')
-  prGreen("     ---> Total time elapsed: " + str(round(timeElapsed, 2)) + " Seconds  <---")
-  prGreen("     ---> Accuracy: " + str(round(accuracy, 2)) + "%                     <---")
-  print('      ++++++++++++++++++++++++++++++++++++++++++++')
-  print('      ++++++++++++++++++++++++++++++++++++++++++++')
-
+  if command != -1:
+    timeElapsed, accuracy = evaluate(command)
+    print('\n' + '      ++++++++++++++++++ Result ++++++++++++++++++')
+    print('      ++++++++++++++++++++++++++++++++++++++++++++')
+    prGreen("     ---> Total time elapsed: " + str(round(timeElapsed, 2)) + " Seconds  <---")
+    prGreen("     ---> Accuracy: " + str(round(accuracy, 2)) + "%                     <---")
+    print('      ++++++++++++++++++++++++++++++++++++++++++++')
+    print('      ++++++++++++++++++++++++++++++++++++++++++++')
 
   zf = zipfile.ZipFile("TestFiles.zip", "w")
   for dirname, subdirs, files in os.walk("TestFiles"):
@@ -173,5 +168,8 @@ if __name__ == "__main__":
         zf.write(os.path.join(dirname, filename))
   zf.close()
 
-  shutil.rmtree('TestFiles')
+  shutil.rmtree('TestFiles')  
 
+if __name__ == "__main__":
+  freeze_support()
+  plac.call(main)

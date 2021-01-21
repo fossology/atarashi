@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """
-import argparse
+import plac
 from builtins import staticmethod
 import json
 from multiprocessing import Pool as ThreadPool
@@ -168,14 +168,13 @@ class LicenseDownloader(object):
     return pd.DataFrame(licenseDict, columns=csvColumns)
 
 
-if __name__ == "__main__":
-  parser = argparse.ArgumentParser()
-  parser.add_argument("-t", "--threads", required=False, default=os.cpu_count(),
-                      type=int,
-                      help="No of threads to use for download. Default: CPU count")
-  parser.add_argument("-f", "--force", action="store_true",
-                      help="Force download regardless of existing list")
-  args = parser.parse_args()
-  threads = args.threads
-  force = args.force
+@plac.annotations(
+  force = plac.Annotation("Force download regardless of existing list", "flag", "f"),
+  threads = plac.Annotation("No of threads to use for download. Default: CPU count", "option", "t", int)
+)
+
+def main(force, threads):
   print(LicenseDownloader.download_license(threads, force))
+
+if __name__ == "__main__":
+  plac.call(main)

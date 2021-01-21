@@ -22,7 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 __author__ = "Gaurav Mishra"
 __email__ = "gmishx@gmail.com"
 
-import argparse
+import plac
 import os
 from pathlib import Path
 
@@ -30,8 +30,6 @@ from tqdm import tqdm
 
 from atarashi.libs.commentPreprocessor import CommentPreprocessor
 from atarashi.license.licenseLoader import LicenseLoader
-
-args = None
 
 
 class LicensePreprocessor(object):
@@ -103,15 +101,19 @@ class LicensePreprocessor(object):
     return processedFile
 
 
-if __name__ == "__main__":
-  parser = argparse.ArgumentParser()
-  parser.add_argument("licenseList", help="Specify the license list file which contains licenses")
-  parser.add_argument("processedFile", help="Specify the destination to store processed list")
-  parser.add_argument("-v", "--verbose", help="increase output verbosity",
-                      action="count", default=0)
-  args = parser.parse_args()
+@plac.annotations(
+  licenseList = plac.Annotation("Specify the license list file which contains licenses", "positional"),
+  processedFile = plac.Annotation("Specify the destination to store processed list", "positional"),
+  verbose = plac.Annotation("increase output verbosity", "flag", "v")  
+)
+
+
+def main(licenseList, processedFile, verbose=False):
   licenseList = os.path.abspath(args.licenseList)
   processedFile = os.path.abspath(args.processedFile)
-  verbose = args.verbose
 
   print("Use: " + LicensePreprocessor.create_processed_file(licenseList, processedFile, verbose))
+
+
+if __name__ == "__main__":
+  plac.call(main)

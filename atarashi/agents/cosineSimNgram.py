@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """
-import argparse
+import plac
 from enum import Enum
 import itertools
 import json
@@ -184,24 +184,16 @@ class NgramAgent(AtarashiAgent):
       self.simType = newAlgo
 
 
-if __name__ == "__main__":
-  parser = argparse.ArgumentParser()
-  parser.add_argument("processedLicenseList", help="Specify the processed license list file")
-  parser.add_argument("ngramJson", help="Specify the location of NGRAM JSON")
-  parser.add_argument("inputFile", help="Specify the input file which needs to be scanned")
-  parser.add_argument("-s", "--similarity", required=False, default="BigramCosineSim",
-                      choices=["CosineSim", "DiceSim", "BigramCosineSim"],
-                      help="Specify the similarity algorithm that you want")
-  parser.add_argument("-v", "--verbose", help="increase output verbosity",
-                      action='count', default=0)
-  args = parser.parse_args()
+@plac.annotations(
+  licenseList = plac.Annotation("Specify the processed license list file", "positional", None, str, metavar="processedLicenseList"),
+  ngramJsonLoc = plac.Annotation("Specify the location of NGRAM JSON", metavar="ngramJson"),
+  inputFile = plac.Annotation("Specify the input file which needs to be scanned"),
+  similarity = plac.Annotation("Specify the similarity algorithm that you want", "option", "s", str, ["CosineSim", "DiceSim", "BigramCosineSim"], metavar="{CosineSim,DiceSim,BigramCosineSim}"),
+  verbose = plac.Annotation("increase output verbosity", "flag", "v")  
+)
 
-  licenseList = args.processedLicenseList
-  ngramJsonLoc = args.ngramJson
-  inputFile = args.inputFile
-  simType = args.similarity
-  verbose = args.verbose
-
+def main(licenseList, ngramJsonLoc, inputFile, similarity="BigramCosineSim", verbose=False):
+  simType = similarity
   scanner = NgramAgent(licenseList, ngramJson=ngramJsonLoc, verbose=verbose)
   if simType == "CosineSim":
     scanner.setSimAlgo(NgramAgent.NgramAlgo.cosineSim)
@@ -215,3 +207,7 @@ if __name__ == "__main__":
     print("N-Gram identifier and " + str(simType) + " is " + str(result))
   else:
     print("Result is nothing")
+
+
+if __name__ == "__main__":
+  plac.call(main)

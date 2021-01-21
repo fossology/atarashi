@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """
-import argparse
+import plac
 import json
 from multiprocessing import Pool as ThreadPool
 import os
@@ -137,23 +137,15 @@ def createNgrams(licenseList, ngramJsonLoc, threads=os.cpu_count(), verbose=0):
   return ngramJsonLoc, matched_output, no_keyword_matched
 
 
-if __name__ == '__main__':
-  parser = argparse.ArgumentParser()
-  parser.add_argument("processedLicenseList", help="Specify the processed license list file")
-  parser.add_argument("ngramJson", help="Specify the location to store "
-                                        "NGRAM JSON")
-  parser.add_argument("-t", "--threads", required=False, default=os.cpu_count(),
-                      type=int,
-                      help="No of threads to use for download. Default: CPU count")
-  parser.add_argument("-v", "--verbose", help="increase output verbosity",
-                      action="count", default=0)
-  args = parser.parse_args()
+@plac.annotations(
+  licenseList = plac.Annotation("Specify the processed license list file", "positional", None, str, metavar="processedLicenseList"),
+  ngramJsonLoc = plac.Annotation("Specify the location to store NGRAM JSON", metavar="ngramJson"),
+  threads = plac.Annotation("No of threads to use for download. Default: CPU count", "option", "t", int),
+  verbose = plac.Annotation("increase output verbosity", "flag", "v")  
+)
 
-  licenseList = args.processedLicenseList
-  threads = args.threads
-  ngramJsonLoc = args.ngramJson
-  verbose = args.verbose
 
+def main(licenseList, ngramJsonLoc, threads=os.cpu_count(), verbose=False):
   createNgrams(licenseList, ngramJsonLoc, threads, verbose=verbose)
   if verbose > 0:
     print(matched_output)
@@ -168,3 +160,6 @@ Steps:
 4. store the unique ngrams in a file (maybe csv or any file)
 
 '''
+
+if __name__ == '__main__':
+  plac.call(main)
