@@ -19,7 +19,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """
 
-import argparse
+import plac
+from nirjas import extract
 import json
 import os
 import sys
@@ -32,7 +33,6 @@ from nirjas import extract as commentExtract, LanguageMapper
 __author__ = "Aman Jain"
 __email__ = "amanjain5221@gmail.com"
 
-args = None
 
 def licenseComment(data):
   match_list = ['source', 'free', 'under','use',  'copyright', 'grant', 'software', 'license','licence', 'agreement', 'distribute', 'redistribution', 'liability', 'rights', 'reserved', 'general', 'public', 'modify', 'modified', 'modification', 'permission','permitted' 'granted', 'distributed', 'notice', 'distribution', 'terms', 'freely', 'licensed', 'merchantibility','redistributed', 'see', 'read', '(c)', 'copying', 'legal', 'licensing', 'spdx']
@@ -141,20 +141,15 @@ class CommentPreprocessor(object):
     return outputFile
 
 
-if __name__ == "__main__":
-  print("The file has been run directly")
-  parser = argparse.ArgumentParser()
-  parser.add_argument("-p", "--process", required=True,
-                      choices=['preprocess', 'extract'],
-                      help="Which process you want to run")
-  parser.add_argument("inputFile", help="Specify the input file which needs to be processed")
-  parser.add_argument("-v", "--verbose", help="increase output verbosity",
-                      action="count", default=0)
-  args = parser.parse_args()
-  process = args.process
-  inputFile = args.inputFile
-  verbose = args.verbose
+@plac.annotations(
+  process = plac.Annotation("Which process you want to run", "option", "p", str, ["preprocess", "extract"], metavar="{preprocess,extract}"),
+  inputFile = plac.Annotation("Specify the input file which needs to be processed"),
+  verbose = plac.Annotation("increase output verbosity", "flag", "v")  
+)
 
+
+def main(process, inputFile, verbose=False):
+  print("The file has been run directly")
   if process == "extract":
     tempLoc = str(CommentPreprocessor.extract(inputFile))
     print("Temporary output file path: ", tempLoc)
@@ -164,3 +159,7 @@ if __name__ == "__main__":
     with open(inputFile) as file:
       data = file.read().replace('\n', ' ')
       print("Preprocessed data is: ", str(CommentPreprocessor.preprocess(data)))
+
+
+if __name__ == "__main__":
+  plac.call(main)

@@ -19,7 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """
 
-import argparse
+import plac
 import sys
 
 from pyxdameraulevenshtein import damerau_levenshtein_distance
@@ -62,18 +62,18 @@ class DameruLevenDist(AtarashiAgent):
       return temp[0]
 
 
-if __name__ == "__main__":
-  print("The file has been run directly")
-  parser = argparse.ArgumentParser()
-  parser.add_argument("inputFile", help="Specify the input file which needs to be scanned")
-  parser.add_argument("processedLicenseList",
-                      help="Specify the processed license list file which contains licenses")
-  parser.add_argument("-v", "--verbose", help="increase output verbosity",
-                      action="count", default=0)
-  args = parser.parse_args()
-  filename = args.inputFile
-  licenseList = args.processedLicenseList
-  verbose = args.verbose
+@plac.annotations(
+  filename = plac.Annotation("Specify the input file which needs to be scanned", metavar="inputFile"),
+  licenseList = plac.Annotation("Specify the processed license list file which contains licenses", "positional", None, str, metavar="processedLicenseList"),
+  verbose = plac.Annotation("increase output verbosity", "flag", "v")  
+)
 
+
+def main(filename, licenseList, verbose=False):
+  print("The file has been run directly")
   scanner = DameruLevenDist(licenseList, verbose=verbose)
-  print("License Detected using Dameru Leven Distance: " + str(scanner.scan(filename)))
+  print("License Detected using Dameru Leven Distance: " + str(scanner.scan(filename)))  
+
+
+if __name__ == "__main__":
+  plac.call(main)

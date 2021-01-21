@@ -22,7 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 __author__ = "Aman Jain"
 __email__ = "amanjain5221@gmail.com"
 
-import argparse
+import plac
 import re
 
 from atarashi.agents.atarashiAgent import AtarashiAgent, exactMatcher
@@ -79,19 +79,18 @@ class WordFrequencySimilarity(AtarashiAgent):
       return temp
 
 
-if __name__ == "__main__":
+@plac.annotations(
+  filename = plac.Annotation("Specify the input file which needs to be scanned", metavar="inputFile"),
+  licenseList = plac.Annotation("Specify the processed license list file which contains licenses", "positional", None, str, metavar="processedLicenseList"),
+  verbose = plac.Annotation("increase output verbosity", "flag", "v")  
+)
+
+
+def main(filename, licenseList, verbose=False):
   print("The file has been called from main")
-  parser = argparse.ArgumentParser()
-  parser.add_argument("inputFile", help = "Specify the input file which needs to be scanned")
-  parser.add_argument("processedLicenseList",
-                      help = "Specify the processed license list file which contains licenses")
-  parser.add_argument("-v", "--verbose", help = "increase output verbosity",
-                      action = "count", default = 0)
-
-  args = parser.parse_args()
-  filename = args.inputFile
-  licenseList = args.processedLicenseList
-  verbose = args.verbose
-
   scanner = WordFrequencySimilarity(licenseList, verbose = verbose)
   print("The result from Histogram similarity algo is ", scanner.scan(filename))
+
+
+if __name__ == "__main__":
+  plac.call(main)

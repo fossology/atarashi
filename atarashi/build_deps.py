@@ -22,7 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 __author__ = "Gaurav Mishra"
 __email__ = "gmishx@gmail.com"
 
-import argparse
+import plac
 import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)) + '/../')
@@ -40,7 +40,12 @@ First downloads SPDX licenses, then merge them with FOSSology licenses.
 The merged CSV is then processesed which is then used to create the Ngrams.
 """
 
-def download_dependencies(threads = os.cpu_count(), verbose = 0):
+@plac.annotations(
+  threads = plac.Annotation("No of threads to use for download. Default: CPU count", "option", "t", int, metavar="THREADS"),
+  verbose = plac.Annotation("increase output verbosity", "flag", "v")
+)
+
+def download_dependencies(threads = os.cpu_count(), verbose = False):
   currentDir = os.path.dirname(os.path.abspath(__file__))
   licenseListCsv = currentDir + "/data/licenses/licenseList.csv"
   processedLicenseListCsv = currentDir + "/data/licenses/processedLicenses.csv"
@@ -59,14 +64,4 @@ def download_dependencies(threads = os.cpu_count(), verbose = 0):
   createNgrams(processedLicenseListCsv, ngramJsonLoc, threads, verbose)
 
 if __name__ == "__main__":
-  parser = argparse.ArgumentParser()
-  parser.add_argument("-t", "--threads", required = False, default = os.cpu_count(),
-                      type = int,
-                      help = "No of threads to use for download. Default: CPU count")
-  parser.add_argument("-v", "--verbose", help = "increase output verbosity",
-                      action = "count", default = 0)
-  args = parser.parse_args()
-  threads = args.threads
-  verbose = args.verbose
-
-  download_dependencies(threads, verbose)
+  plac.call(download_dependencies)

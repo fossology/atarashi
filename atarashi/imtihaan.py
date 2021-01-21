@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """
-import argparse
+import plac
 import os
 import sys
 from sys import exit
@@ -30,28 +30,17 @@ from atarashi.agents.tfidf import TFIDF
 __author__ = "Aman Jain"
 __email__ = "amanjain5221@gmail.com"
 
-args = None
 
-if __name__ == "__main__":
-  parser = argparse.ArgumentParser()
-  parser.add_argument("processedLicenseList", help="Specify the processed license list file which contains licenses")
-  parser.add_argument("AgentName", choices=['DLD', 'tfidf', 'Ngram'],
-                      help="Name of the agent that needs to be run")
-  parser.add_argument("TestFiles", help="Specify the folder path that needs to be tested")
-  parser.add_argument("-s", "--similarity", required=False, default="CosineSim",
-                      choices=["ScoreSim", "CosineSim", "DiceSim", "BigramCosineSim"],
-                      help="Specify the similarity algorithm that you want."
-                           " First 2 are for TFIDF and last 3 are for Ngram")
-  parser.add_argument("-j", "--ngram_json", required=False,
-                      help="Specify the location of Ngram JSON (for Ngram agent only)")
-  parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
-  args = parser.parse_args()
-  agent_name = args.AgentName
-  processedLicense = args.processedLicenseList
-  testFilePath = args.TestFiles
-  similarity = args.similarity
-  ngram_json = args.ngram_json
+@plac.annotations(
+  ngram_json = plac.Annotation("Specify the location of Ngram JSON (for Ngram agent only)", "option", "j"),
+  processedLicense = plac.Annotation("Specify the processed license list file which contains licenses", metavar="processedLicenseList"),
+  agent_name = plac.Annotation("Name of the agent that needs to be run", "positional", None, str, ["DLD", "tfidf", "Ngram"], metavar="{DLD,tfidf,Ngram}"),
+  testFilePath = plac.Annotation("Specify the folder path that needs to be tested", metavar="TestFiles"),
+  similarity = plac.Annotation("Specify the similarity algorithm that you want. First 2 are for TFIDF and last 3 are for Ngram", "option", "s", str, ["ScoreSim", "CosineSim", "DiceSim", "BigramCosineSim"], metavar="{ScoreSim,CosineSim,DiceSim,BigramCosineSim}"),
+  verbose = plac.Annotation("increase output verbosity", "flag", "v")
+)
 
+def main(ngram_json, processedLicense, agent_name, testFilePath, similarity="CosineSim", verbose=False):
   pathname = os.path.dirname(sys.argv[0])
   testFilePath = os.path.abspath(testFilePath)
 
@@ -85,4 +74,7 @@ if __name__ == "__main__":
       print(filepath.split('tests/')[1])
       actual_license = filepath.split('/')[-1].split('.c')[0]
       result = scanner.scan(filepath)
-      print("Actual License: " + actual_license + "\nResult: " + str(result) + "\n")
+      print("Actual License: " + actual_license + "\nResult: " + str(result) + "\n")  
+
+if __name__ == "__main__":
+  plac.call(main)

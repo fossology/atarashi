@@ -15,4 +15,3 @@ include atarashi/data/Ngram_keywords.json
 prune .git
 prune venv
 prune test*
-
