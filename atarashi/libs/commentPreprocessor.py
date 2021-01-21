@@ -20,7 +20,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 """
 
 import argparse
-from nirjas import extract
 import json
 import os
 import sys
@@ -28,57 +27,62 @@ import re
 import string
 import tempfile
 
+from nirjas import extract as commentExtract, LanguageMapper
+
 __author__ = "Aman Jain"
 __email__ = "amanjain5221@gmail.com"
 
 args = None
 
 def licenseComment(data):
-    list = ['source', 'free', 'under','use',  'copyright', 'grant', 'software', 'license','licence', 'agreement', 'distribute', 'redistribution', 'liability', 'rights', 'reserved', 'general', 'public', 'modify', 'modified', 'modification', 'permission','permitted' 'granted', 'distributed', 'notice', 'distribution', 'terms', 'freely', 'licensed', 'merchantibility','redistributed', 'see', 'read', '(c)', 'copying', 'legal', 'licensing', 'spdx']
+  match_list = ['source', 'free', 'under','use',  'copyright', 'grant', 'software', 'license','licence', 'agreement', 'distribute', 'redistribution', 'liability', 'rights', 'reserved', 'general', 'public', 'modify', 'modified', 'modification', 'permission','permitted' 'granted', 'distributed', 'notice', 'distribution', 'terms', 'freely', 'licensed', 'merchantibility','redistributed', 'see', 'read', '(c)', 'copying', 'legal', 'licensing', 'spdx']
 
-    MLmapCount, CSLmapCount, SLmapCount = [], [], []
-    comment = ""
-    tempCount = 0
-    for id, item in enumerate(data[0]["multi_line_comment"]):
-        count = 0
-        if 'spdx-license-identifier' in item['comment'].lower():
-            return item['comment']
+  MLmapCount, CSLmapCount, SLmapCount = [], [], []
+  comment = ""
+  tempCount = 0
+  if "multi_line_comment" in data:
+    for id, item in enumerate(data["multi_line_comment"]):
+      count = 0
+      if 'spdx-license-identifier' in item['comment'].lower():
+        return item['comment']
 
-        for i in list:
-            if i in item['comment'].lower():
-                count+=1
+      for i in match_list:
+        if i in item['comment'].lower():
+          count+=1
 
-        if count > tempCount:
-            tempCount = count
-            comment = item['comment']
+      if count > tempCount:
+        tempCount = count
+        comment = item['comment']
 
-    if "cont_single_line_comment" in data[0]:
-      for id, item in enumerate(data[0]["cont_single_line_comment"]):
-          count = 0
-          if 'spdx-license-identifier' in item['comment'].lower():
-              return item['comment']
+  if "cont_single_line_comment" in data:
+    for id, item in enumerate(data["cont_single_line_comment"]):
+      count = 0
+      if 'spdx-license-identifier' in item['comment'].lower():
+        return item['comment']
 
-          for i in list:
-              if i in item['comment'].lower():
-                  count+=1
-          if count > tempCount:
-              tempCount = count
-              comment = item['comment']
+      for i in match_list:
+        if i in item['comment'].lower():
+          count+=1
 
-    if "single_line_comment" in data[0]:
-      for id, item in enumerate(data[0]["single_line_comment"]):
-          count = 0
-          if 'spdx-license-identifier' in item['comment'].lower():
-              return item['comment']
+      if count > tempCount:
+        tempCount = count
+        comment = item['comment']
 
-          for i in list:
-              if i in item['comment'].lower():
-                  count+=1
-          if count > tempCount:
-              tempCount = count
-              comment = item['comment']
-        
-    return comment
+  if "single_line_comment" in data:
+    for id, item in enumerate(data["single_line_comment"]):
+      count = 0
+      if 'spdx-license-identifier' in item['comment'].lower():
+        return item['comment']
+
+      for i in match_list:
+        if i in item['comment'].lower():
+          count+=1
+
+      if count > tempCount:
+        tempCount = count
+        comment = item['comment']
+
+  return comment
 
 
 class CommentPreprocessor(object):
@@ -114,17 +118,15 @@ class CommentPreprocessor(object):
     :return: Temp file path from the OS
     '''
 
-    supportedFileExtensions = ['.py','.m4','.nsi','.c','.h','.cs','.cpp','.sep','.hxx','.cc','.css','.go','.hs','.html',
-                  '.xml','.java','.js','.kt','.kts','.ktm','.m','.php','.pl','.r','.R','.rb','.rs','.sh','.swift','.scala',
-                  '.sc','.txt','.lic','.install','.OSS','.gl']
-    
+    supportedFileExtensions = list(LanguageMapper.LANG_MAP.keys())
+
     fd, outputFile = tempfile.mkstemp()
     fileType = os.path.splitext(inputFile)[1]
 
     with open(outputFile, 'w') as outFile:
       # if the file extension is supported
       if fileType in supportedFileExtensions:
-        data_file = extract(inputFile)
+        data_file = commentExtract(inputFile)
         data = json.loads(data_file)
         data1 = licenseComment(data)
         outFile.write(data1)
