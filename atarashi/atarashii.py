@@ -34,7 +34,6 @@ __author__ = "Aman Jain"
 __email__ = "amanjain5221@gmail.com"
 __version__ = "0.0.11"
 
-
 def atarashii_runner(inputFile, processedLicense, agent_name, similarity="CosineSim", ngramJsonLoc=None, verbose=None):
   '''
   :param inputFile: Input File for scanning of license
@@ -88,6 +87,20 @@ def atarashii_runner(inputFile, processedLicense, agent_name, similarity="Cosine
   else:    
     raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), inputFile)
 
+def scandir(filepath):  
+  try :
+    temp=[]
+    dicts = {}
+    for dirpath, dirnames, filenames in os.walk(filepath):
+          for file in filenames:
+                print(os.path.join(dirpath,file))
+                temp.append(os.path.join(dirpath,file))
+    dicts = dict(list(enumerate(temp)))
+    filestorejson = json.dumps(dicts)        
+    return filestorejson
+  except :
+    print("Enter correct filepath to be scanned")
+    return None
 
 def main():
   '''
@@ -107,11 +120,15 @@ def main():
                       choices=["ScoreSim", "CosineSim", "DiceSim", "BigramCosineSim"],
                       help="Specify the similarity algorithm that you want."
                            " First 2 are for TFIDF and last 3 are for Ngram")
+
+  parser.add_argument("-d", "--scandir", help="Extracting all files from directories and subdirectories. Returns everything in JSON")
+  
   parser.add_argument("-j", "--ngram_json", required=False,
                       help="Specify the location of Ngram JSON (for Ngram agent only)")
   parser.add_argument("-v", "--verbose", help="increase output verbosity",
                       action="count", default=0)
   parser.add_argument('-V', '--version', action='version', version='%(prog)s ' + __version__)
+
   args = parser.parse_args()
   inputFile = args.inputFile
   agent_name = args.agent_name
@@ -119,6 +136,13 @@ def main():
   verbose = args.verbose
   processedLicense = args.processedLicenseList
   ngram_json = args.ngram_json
+  scandirfilepath = args.scandir 
+
+  if scandirfilepath:
+        try:
+          filestorejson = scandir(scandirfilepath)
+        except:
+          print("Enter correct filepath to be scanned")
 
   if processedLicense is None:
     processedLicense = defaultProcessed
