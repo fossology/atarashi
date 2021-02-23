@@ -126,53 +126,53 @@ def main():
     ngram_json = defaultJSON
 
   try:
-    if os.path.isfile(inputFile):
+      if os.path.isfile(inputFile):
           result = atarashii_runner(inputFile, processedLicense, agent_name, similarity, ngram_json, verbose)
           if result != -1:
-                if agent_name == "wordFrequencySimilarity":
-                      result = [{
+              if agent_name == "wordFrequencySimilarity":
+                  result = [{
                       "shortname": str(result),
                       "sim_score": 1,
                       "sim_type": "wordFrequencySimilarity",
                       "description": ""
                       }]
-                elif agent_name == "DLD":
-                      result = [{
+              elif agent_name == "DLD":
+                  result = [{
                       "shortname": str(result),
                       "sim_score": 1,
                       "sim_type": "dld",
                       "description": ""
                       }]
-                result = list(result)
-                result = {"file": os.path.abspath(inputFile), "results": result}
-                result = json.dumps(result, sort_keys=True, ensure_ascii=False, indent=4)
-                print(result + "\n")
+              result = list(result)
+              result = {"file": os.path.abspath(inputFile), "results": result}
+              result = json.dumps(result, sort_keys=True, ensure_ascii=False, indent=4)
+              print(result + "\n")
 
-    elif os.path.isdir(inputFile):
+      elif os.path.isdir(inputFile):
           dirresult = {}
           for dirpath, dirnames, filenames in os.walk(filepath):
-                for file in filenames:
-                      fpath = os.path.join(dirpath,file))
-                      result = atarashii_runner(fpath, processedLicense, agent_name, similarity, ngram_json, verbose)
-                      if result != -1:
-                            if agent_name == "wordFrequencySimilarity":
-                                  result = [{
-                                  "shortname": str(result),
-                                  "sim_score": 1,
-                                  "sim_type": "wordFrequencySimilarity",
-                                  "description": ""
-                                  }]
-                            elif agent_name == "DLD":
-                                  result = [{
-                                  "shortname": str(result),
-                                  "sim_score": 1,
-                                  "sim_type": "dld",
-                                  "description": ""
-                                  }]
-                            result = list(result)
-                            dirresult[fpath] = result
-                            result = {"file": fpath, "results": result}
-                            print(result + "\n")
+              for file in filenames:
+                  fpath = os.path.join(dirpath,file))
+                  result = atarashii_runner(fpath, processedLicense, agent_name, similarity, ngram_json, verbose)
+                  if result != -1:
+                      if agent_name == "wordFrequencySimilarity":
+                          result = [{
+                              "shortname": str(result),
+                              "sim_score": 1,
+                              "sim_type": "wordFrequencySimilarity",
+                              "description": ""
+                              }]
+                      elif agent_name == "DLD":
+                          result = [{
+                              "shortname": str(result),
+                              "sim_score": 1,
+                              "sim_type": "dld",
+                              "description": ""
+                              }]
+                      result = list(result)
+                      dirresult[fpath] = result
+                      result = {"file": fpath, "results": result}
+                      print(result + "\n")
           dirresult = json.dumps(dirresult, sort_keys=True, ensure_ascii=False, indent=4)                
 
   except:
