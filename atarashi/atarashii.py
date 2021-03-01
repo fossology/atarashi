@@ -150,7 +150,7 @@ def main():
 
     elif os.path.isdir(inputFile):
       dirresult = []
-      for dirpath, dirnames, filenames in os.walk(filepath):
+      for dirpath, dirnames, filenames in os.walk(inputFile):
         for file in filenames:
           fpath = os.path.join(dirpath,file)
           result = atarashii_runner(fpath, processedLicense, agent_name, similarity, ngram_json, verbose)
@@ -171,9 +171,8 @@ def main():
               }]
             result = list(result)
             result = {"file": fpath, "results": result}  
-            for k,v in result.items():
-              print(k," : ",v)          
             dirresult.append(result)
+      print(dirresult)
       dirresult = json.dumps(dirresult, sort_keys=True, ensure_ascii=False, indent=4)                
 
   except:
