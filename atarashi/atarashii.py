@@ -150,6 +150,8 @@ def main():
 
     elif os.path.isdir(inputFile):
       dirresult = []
+      print("[")
+      printComma = False
       for dirpath, dirnames, filenames in os.walk(inputFile):
         for file in filenames:
           fpath = os.path.join(dirpath,file)
@@ -172,7 +174,12 @@ def main():
             result = list(result)
             result = {"file": fpath, "results": result}  
             dirresult.append(result)
-      print(dirresult)
+            if printComma:
+              print(",", end="")
+            else:
+              printComma = True
+            print(json.dumps(result))
+      print("]")
       dirresult = json.dumps(dirresult, sort_keys=True, ensure_ascii=False, indent=4)                
 
   except:
