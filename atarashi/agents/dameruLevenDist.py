@@ -57,9 +57,21 @@ class DameruLevenDist(AtarashiAgent):
           globalDistance = distance
           result = idx
 
-      return str(self.licenseList.iloc[result]['shortname'])
+      return [{
+        "shortname": str(self.licenseList.iloc[result]['shortname']),
+        "sim_score": 1,
+        "sim_type": "dld",
+        "description": ""
+      }]
     else:
-      return temp[0]
+      result = []
+      for shortname in temp:
+        result.append({
+          "shortname": str(shortname),
+          "sim_score": 1,
+          "sim_type": "dld",
+          "description": "exact match"
+        })
 
 
 if __name__ == "__main__":

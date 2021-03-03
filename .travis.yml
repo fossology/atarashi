@@ -9,6 +9,7 @@ python:
   - 3.5
   - 3.6
   - 3.7
+  - 3.8
 
 before_install:
   - pip install --upgrade pip
@@ -21,5 +22,6 @@ script:
   - atarashi -h
   - atarashi -a Ngram -s BigramCosineSim ./atarashi/atarashii.py
   - atarashi -a tfidf -s CosineSim ./atarashi/atarashii.py
+  - atarashi -a Ngram -s BigramCosineSim ./atarashi/agents
   - atarashi -a DLD ./atarashi/atarashii.py
   - atarashi -a wordFrequencySimilarity ./atarashi/atarashii.py

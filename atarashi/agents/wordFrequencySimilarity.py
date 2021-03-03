@@ -73,10 +73,23 @@ class WordFrequencySimilarity(AtarashiAgent):
           globalCount = tempCount
       if self.verbose > 0:
         print("Result is license with ID", result)
-      return str(self.licenseList.at[result, 'shortname'])
+      return [{
+        "shortname": str(self.licenseList.at[result, 'shortname']),
+        "sim_score": 1,
+        "sim_type": "wordFrequencySimilarity",
+        "description": ""
+      }]
 
     else:
-      return temp
+      result = []
+      for shortname in temp:
+        result.append({
+          "shortname": str(shortname),
+          "sim_score": 1,
+          "sim_type": "wordFrequencySimilarity",
+          "description": "exact match"
+        })
+      return result
 
 
 if __name__ == "__main__":
