@@ -37,7 +37,7 @@ __version__ = "0.0.11"
 
 def atarashii_runner(inputFile, processedLicense, agent_name, similarity="CosineSim", ngramJsonLoc=None, verbose=None):
   '''
-  :param inputFile: Input File for scanning of license
+  :param inputFile: Input File path for scanning of license
   :param processedLicense: Processed License List (CSV) path (Default path already provided)
   :param agent_name: Specify the agent that you want to use for scanning
   :param similarity: Specify the similarity type to be used for the particular agent
@@ -92,12 +92,12 @@ def atarashii_runner(inputFile, processedLicense, agent_name, similarity="Cosine
 def main():
   '''
   Calls atarashii_runner for each file in the folder/ repository specified by user
-  Prints the Input file path and the JSON output from atarashii_runner
+  Prints the Input path and the JSON output from atarashii_runner
   '''
   defaultProcessed = resource_filename("atarashi", "data/licenses/processedLicenses.csv")
   defaultJSON = resource_filename("atarashi", "data/Ngram_keywords.json")
   parser = argparse.ArgumentParser()
-  parser.add_argument("inputFile", help="Specify the input file path to scan")
+  parser.add_argument("inputPath", help="Specify the input file/directory path to scan")
   parser.add_argument("-l", "--processedLicenseList", required=False,
                       help="Specify the location of processed license list file")
   parser.add_argument("-a", "--agent_name", required=True,
@@ -113,7 +113,7 @@ def main():
                       action="count", default=0)
   parser.add_argument('-V', '--version', action='version', version='%(prog)s ' + __version__)
   args = parser.parse_args()
-  inputFile = args.inputFile
+  inputPath = args.inputPath
   agent_name = args.agent_name
   similarity = args.similarity
   verbose = args.verbose
@@ -126,8 +126,8 @@ def main():
     ngram_json = defaultJSON
 
   try:
-    if os.path.isfile(inputFile):
-      result = atarashii_runner(inputFile, processedLicense, agent_name, similarity, ngram_json, verbose)
+    if os.path.isfile(inputPath):
+      result = atarashii_runner(inputPath, processedLicense, agent_name, similarity, ngram_json, verbose)
       if result != -1:
         if agent_name == "wordFrequencySimilarity":
           result = [{
@@ -144,15 +144,14 @@ def main():
             "description": ""
             }]
         result = list(result)
-        result = {"file": os.path.abspath(inputFile), "results": result}
+        result = {"file": os.path.abspath(inputPath), "results": result}
         result = json.dumps(result, sort_keys=True, ensure_ascii=False, indent=4)
         print(result + "\n")
 
-    elif os.path.isdir(inputFile):
-      dirresult = []
+    elif os.path.isdir(inputPath):
       print("[")
       printComma = False
-      for dirpath, dirnames, filenames in os.walk(inputFile):
+      for dirpath, dirnames, filenames in os.walk(inputPath):
         for file in filenames:
           fpath = os.path.join(dirpath,file)
           result = atarashii_runner(fpath, processedLicense, agent_name, similarity, ngram_json, verbose)
@@ -173,14 +172,12 @@ def main():
               }]
             result = list(result)
             result = {"file": fpath, "results": result}  
-            dirresult.append(result)
             if printComma:
               print(",", end="")
             else:
               printComma = True
             print(json.dumps(result))
-      print("]")
-      dirresult = json.dumps(dirresult, sort_keys=True, ensure_ascii=False, indent=4)                
+      print("]")               
 
   except:
     print("Error: Please enter a correct path or a directory")
