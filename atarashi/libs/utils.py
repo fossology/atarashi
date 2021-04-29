@@ -55,7 +55,7 @@ def ngram_l2_norm(a):
 
 def cosine_similarity(a, b):
   '''
-  https://blog.nishtahir.com/2015/09/19/fuzzy-string-matching-using-cosine-similarity/
+  https://blog.nishtahir.com/fuzzy-string-matching-using-cosine-similarity/
   Cosine similarity value of two word frequency dictionaries
   '''
   dot_product = 0

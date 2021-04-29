@@ -50,7 +50,7 @@ class TFIDF(AtarashiAgent):
 
   def __cosine_similarity(self, a, b):
     '''
-    https://blog.nishtahir.com/2015/09/19/fuzzy-string-matching-using-cosine-similarity/
+    https://blog.nishtahir.com/fuzzy-string-matching-using-cosine-similarity/
 
     :return: Cosine similarity value of two word frequency arrays
     '''
