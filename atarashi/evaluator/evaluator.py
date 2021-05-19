@@ -16,21 +16,28 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """
-import subprocess
-import zipfile,os
-import time
-import json
-from tqdm import tqdm
-import shutil
-import sys
-import argparse
-from multiprocessing import Pool
 
 __author__ = "Ayush Bhardwaj"
 __email__ = "classicayush@gmail.com"
 
+from pkg_resources import resource_filename
+import argparse
+import zipfile
+import shutil
+import time
+import sys
+import os
+
+from tqdm.contrib.concurrent import process_map
+from tqdm import tqdm
+
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)) + '/../')
+
+from atarashii import build_scanner_obj
+
 with zipfile.ZipFile('TestFiles.zip', 'r') as zip:
   zip.extractall()
+
 
 # To generate colored Text
 def prGreen(text): tqdm.write("\033[92m {}\033[00m" .format(text))
@@ -39,89 +46,49 @@ def prGreen(text): tqdm.write("\033[92m {}\033[00m" .format(text))
 def prCyan(text): tqdm.write("\033[96m {}\033[00m" .format(text))
 
 
-def getCommand(agent_name, similarity):
-  '''
-  getCommand function helps us to find the command needed to be run on the bash. The command is obtained from the combination of agent name and the sim type.
-
-  :param agent_name: The scanner agent going to be evaluated
-  :param similarity: Similarity type of the agent
-  :return: Command obtained using the agent name and the sim type
-  :rtype: str
-  '''
-  if agent_name == "wordFrequencySimilarity":
-    command = "atarashi -a wordFrequencySimilarity"
-  elif agent_name == "DLD":
-    command = "atarashi -a DLD"
-  elif agent_name == "tfidf":
-    command = "atarashi -a tfidf"
-    if similarity == "CosineSim":
-      command = "atarashi -a tfidf -s CosineSim"
-    elif similarity == "ScoreSim":
-      command = "atarashi -a tfidf -s ScoreSim"
-    elif similarity == " ":
-      command = "atarashi -a tfidf"
-    else:
-      print("Please choose similarity from {CosineSim,ScoreSim}")
-      return -1
-  elif agent_name == "Ngram":
-    command = "atarashi -a Ngram"
-    if similarity == "CosineSim":
-      command = "atarashi -a Ngram -s CosineSim"
-    elif similarity == "DiceSim":
-      command = "atarashi -a Ngram -s DiceSim"
-    elif similarity == "BigramCosineSim":
-      command = "atarashi -a Ngram -s BigramCosineSim"
-    elif similarity == " ":
-      command = "atarashi -a Ngram"
-    else:
-      print("Please choose similarity from {CosineSim,ScoreSim}")
-      return -1
-  return command
-
 filesScanned = 0
 match = 0
 
-def processFile(filepath):
+
+def processFile(scan_input):
   '''
-  processFile function runs the agent command on the bash/terminal and gets the result for the given file
+  processFile function runs the agent command on the bash/terminal and gets the
+  result for the given file
 
   :param filepath: The path of the file to be scanned
   :param similarity: Similarity type of the agent
   :return: Returns 1 if the result found by agent is correct and otherwise returns false
   :rtype: int
   '''
+  scanner = scan_input[0]
+  filepath = scan_input[1]
   if filepath:
     # Extract Filename from the Path
     base = os.path.basename(filepath)
     filename = os.path.splitext(base)[0]
-    tqdm.write("\n" + " ====> "+'On File: ' + filename)
-    # Run Scanner command from bash
-    runCommand = command + " " + filepath
-    tqdm.write('Command Running: ' + runCommand + '\n')
+    # Run Scanner
     try:
-      output = subprocess.check_output(
-          runCommand, shell=True, stderr=subprocess.STDOUT)
-      output = output.decode("utf-8")
-      temp = json.loads(output)
-      if len(temp['results']) == 0:
-        temp['results'].append({'shortname': 'NULL'})
-      result = temp['results'][0]['shortname']
+      temp = scanner.scan(filepath)
+      if temp == -1 or len(temp) == 0:
+        temp = [{'shortname': 'NULL'}]
+      result = temp[0]['shortname']
       result = result.strip("['']")
+      prCyan("\n" + " ====> " + 'On File: ' + filename)
       tqdm.write("The Obtained result by agent is: " + result)
-      prCyan('Scanned the file ' + str(filepath) + '\n')
       if filename == result:
         return 1
-      else:
-        return 0
+      return 0
     except Exception:
       return 0
 
-def evaluate(command):
-  '''
-  The Function runs the agent command on the bash/terminal and gets the result. The license name is then parsed from the result and matched with the actual name. Successful matched % is then returned as accuracy.
 
-  :param command: The Scanner agent command with agent name and sim
-  :type command: str
+def evaluate(scanner):
+  '''
+  The Function runs the agent command on the bash/terminal and gets the result.
+  The license name is then parsed from the result and matched with the actual
+  name. Successful matched % is then returned as accuracy.
+
+  :param scanner: Scanner object prepared to run scans
   :return: Time elapsed in the evaluation & the accuracy
   :rtype: float, int
   '''
@@ -130,10 +97,9 @@ def evaluate(command):
   for (root, dirs, files) in os.walk("TestFiles", topdown=True):
     for file in files:
       filepath = root + os.sep + file
-      fileList.append(filepath)
+      fileList.append((scanner, filepath))
 
-  with Pool(os.cpu_count()) as p:
-    result = list(tqdm(p.imap_unordered(processFile, fileList), total=len(fileList), unit="files"))
+  result = process_map(processFile, fileList, max_workers=os.cpu_count())
 
   # success_count is the count of successfully matched files
   success_count = sum(result)
@@ -145,33 +111,47 @@ def evaluate(command):
 
 
 if __name__ == "__main__":
+  defaultProcessed = resource_filename("atarashi",
+                                       "data/licenses/processedLicenses.csv")
+  defaultJSON = resource_filename("atarashi", "data/Ngram_keywords.json")
   parser = argparse.ArgumentParser()
   parser.add_argument("-a", "--agent_name", required=True,
-                      choices=['wordFrequencySimilarity', 'DLD', 'tfidf', 'Ngram'], help="Name of the agent that you want to evaluate")
-  parser.add_argument("-s", "--similarity", required=False,
-                      default=" ", choices=["ScoreSim", "CosineSim", "DiceSim", " ", "BigramCosineSim"], help="Specify the similarity algorithm that you want to evaluate"
-                      " First 2 are for TFIDF and last 3 are for Ngram")
+                      choices=['wordFrequencySimilarity', 'DLD', 'tfidf', 'Ngram'],
+                      help="Name of the agent that needs to be run")
+  parser.add_argument("-s", "--similarity", required=False, default="CosineSim",
+                      choices=["ScoreSim", "CosineSim", "DiceSim", "BigramCosineSim"],
+                      help="Specify the similarity algorithm that you want."
+                           " First 2 are for TFIDF and last 3 are for Ngram")
+  parser.add_argument("-l", "--processedLicenseList", required=False,
+                      help="Specify the location of processed license list file")
+  parser.add_argument("-j", "--ngram_json", required=False,
+                      help="Specify the location of Ngram JSON (for Ngram agent only)")
+  parser.add_argument("-v", "--verbose", help="increase output verbosity",
+                      action="count", default=0)
   args = parser.parse_args()
   agent_name = args.agent_name
   similarity = args.similarity
+  verbose = args.verbose
+  processedLicense = args.processedLicenseList
+  ngram_json = args.ngram_json
 
+  if processedLicense is None:
+    processedLicense = defaultProcessed
+  if ngram_json is None:
+    ngram_json = defaultJSON
+  agent_name = args.agent_name
+  similarity = args.similarity
 
-  command = getCommand(agent_name, similarity)
-  timeElapsed, accuracy = evaluate(command)
+  scanner = build_scanner_obj(processedLicense, agent_name, similarity,
+                              ngram_json, verbose)
+  timeElapsed, accuracy = evaluate(scanner)
+
   print('\n' + '      ++++++++++++++++++ Result ++++++++++++++++++')
-  print('      ++++++++++++++++++++++++++++++++++++++++++++')
+  print('      ' + '+' * 44)
   prGreen("     ---> Total time elapsed: " + str(round(timeElapsed, 2)) + " Seconds  <---")
   prGreen("     ---> Accuracy: " + str(round(accuracy, 2)) + "%                     <---")
-  print('      ++++++++++++++++++++++++++++++++++++++++++++')
-  print('      ++++++++++++++++++++++++++++++++++++++++++++')
-
-
-  zf = zipfile.ZipFile("TestFiles.zip", "w")
-  for dirname, subdirs, files in os.walk("TestFiles"):
-    zf.write(dirname)
-    for filename in files:
-        zf.write(os.path.join(dirname, filename))
-  zf.close()
+  print('      ' + '+' * 44)
+  print('      ' + '+' * 44)
 
   shutil.rmtree('TestFiles')
 

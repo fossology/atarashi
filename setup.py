@@ -52,7 +52,7 @@ def read(fname):
 build_requirements = [
   'setuptools>=39.2.0',
   'numpy>=1.16.0',
-  'tqdm>=4.23.4',
+  'tqdm>=4.42.0',
   'pandas>=0.23.1',
   'urllib3>=1.24.1',
   'nirjas>=0.0.5'
@@ -61,7 +61,7 @@ build_requirements = [
 requirements = [
   'setuptools>=39.2.0',
   'numpy>=1.16.0',
-  'tqdm>=4.23.4',
+  'tqdm>=4.42.0',
   'pandas>=0.23.1',
   'scikit-learn>=0.18.1',
   'scipy>=0.18.1',
