@@ -72,6 +72,7 @@ class DameruLevenDist(AtarashiAgent):
           "sim_type": "dld",
           "description": "exact match"
         })
+      return result
 
 
 if __name__ == "__main__":
