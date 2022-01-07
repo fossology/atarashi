@@ -23,8 +23,9 @@ import os
 import subprocess
 import sys
 
+from Cython.Build import cythonize
 from atarashi.build_deps import download_dependencies
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, Extension
 import setuptools.command.build_py
 
 
@@ -56,6 +57,7 @@ build_requirements = [
   'pandas>=0.23.1',
   'urllib3>=1.24.1',
   'nirjas>=0.0.5'
+  'Cython==0.29.21',
 ]
 
 requirements = [
@@ -66,7 +68,6 @@ requirements = [
   'scikit-learn>=0.18.1',
   'scipy>=0.18.1',
   'textdistance>=3.0.3',
-  'pyxDamerauLevenshtein>=1.5',
   'urllib3>=1.24.1',
   'nirjas>=0.0.5'
 ]
@@ -153,4 +154,5 @@ metadata = dict(
   },
 )
 
-setup(**metadata)
+ext = [Extension("DLD", ['atarashi/agents/DLD.c'])]
+setup(ext_modules=cythonize(ext), **metadata)

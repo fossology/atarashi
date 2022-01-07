@@ -1,10 +1,10 @@
 tqdm>=4.42.0
 pandas>=0.23.1
-pyxDamerauLevenshtein>=1.5
 scikit-learn>=0.18.1
 scipy>=0.18.1
 spacy>=2.0.11
 textdistance>=3.0.3
 setuptools>=39.2.0
 nirjas>=0.0.5
-urllib3>=1.24.1
+urllib3>=1.24.1 
+Cython==0.29.21

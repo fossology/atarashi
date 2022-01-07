@@ -22,7 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 import argparse
 import sys
 
-from pyxdameraulevenshtein import damerau_levenshtein_distance
+import DLD
 
 from atarashi.agents.atarashiAgent import AtarashiAgent, exactMatcher
 
@@ -49,7 +49,7 @@ class DameruLevenDist(AtarashiAgent):
       globalDistance = sys.maxsize
       result = 0
       for idx in range(len(self.licenseList)):
-        distance = damerau_levenshtein_distance(processedData.split(" "),
+        distance = DLD.damerau_levenshtein_distance(processedData.split(" "),
                                                 self.licenseList.iloc[idx]['processed_text'].split(" "))
         if self.verbose > 0:
           print(str(idx) + "  " + self.licenseList.iloc[idx]['shortname'] + "  " + str(distance))
