@@ -20,9 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 """
 
 import argparse
-import json
 import os
-import sys
 import re
 import string
 import tempfile
@@ -127,9 +125,8 @@ class CommentPreprocessor(object):
       # if the file extension is supported
       if fileType in supportedFileExtensions:
         data_file = commentExtract(inputFile)
-        data = json.loads(data_file)
-        data1 = licenseComment(data)
-        outFile.write(data1)
+        data = licenseComment(data_file)
+        outFile.write(data)
       else:
         # if file extension is not supported
         with open(inputFile) as inFile:
