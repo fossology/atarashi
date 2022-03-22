@@ -115,7 +115,7 @@ class TFIDF(AtarashiAgent):
     startTime = time.time()
 
     all_documents = self.licenseList['processed_text'].tolist()
-    sklearn_tfidf = TfidfVectorizer(min_df=0, use_idf=True, smooth_idf=True,
+    sklearn_tfidf = TfidfVectorizer(min_df=0, max_df=0.10, use_idf=True, smooth_idf=True,
                                     sublinear_tf=True, tokenizer=tokenize)
 
     all_documents_matrix = sklearn_tfidf.fit_transform(all_documents).toarray()
@@ -123,7 +123,7 @@ class TFIDF(AtarashiAgent):
 
     for counter, value in enumerate(all_documents_matrix, start=0):
       sim_score = self.__cosine_similarity(value, search_martix)
-      if sim_score >= 0.3:
+      if sim_score >= 0.16:
         matches.append({
           'shortname': self.licenseList.iloc[counter]['shortname'],
           'sim_type': "TF-IDF Cosine Sim",
