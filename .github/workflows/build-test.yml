@@ -1,0 +1,48 @@
+# SPDX-FileCopyrightText: 2022 Gaurav Mishra <mishra.gaurav@siemens.com>
+# SPDX-License-Identifier: GPL-2.0
+
+name: Build and test packages
+
+on:
+  - "pull_request"
+  - "push"
+
+jobs:
+  build:
+
+    strategy:
+      matrix:
+        python: [3.5, 3.6, 3.7, 3.8, 3.9]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+          architecture: 'x64'
+
+      - name: Install build dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install --requirement requirements.txt
+
+      - name: Build and install
+        run: |
+          python3 setup.py build
+          python3 -m pip install .
+
+      - name: Test
+        run: |
+          atarashi -h
+          atarashi -a wordFrequencySimilarity ./atarashi/atarashii.py
+          atarashi -a DLD ./atarashi/atarashii.py
+          atarashi -a tfidf -s ScoreSim ./atarashi/atarashii.py
+          atarashi -a tfidf -s CosineSim ./atarashi/atarashii.py
+          atarashi -a Ngram -s CosineSim ./atarashi/atarashii.py
+          atarashi -a Ngram -s DiceSim ./atarashi/atarashii.py
+          atarashi -a Ngram -s BigramCosineSim ./atarashi/atarashii.py
+          atarashi -a Ngram -s BigramCosineSim ./atarashi/agents
