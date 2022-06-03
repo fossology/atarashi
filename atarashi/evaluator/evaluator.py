@@ -35,7 +35,9 @@ sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)) + '/../')
 
 from atarashii import build_scanner_obj
 
-with zipfile.ZipFile('TestFiles.zip', 'r') as zip:
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+CONFIG_PATH = os.path.join(ROOT_DIR, 'TestFiles.zip')
+with zipfile.ZipFile(CONFIG_PATH, 'r') as zip:
   zip.extractall()
 
 
