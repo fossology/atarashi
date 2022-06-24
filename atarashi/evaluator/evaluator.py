@@ -56,7 +56,6 @@ def processFile(scan_input):
   '''
   processFile function runs the agent command on the bash/terminal and gets the
   result for the given file
-
   :param filepath: The path of the file to be scanned
   :param similarity: Similarity type of the agent
   :return: Returns 1 if the result found by agent is correct and otherwise returns false
@@ -89,7 +88,6 @@ def evaluate(scanner):
   The Function runs the agent command on the bash/terminal and gets the result.
   The license name is then parsed from the result and matched with the actual
   name. Successful matched % is then returned as accuracy.
-
   :param scanner: Scanner object prepared to run scans
   :return: Time elapsed in the evaluation & the accuracy
   :rtype: float, int
@@ -118,7 +116,8 @@ if __name__ == "__main__":
   defaultJSON = resource_filename("atarashi", "data/Ngram_keywords.json")
   parser = argparse.ArgumentParser()
   parser.add_argument("-a", "--agent_name", required=True,
-                      choices=['wordFrequencySimilarity', 'DLD', 'tfidf', 'Ngram'],
+                      choices=['wordFrequencySimilarity', 'DLD',
+                               'tfidf', 'Ngram', 'logisticRegression'],
                       help="Name of the agent that needs to be run")
   parser.add_argument("-s", "--similarity", required=False, default="CosineSim",
                       choices=["ScoreSim", "CosineSim", "DiceSim", "BigramCosineSim"],
@@ -156,4 +155,3 @@ if __name__ == "__main__":
   print('      ' + '+' * 44)
 
   shutil.rmtree('TestFiles')
-
