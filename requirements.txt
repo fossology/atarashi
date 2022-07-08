@@ -8,3 +8,4 @@ textdistance>=3.0.3
 setuptools>=39.2.0
 nirjas>=0.0.5
 urllib3>=1.24.1
+logreg>=0.1.0

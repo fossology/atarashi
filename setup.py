@@ -55,7 +55,8 @@ build_requirements = [
   'tqdm>=4.42.0',
   'pandas>=0.23.1',
   'urllib3>=1.24.1',
-  'nirjas>=0.0.5'
+  'nirjas>=0.0.5',
+  'logreg>=0.1.0'
 ]
 
 requirements = [
@@ -68,7 +69,8 @@ requirements = [
   'textdistance>=3.0.3',
   'pyxDamerauLevenshtein>=1.5',
   'urllib3>=1.24.1',
-  'nirjas>=0.0.5'
+  'nirjas>=0.0.5',
+  'logreg>=0.1.0'
 ]
 
 class BuildAtarashiDependencies(distutils.cmd.Command):

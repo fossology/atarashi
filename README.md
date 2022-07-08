@@ -60,6 +60,9 @@ Get the help by running `atarashi -h` or `atarashi --help`
 - Running **wordFrequencySimilarity** agent
 
     `atarashi -a wordFrequencySimilarity /path/to/file.c`
+- Running **logisticRegression** agent
+
+    `atarashi -a logisticRegression /path/to/file.c`
 - Running **tfidf** agent
     - With **Cosine similarity**
 

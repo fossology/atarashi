@@ -19,6 +19,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """
 
+from atarashi.license.license_merger import license_merger
+from atarashi.license.licensePreprocessor import LicensePreprocessor
+from atarashi.license.licenseDownloader import LicenseDownloader
+from atarashi.libs.ngram import createNgrams
 __author__ = "Gaurav Mishra"
 __email__ = "gmishx@gmail.com"
 
@@ -26,11 +30,6 @@ import argparse
 import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)) + '/../')
-
-from atarashi.libs.ngram import createNgrams
-from atarashi.license.licenseDownloader import LicenseDownloader
-from atarashi.license.licensePreprocessor import LicensePreprocessor
-from atarashi.license.license_merger import license_merger
 
 
 """
@@ -40,7 +39,8 @@ First downloads SPDX licenses, then merge them with FOSSology licenses.
 The merged CSV is then processesed which is then used to create the Ngrams.
 """
 
-def download_dependencies(threads = os.cpu_count(), verbose = 0):
+
+def download_dependencies(threads=os.cpu_count(), verbose=0):
   currentDir = os.path.dirname(os.path.abspath(__file__))
   licenseListCsv = currentDir + "/data/licenses/licenseList.csv"
   processedLicenseListCsv = currentDir + "/data/licenses/processedLicenses.csv"
@@ -57,6 +57,7 @@ def download_dependencies(threads = os.cpu_count(), verbose = 0):
     verbose = verbose)
   print("** Generating Ngrams **")
   createNgrams(processedLicenseListCsv, ngramJsonLoc, threads, verbose)
+
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
