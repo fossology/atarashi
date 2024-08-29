@@ -73,7 +73,7 @@ def license_merger(licenseList, requiredlicenseList, verbose=0):
         spdx_compatible_shortname, case=False, regex=False).any():
       # SPDX style short name match
       continue
-    licenses_merge = licenses_merge.append(
+    licenses_merge = licenses_merge._append(
       licenses.loc[idx], ignore_index=True, sort=False)
 
   if verbose > 0:

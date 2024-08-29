@@ -118,7 +118,7 @@ if __name__ == "__main__":
   defaultJSON = resource_filename("atarashi", "data/Ngram_keywords.json")
   parser = argparse.ArgumentParser()
   parser.add_argument("-a", "--agent_name", required=True,
-                      choices=['wordFrequencySimilarity', 'DLD', 'tfidf', 'Ngram'],
+                      choices=['wordFrequencySimilarity', 'DLD', 'tfidf', 'Ngram', 'SemanticSearch'],
                       help="Name of the agent that needs to be run")
   parser.add_argument("-s", "--similarity", required=False, default="CosineSim",
                       choices=["ScoreSim", "CosineSim", "DiceSim", "BigramCosineSim"],

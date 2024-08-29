@@ -28,6 +28,7 @@ from atarashi.agents.cosineSimNgram import NgramAgent
 from atarashi.agents.dameruLevenDist import DameruLevenDist
 from atarashi.agents.tfidf import TFIDF
 from atarashi.agents.wordFrequencySimilarity import WordFrequencySimilarity
+from atarashi.agents.semanticSearch import SemanticSearchAgent
 
 __author__ = "Aman Jain"
 __email__ = "amanjain5221@gmail.com"
@@ -98,6 +99,8 @@ def build_scanner_obj(processedLicense, agent_name, similarity="CosineSim",
     else:
       print("Please choose similarity from {CosineSim,DiceSim,BigramCosineSim}")
       return -1
+  elif agent_name == 'SemanticSearch':
+    scanner = SemanticSearchAgent(processedLicense)
 
   scanner.setVerbose(verbose)
   return scanner
@@ -128,7 +131,7 @@ def main():
   parser.add_argument("-l", "--processedLicenseList", required=False,
                       help="Specify the location of processed license list file")
   parser.add_argument("-a", "--agent_name", required=True,
-                      choices=['wordFrequencySimilarity', 'DLD', 'tfidf', 'Ngram'],
+                      choices=['wordFrequencySimilarity', 'DLD', 'tfidf', 'Ngram', 'SemanticSearch'],
                       help="Name of the agent that needs to be run")
   parser.add_argument("-s", "--similarity", required=False, default="CosineSim",
                       choices=["ScoreSim", "CosineSim", "DiceSim", "BigramCosineSim"],

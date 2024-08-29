@@ -68,7 +68,8 @@ requirements = [
   'textdistance>=3.0.3',
   'pyxDamerauLevenshtein>=1.5',
   'urllib3>=1.24.1',
-  'nirjas>=0.0.5'
+  'nirjas>=0.0.5',
+  'fuzzywuzzy[speedup]>=0.18.0'
 ]
 
 class BuildAtarashiDependencies(distutils.cmd.Command):
