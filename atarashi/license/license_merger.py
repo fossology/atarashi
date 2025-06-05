@@ -73,8 +73,8 @@ def license_merger(licenseList, requiredlicenseList, verbose=0):
         spdx_compatible_shortname, case=False, regex=False).any():
       # SPDX style short name match
       continue
-    licenses_merge = licenses_merge.append(
-      licenses.loc[idx], ignore_index=True, sort=False)
+    licenses_merge = pd.concat([licenses_merge,
+      licenses.loc[[idx]]], ignore_index=True, sort=False)
 
   if verbose > 0:
     print("Licenses to Merge", len(licenses_merge))

@@ -26,6 +26,8 @@ import argparse
 from enum import Enum
 import itertools
 import time
+import warnings
+warnings.filterwarnings("ignore", message="The parameter 'token_pattern' will not be used since 'tokenizer' is not None")
 
 from numpy import unique, sum, dot
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -78,7 +80,7 @@ class TFIDF(AtarashiAgent):
 
     all_documents = self.licenseList['processed_text'].tolist()
     all_documents.append(processedData1)
-    sklearn_tfidf = TfidfVectorizer(min_df=0, use_idf=True, smooth_idf=True,
+    sklearn_tfidf = TfidfVectorizer(min_df=1, use_idf=True, smooth_idf=True,
                                     sublinear_tf=True, tokenizer=tokenize,
                                     vocabulary=processedData)
 
@@ -115,7 +117,7 @@ class TFIDF(AtarashiAgent):
     startTime = time.time()
 
     all_documents = self.licenseList['processed_text'].tolist()
-    sklearn_tfidf = TfidfVectorizer(min_df=0, max_df=0.10, use_idf=True, smooth_idf=True,
+    sklearn_tfidf = TfidfVectorizer(min_df=1, max_df=0.10, use_idf=True, smooth_idf=True,
                                     sublinear_tf=True, tokenizer=tokenize)
 
     all_documents_matrix = sklearn_tfidf.fit_transform(all_documents).toarray()
