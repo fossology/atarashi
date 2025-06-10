@@ -1,5 +1,5 @@
-# SPDX-FileCopyrightText: 2022 Gaurav Mishra <mishra.gaurav@siemens.com>
-# SPDX-License-Identifier: GPL-2.0
+# SPDX-FileCopyrightText: 2025 Gaurav Mishra <mishra.gaurav@siemens.com>
+# SPDX-License-Identifier: GPL-2.0-only
 
 name: Build and test packages
 
@@ -12,37 +12,36 @@ jobs:
 
     strategy:
       matrix:
-        python: [3.5, 3.6, 3.7, 3.8, 3.9]
+        python: ['3.10', '3.11', '3.12']
 
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Setup python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
-          architecture: 'x64'
 
       - name: Install build dependencies
         run: |
-          python3 -m pip install --upgrade pip
-          python3 -m pip install --requirement requirements.txt
+          python3 -m pip install --upgrade pip poetry
 
       - name: Build and install
         run: |
-          python3 setup.py build
-          python3 -m pip install .
+          poetry install
+          poetry run preprocess
+          poetry build
 
       - name: Test
         run: |
-          atarashi -h
-          atarashi -a wordFrequencySimilarity ./atarashi/atarashii.py
-          atarashi -a DLD ./atarashi/atarashii.py
-          atarashi -a tfidf -s ScoreSim ./atarashi/atarashii.py
-          atarashi -a tfidf -s CosineSim ./atarashi/atarashii.py
-          atarashi -a Ngram -s CosineSim ./atarashi/atarashii.py
-          atarashi -a Ngram -s DiceSim ./atarashi/atarashii.py
-          atarashi -a Ngram -s BigramCosineSim ./atarashi/atarashii.py
-          atarashi -a Ngram -s BigramCosineSim ./atarashi/agents
+          poetry run atarashi -h
+          poetry run atarashi -a wordFrequencySimilarity ./atarashi/atarashii.py
+          poetry run atarashi -a DLD ./atarashi/atarashii.py
+          poetry run atarashi -a tfidf -s ScoreSim ./atarashi/atarashii.py
+          poetry run atarashi -a tfidf -s CosineSim ./atarashi/atarashii.py
+          poetry run atarashi -a Ngram -s CosineSim ./atarashi/atarashii.py
+          poetry run atarashi -a Ngram -s DiceSim ./atarashi/atarashii.py
+          poetry run atarashi -a Ngram -s BigramCosineSim ./atarashi/atarashii.py
+          poetry run atarashi -a Ngram -s BigramCosineSim ./atarashi/agents

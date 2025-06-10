@@ -8,6 +8,10 @@ __pycache__/
 
 TestFiles/
 
+# Processed files
+atarashi/data/licenses/processedLicenses.csv
+atarashi/data/Ngram_keywords.json
+
 # Distribution / packaging
 .Python
 build/
