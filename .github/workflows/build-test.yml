@@ -1,11 +1,14 @@
 # SPDX-FileCopyrightText: 2025 Gaurav Mishra <mishra.gaurav@siemens.com>
+# SPDX-FileCopyrightText: 2025 Kaushlendra Pratap <kaushlendra-pratap.singh@siemens.com>
 # SPDX-License-Identifier: GPL-2.0-only
 
 name: Build and test packages
 
 on:
-  - "pull_request"
-  - "push"
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
 
 jobs:
   build:
@@ -15,6 +18,8 @@ jobs:
         python: ['3.10', '3.11', '3.12']
 
     runs-on: ubuntu-latest
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
 
     steps:
       - uses: actions/checkout@v4
