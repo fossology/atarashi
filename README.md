@@ -19,8 +19,9 @@ https://fossology.github.io/atarashi
 
 ### Requirements
 
-- Python >= v3.5
-- pip >= 18.1
+- Python >= v3.10
+- pip >= 25.0
+- poetry >= 2.0.0
 
 ## Steps for Installation
 
@@ -32,7 +33,10 @@ https://fossology.github.io/atarashi
 
 #### Source install
 
-- `pip install .`
+- ```shell
+  poetry install
+  poetry run preprocess
+  ```
 - It will download all dependencies required and trigger build as well.
 - Build will generate 3 new files in your current directory
     1.  `data/Ngram_keywords.json`
@@ -40,13 +44,9 @@ https://fossology.github.io/atarashi
     3.  `licenses/processedList.csv`
 - These files will be placed to their appropriate places by the install script.
 
-### Installing just dependencies
-
-- `pip install -r requirements.txt`
-
 ### Build (optional)
 
-- `$ python3 setup.py build`
+- `poetry build`
 
 ## How to run
 

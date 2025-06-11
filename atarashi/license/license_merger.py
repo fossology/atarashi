@@ -73,8 +73,8 @@ def license_merger(licenseList, requiredlicenseList, verbose=0):
         spdx_compatible_shortname, case=False, regex=False).any():
       # SPDX style short name match
       continue
-    licenses_merge = licenses_merge.append(
-      licenses.loc[idx], ignore_index=True, sort=False)
+    licenses_merge = pd.concat([licenses_merge,
+      licenses.loc[idx]], ignore_index=True, sort=False)
 
   if verbose > 0:
     print("Licenses to Merge", len(licenses_merge))
@@ -100,18 +100,7 @@ def license_merger(licenseList, requiredlicenseList, verbose=0):
 
   requiredlicenses = requiredlicenses.drop_duplicates(
     subset='shortname').sort_values(by=['shortname']).reset_index(drop=True)
-  indexesToDrop = []
-  for idx, row in requiredlicenses.iterrows():
-    if len(requiredlicenses.loc[requiredlicenses['shortname'] == \
-                                row['shortname'] + '-only']['deprecated'] == \
-                                True) > 0:
-      indexesToDrop.append(idx)
-    if row['shortname'].endswith('+') and \
-        len(requiredlicenses.loc[requiredlicenses['shortname'] == \
-                                 row['shortname'][:-1] + \
-                                 "-or-later" ]['deprecated'] == True) > 0:
-      indexesToDrop.append(idx)
-  requiredlicenses.drop(indexesToDrop, inplace=True)
+  requiredlicenses = requiredlicenses[requiredlicenses.deprecated == False]
   requiredlicenses.to_csv(str(requiredlicenseList), index=False, encoding='utf-8')
 
   return str(Path(os.path.abspath(requiredlicenseList)))

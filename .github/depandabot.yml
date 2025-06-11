@@ -1,0 +1,24 @@
+# SPDX-FileCopyrightText: © 2025 Siemens AG
+# SPDX-FileContributor: Kaushlendra Pratap <kaushlendra-pratap.singh@siemens.com>
+
+# SPDX-License-Identifier: GPL-2.0-only
+
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "docker"
+    directories:
+      - "/"
+    groups:
+      docker:
+        applies-to: security-updates
+        patterns: [ "*" ]
+    schedule:
+      interval: "weekly"

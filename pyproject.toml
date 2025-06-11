@@ -1,14 +1,55 @@
+[project]
+name = "atarashi"
+version = "0.0.11"
+description = "An intelligent license scanner."
+authors = [
+    {name = "Aman Jain", email = "amanjain5221@gmail.com"}
+]
+maintainers = [
+    {name = "Kaushlendra Pratap Singh", email = "kaushlendra-pratap.singh@siemens.com"},
+    {name = "Gaurav Mishra", email = "mishra.gaurav@siemens.com"},
+]
+license = {text = "GPL-2.0-only"}
+readme = "README.md"
+requires-python = ">=3.10,<3.14"
+keywords = [
+    "atarashi", "license", "license-scanner", "oss",
+    "oss-compliance"
+]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Topic :: Utilities",
+    "Intended Audience :: Legal Industry",
+    "License :: OSI Approved :: GNU General Public License v2 (GPLv2)"
+]
+dependencies = [
+    "tqdm (>=4.67.1,<5.0.0)",
+    "pandas (>=2.3.0,<3.0.0)",
+    "pyxdameraulevenshtein (>=1.8.0,<2.0.0)",
+    "scikit-learn (>=1.7.0,<2.0.0)",
+    "scipy (>=1.15.3,<2.0.0)",
+    "spacy (>=3.8.7,<4.0.0)",
+    "textdistance (>=4.6.3,<5.0.0)",
+    "setuptools (>=80.9.0,<81.0.0)",
+    "nirjas (>=1.0.1,<2.0.0)",
+    "urllib3 (>=2.4.0,<3.0.0)",
+    "importlib-resources (>=6.5.2,<7.0.0)"
+]
+
+[project.urls]
+homepage = "https://github.com/fossology/atarashi"
+repository = "https://github.com/fossology/atarashi"
+
+[tool.poetry.scripts]
+atarashi = "atarashi.atarashii:main"
+preprocess = "atarashi.build_deps:download_dependencies"
+
 [build-system]
-requires = [
-  "setuptools>=39.2.0",
-  "wheel",
-  "numpy>=1.16.0",
-  "tqdm>=4.42.0",
-  "pandas>=0.23.1",
-  "scikit-learn>=0.18.1",
-  "scipy>=0.18.1",
-  "textdistance>=3.0.3",
-  "pyxDamerauLevenshtein>=1.5",
-  "nirjas>=0.0.5",
-  "urllib3>=1.24.1"
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+include = [
+    { path = "atarashi/data/Ngram_keywords.json", format = ["sdist", "wheel"] },
+    { path = "atarashi/data/licenses/processedLicenses.csv", format = ["sdist", "wheel"] }
 ]

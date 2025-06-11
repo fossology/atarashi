@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """
-from pkg_resources import resource_filename
+from importlib_resources import files
 import argparse
 import errno
 import json
@@ -121,8 +121,8 @@ def main():
   Calls atarashii_runner for each file in the folder/ repository specified by user
   Prints the Input path and the JSON output from atarashii_runner
   '''
-  defaultProcessed = resource_filename("atarashi", "data/licenses/processedLicenses.csv")
-  defaultJSON = resource_filename("atarashi", "data/Ngram_keywords.json")
+  defaultProcessed = str(files("atarashi.data.licenses").joinpath("processedLicenses.csv"))
+  defaultJSON = str(files("atarashi.data").joinpath("Ngram_keywords.json"))
   parser = argparse.ArgumentParser()
   parser.add_argument("inputPath", help="Specify the input file/directory path to scan")
   parser.add_argument("-l", "--processedLicenseList", required=False,
