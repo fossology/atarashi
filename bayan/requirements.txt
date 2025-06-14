@@ -1,0 +1,13 @@
+loguru==0.7.2
+openai==1.31.1
+pandas==2.0.3
+tenacity==8.3.0
+ratelimit==2.2.1
+Nirjas==1.0.1
+fuzzywuzzy[speedup]>=0.18.0
+langchain_groq
+tiktoken
+typing_extensions
+jupyter
+typing_extensions
+scikit-learn
