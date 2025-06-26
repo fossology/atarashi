@@ -1,0 +1,28 @@
+acknowledg(e|ement|ements)?
+agreement
+as[\s-]is
+copyright
+damages
+deriv(e|ed|ation|ative|es|ing)
+redistribut(e|ion|able|ing)?|distribut(e|ion|able|ing)
+free software
+grant
+indemnif(i|y|ied|ication|ying)?
+intellectual propert(y|ies)?
+[^e]liabilit(y|ies)?
+licen[cs](e|ing)?
+mis[- ]?represent
+open source
+patent
+permission
+public[\s-]domain
+require(s|d|ment|ments)?
+same terms
+see[\s:-]*(https?://|file://|www\.|[A-Za-z0-9._/-]+)
+source (and|or)? ?binary
+source code
+subject to
+terms and conditions
+warrant(y|ies|ed|ing)?
+without (fee|restrict(ion|ed)?|limit(ation|ed)?)
+severability clause
