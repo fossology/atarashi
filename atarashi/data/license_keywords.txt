@@ -1,0 +1,34 @@
+acknowledg(e|ement|ements)?
+\bagreement\b
+as[\s-]is
+\bcopyright\b
+\bdamages\b
+deriv(e|ed|ation|ative|es|ing)
+redistribut(e|ion|able|ing)?|distribut(e|ion|able|ing)
+\bfree software\b
+\bgrant\b
+indemnif(i|y|ied|ication|ying)?
+intellectual propert(y|ies)?
+[^e]liabilit(y|ies)?
+licen[cs](e|ing)?
+mis[- ]?represent
+\bopen source\b
+\bpatent\b
+\bpermission\b
+public[\s-]domain
+require(s|d|ment|ments)?
+\bsame terms\b
+see[\s:-]*(https?://|file://|www\.|[A-Za-z0-9._/-]+)
+source (and|or)? ?binary
+\bsource code\b
+\bsubject to\b
+\bterms and conditions\b
+warrant(y|ies|ed|ing)?
+without (fee|restrict(ion|ed)?|limit(ation|ed)?)
+\bseverability clause\b
+\bException\b
+-\(\d+\)\.\(\d+\)
+\bonly-or-later\b
+\bVersion\s+\(\d+\)\.\(\d+\)
+\bVersion-\(\d+\)\.\(\d+\)
+\bSPDX-License-Identifier\b

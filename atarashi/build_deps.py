@@ -55,6 +55,9 @@ def download_dependencies(threads = os.cpu_count(), verbose = 0):
     spdxLicenseList,
     processedLicenseListCsv,
     verbose = verbose)
+  print("** Populating Licence Refs SPDX and FOSSology")
+  generated_refs_path = LicenseDownloader.generate_combined_license_refs(threads=threads)
+  print(f"Combined license refs list generated at path: {generated_refs_path}")
   print("** Generating Ngrams **")
   createNgrams(processedLicenseListCsv, ngramJsonLoc, threads, verbose)
 
