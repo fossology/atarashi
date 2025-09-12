@@ -1,0 +1,10 @@
+logs
+logs/*
+/*__pychache__
+.venv
+*/__pychache__
+helpers/__pychache__/*
+helpers/__pychache__/
+.vscode
+*.log
+*/__pychache__/*
