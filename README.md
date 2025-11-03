@@ -1,6 +1,6 @@
 # Atarashi
 
-[![Build Status](https://github.com/fossology/atarashi/actions/workflows/build-test.yml/badge.svg)]([https://travis-ci.com/fossology/atarashi](https://github.com/fossology/atarashi/actions/workflows/build-test.yml)
+[![Build Status](https://github.com/fossology/atarashi/actions/workflows/build-test.yml/badge.svg)](https://github.com/fossology/atarashi/actions/workflows/build-test.yml)
 
 Open source software is licensed using open source licenses. There are many
 of open source licenses around and adding to that, open source software
