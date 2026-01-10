@@ -26,6 +26,7 @@ import argparse
 from enum import Enum
 import itertools
 import time
+import warnings
 
 from numpy import unique, sum, dot
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -78,8 +79,11 @@ class TFIDF(AtarashiAgent):
 
     all_documents = self.licenseList['processed_text'].tolist()
     all_documents.append(processedData1)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
     sklearn_tfidf = TfidfVectorizer(min_df=1, use_idf=True, smooth_idf=True,
                                     sublinear_tf=True, tokenizer=tokenize,
+                                        token_pattern=None,
                                     vocabulary=processedData)
 
     sklearn_representation = sklearn_tfidf.fit_transform(all_documents).toarray()
@@ -115,8 +119,10 @@ class TFIDF(AtarashiAgent):
     startTime = time.time()
 
     all_documents = self.licenseList['processed_text'].tolist()
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
     sklearn_tfidf = TfidfVectorizer(min_df=1, max_df=0.10, use_idf=True, smooth_idf=True,
-                                    sublinear_tf=True, tokenizer=tokenize)
+                                        sublinear_tf=True, tokenizer=tokenize, token_pattern=None)
 
     all_documents_matrix = sklearn_tfidf.fit_transform(all_documents).toarray()
     search_martix = sklearn_tfidf.transform([processedData1]).toarray()[0]

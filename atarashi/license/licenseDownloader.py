@@ -48,7 +48,7 @@ def _get_http_pool():
   Ignoring the SSL verification as to avoid errors and the source is trusted.
   :return: HTTP Pool Manager
   """
-  proxy_val = os.environ.get('http_proxy', False)
+  proxy_val = os.environ.get('http_proxy')
   if proxy_val:
     return urllib3.ProxyManager(proxy_val, cert_reqs='CERT_NONE',
                                 assert_hostname=False)
@@ -72,7 +72,26 @@ class LicenseDownloader(object):
     return json.loads(response.data.decode('utf-8'))
 
   @staticmethod
-  def download_license(threads=os.cpu_count(), force=False):
+  def get_num_threads(requested_threads):
+    """
+    Determine optimal number of threads to use based on system's CPU count and requested value.
+
+    :param requested_threads: User-specified number of threads (can be None)
+    :return: Final number of threads to use
+    """
+    cpu_count = os.cpu_count()
+    if requested_threads is None:
+        num_threads = cpu_count or 1
+    else:
+        num_threads = requested_threads
+
+    if cpu_count is not None:
+        num_threads = min(num_threads, cpu_count * 2)
+
+    return num_threads
+
+  @staticmethod
+  def download_license(threads=os.cpu_count(), force=False, to_csv=True):
     """
     Downloads license data from spdx.org.
 
@@ -84,7 +103,8 @@ class LicenseDownloader(object):
 
     :param threads: Number of CPU to be used for downloading. This is done to speed up the process
     :param force: Bool value if licenses needs to be downloaded forcefully
-    :return: File path if success, None otherwise.
+    :param to_csv: Bool value to either save the data to a csv or return a list of shortnames
+    :return: File path if to_csv is True, list of shortnames if to_csv is False, None otherwise.
     """
     jsonData = LicenseDownloader._download_json('https://spdx.org/licenses/licenses.json')
     license_exceptions = LicenseDownloader._download_json('https://spdx.org/licenses/exceptions.json').get('exceptions')
@@ -98,20 +118,24 @@ class LicenseDownloader(object):
       directory = os.path.abspath(directory + "/../data/licenses")
       Path(directory).mkdir(exist_ok=True)
       filePath = Path(os.path.abspath(directory + "/" + fileName))
-      if filePath.is_file():
-        if (force):
+
+      if filePath.is_file() and to_csv:
+        if force:
           filePath.unlink()
         else:
           return str(filePath)
+
       licenseDataFrame = pd.DataFrame(columns=csvColumns)
-      cpuCount = os.cpu_count()
-      threads = cpuCount * 2 if threads > cpuCount * 2 else threads
-      pool = ThreadPool(threads)
+      num_threads = LicenseDownloader.get_num_threads(threads)
+
+      pool = ThreadPool(num_threads)
+
       for row in tqdm(pool.imap_unordered(
           LicenseDownloader.fetch_exceptional_license, license_exceptions),
           desc="Exceptions processed", total=len(license_exceptions),
           unit="exception"):
         licenseDataFrame = pd.concat([licenseDataFrame, row], sort=False, ignore_index=True)
+
       for row in tqdm(pool.imap_unordered(
           LicenseDownloader.fetch_license, licenses),
           desc="Licenses processed", total=len(licenses),
@@ -121,10 +145,91 @@ class LicenseDownloader(object):
       licenseDataFrame = licenseDataFrame.drop_duplicates(subset='shortname')
       licenseDataFrame = licenseDataFrame.sort_values('deprecated').drop_duplicates(subset='fullname', keep='first')
       licenseDataFrame = licenseDataFrame.sort_values('shortname').reset_index(drop=True)
-      licenseDataFrame.to_csv(str(filePath), index=False, encoding='utf-8')
-      return str(filePath)
+
+      if to_csv:
+        licenseDataFrame.to_csv(str(filePath), index=False, encoding='utf-8')
+        return str(filePath)
+      else:
+        return licenseDataFrame['shortname'].tolist()
     else:
       return None
+
+  @staticmethod
+  def _extract_fossology_names(entry):
+    """
+    Helper function to extract license shortname and fullname from an entry.
+    Returns a list of non-empty cleaned strings.
+    """
+    terms = []
+    shortname = entry.get("rf_shortname")
+    fullname = entry.get("rf_fullname")
+    if shortname:
+        terms.append(shortname.strip())
+    if fullname:
+        terms.append(fullname.strip())
+    return terms
+
+  @staticmethod
+  def download_fossology_licenses(threads=os.cpu_count()):
+    """
+    Downloads the license references used by FOSSology from their GitHub repo.
+
+    :return: A list of license shortnames (refs) from FOSSology.
+    """
+    url = "https://raw.githubusercontent.com/fossology/fossology/master/install/db/licenseRef.json"
+    try:
+      data = LicenseDownloader._download_json(url)
+      num_threads = LicenseDownloader.get_num_threads(threads)
+
+      license_names = []
+      with ThreadPool(num_threads) as pool:
+        results = list(tqdm(
+          pool.imap(LicenseDownloader._extract_fossology_names, data),
+          total=len(data),
+          desc="FOSSology licenses processed",
+          unit="license"
+        ))
+
+        for sublist in results:
+          for term in sublist:
+            license_names.append(term)
+
+      return license_names
+
+    except Exception as e:
+      print(f"Failed to download FOSSology license references: {e}")
+      return []
+
+  @staticmethod
+  def generate_combined_license_refs(threads=os.cpu_count()):
+    """
+    Downloads license references from SPDX and FOSSology, combines them,
+    and saves them to a single CSV file.
+    """
+    print("Downloading SPDX and FOSSology license references...")
+    spdx_licenses = LicenseDownloader.download_license(threads=threads, to_csv=False)
+    fossology_licenses = LicenseDownloader.download_fossology_licenses(threads=threads)
+
+    if spdx_licenses is None:
+      spdx_licenses = []
+
+    combined_set = set(spdx_licenses) | set(fossology_licenses)
+
+    # Remove any empty strings that might have crept in
+    combined_set.discard('')
+    combined_set.discard(None)
+    combined_list = sorted(list(combined_set))
+
+    df = pd.DataFrame(combined_list, columns=['key'])
+
+    directory = os.path.dirname(os.path.abspath(__file__))
+    output_path = os.path.abspath(os.path.join(directory, "..", "data", "licenses", "license_refs_combined.csv"))
+
+    Path(os.path.dirname(output_path)).mkdir(exist_ok=True)
+
+    df.to_csv(output_path, index=False, encoding='utf-8')
+    print(f"Combined license references saved to {output_path}")
+    return output_path
 
   @staticmethod
   def fetch_license(license):
@@ -145,7 +250,7 @@ class LicenseDownloader(object):
     if 'There is no standard license header for the license' in licenseDict['license_header']:
       licenseDict['license_header'] = ''
 
-    return pd.DataFrame(licenseDict, columns=csvColumns)
+    return pd.DataFrame(licenseDict, columns=pd.Index(csvColumns))
 
   @staticmethod
   def fetch_exceptional_license(license):
@@ -165,7 +270,7 @@ class LicenseDownloader(object):
     licenseDict['license_header'] = licenseData.get('standardLicenseHeader', '')
     if 'There is no standard license header for the license' in licenseDict['license_header']:
       licenseDict['license_header'] = ''
-    return pd.DataFrame(licenseDict, columns=csvColumns)
+    return pd.DataFrame(licenseDict, columns=pd.Index(csvColumns))
 
 
 if __name__ == "__main__":
@@ -175,7 +280,16 @@ if __name__ == "__main__":
                       help="No of threads to use for download. Default: CPU count")
   parser.add_argument("-f", "--force", action="store_true",
                       help="Force download regardless of existing list")
+  parser.add_argument("--no-csv", action="store_true",
+                      help="If set, does not write output to CSV and returns list of license shortnames")
+  parser.add_argument("--generate-refs", action="store_true",
+                      help="Generate the combined license references file.")
   args = parser.parse_args()
   threads = args.threads
   force = args.force
-  print(LicenseDownloader.download_license(threads, force))
+  to_csv = not args.no_csv
+
+  if args.generate_refs:
+    LicenseDownloader.generate_combined_license_refs(threads=threads)
+  else:
+    print(LicenseDownloader.download_license(threads, force, to_csv))

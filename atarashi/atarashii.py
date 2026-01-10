@@ -18,16 +18,18 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """
-from importlib_resources import files
 import argparse
 import errno
 import json
 import os
+import sys
+from pathlib import Path
 
 from atarashi.agents.cosineSimNgram import NgramAgent
 from atarashi.agents.dameruLevenDist import DameruLevenDist
 from atarashi.agents.tfidf import TFIDF
 from atarashi.agents.wordFrequencySimilarity import WordFrequencySimilarity
+from atarashi.agents.keywordAgent import KeywordAgent
 
 __author__ = "Aman Jain"
 __email__ = "amanjain5221@gmail.com"
@@ -121,89 +123,108 @@ def main():
   Calls atarashii_runner for each file in the folder/ repository specified by user
   Prints the Input path and the JSON output from atarashii_runner
   '''
-  defaultProcessed = str(files("atarashi.data.licenses").joinpath("processedLicenses.csv"))
-  defaultJSON = str(files("atarashi.data").joinpath("Ngram_keywords.json"))
+  base_dir = Path(__file__).resolve().parent
+  defaultProcessed = str(base_dir / "data" / "licenses" / "processedLicenses.csv")
+  defaultJSON = str(base_dir / "data" / "Ngram_keywords.json")
+
   parser = argparse.ArgumentParser()
   parser.add_argument("inputPath", help="Specify the input file/directory path to scan")
-  parser.add_argument("-l", "--processedLicenseList", required=False,
-                      help="Specify the location of processed license list file")
+  parser.add_argument("-l", "--processedLicenseList", help="Processed license list CSV")
   parser.add_argument("-a", "--agent_name", required=True,
-                      choices=['wordFrequencySimilarity', 'DLD', 'tfidf', 'Ngram'],
-                      help="Name of the agent that needs to be run")
-  parser.add_argument("-s", "--similarity", required=False, default="CosineSim",
-                      choices=["ScoreSim", "CosineSim", "DiceSim", "BigramCosineSim"],
-                      help="Specify the similarity algorithm that you want."
-                           " First 2 are for TFIDF and last 3 are for Ngram")
-  parser.add_argument("-j", "--ngram_json", required=False,
-                      help="Specify the location of Ngram JSON (for Ngram agent only)")
-  parser.add_argument("-v", "--verbose", help="increase output verbosity",
-                      action="count", default=0)
-  parser.add_argument('-V', '--version', action='version',
-                      version='%(prog)s ' + __version__)
+    choices=['wordFrequencySimilarity', 'DLD', 'tfidf', 'Ngram'],
+    help="Agent to run")
+  parser.add_argument("-s", "--similarity", default="CosineSim",
+    choices=["ScoreSim", "CosineSim", "DiceSim", "BigramCosineSim"],
+    help="Select the Similarity algorithm. First 2 are for TFIDF agent, last three for Ngram agent.")
+  parser.add_argument("-j", "--ngram_json", help="Ngram JSON file (for Ngram agent only)")
+  parser.add_argument("-v", "--verbose", action="count", default=0, help="Increase output verbosity")
+  parser.add_argument("--skip-keyword", action="store_true",
+    help="Skip KeywordAgent precheck before similarity scan")
+  parser.add_argument("-V", "--version", action='version', version=f'%(prog)s {__version__}')
   args = parser.parse_args()
+
   inputPath = args.inputPath
-  agent_name = args.agent_name
-  similarity = args.similarity
+  processedLicense = args.processedLicenseList or defaultProcessed
+  ngram_json = args.ngram_json or defaultJSON
   verbose = args.verbose
-  processedLicense = args.processedLicenseList
-  ngram_json = args.ngram_json
 
-  if processedLicense is None:
-    processedLicense = defaultProcessed
-  if ngram_json is None:
-    ngram_json = defaultJSON
+  # Validate compatibility between agent and similarity
+  if args.agent_name == "tfidf" and args.similarity not in ["CosineSim", "ScoreSim"]:
+    print("Error: TFIDF agent supports only CosineSim or ScoreSim.", file=sys.stderr)
+    return 1
+  if args.agent_name == "Ngram" and args.similarity not in ["CosineSim", "DiceSim", "BigramCosineSim"]:
+    print("Error: Ngram agent supports only CosineSim, DiceSim or BigramCosineSim.", file=sys.stderr)
+    return 1
 
-  scanner_obj = build_scanner_obj(processedLicense, agent_name, similarity,
-                                  ngram_json, verbose)
+  scanner_obj = build_scanner_obj(processedLicense, args.agent_name, args.similarity, ngram_json, verbose)
   if scanner_obj == -1:
-    return -1
+    return 1
 
+  keyword_scanner = KeywordAgent(verbose=verbose)
   return_code = 0
+  files_scanned = 0
+  files_skipped = 0
 
   if os.path.isfile(inputPath):
-    try:
-      result = run_scan(scanner_obj, inputPath)
-    except FileNotFoundError as e:
-      result = ["Error: " + e.strerror + ": '" + e.filename + "'"]
-      return_code |= 2
-    except UnicodeDecodeError as e:
-      result = ["Error: Can not encode file '" + inputPath + "' in '" + \
-                e.encoding + "'"]
-      return_code |= 4
-
-    result = list(result)
-    result = {"file": os.path.abspath(inputPath), "results": result}
-    result = json.dumps(result, sort_keys=True, ensure_ascii=False, indent=4)
-    print(result + "\n")
+    keyword_ok = args.skip_keyword or keyword_scanner.scan(inputPath)
+    if not keyword_ok:
+      files_skipped += 1
+      if verbose > 0:
+        print(f"File {inputPath} does not appear to contain a license, skipping.")
+    else:
+      try:
+        result = run_scan(scanner_obj, inputPath)
+        result = list(result)
+      except FileNotFoundError as e:
+        result = [f"Error: {e.strerror}: '{e.filename}'"]
+        return_code |= 2
+      except UnicodeDecodeError as e:
+        result = [f"Error: Cannot encode file '{inputPath}' in '{e.encoding}'"]
+        return_code |= 2
+      output = {"file": os.path.abspath(inputPath), "results": result}
+      print(json.dumps(output, sort_keys=True, ensure_ascii=False, indent=4))
+    print(f"Skipped {files_skipped}.\n")
 
   elif os.path.isdir(inputPath):
     print("[")
     printComma = False
-    for dirpath, dirnames, filenames in os.walk(inputPath):
+    for dirpath, _, filenames in os.walk(inputPath):
+      if "__MACOSX" in Path(dirpath).parts:
+        continue
       for file in filenames:
+        if file.startswith("._") or file == ".DS_Store":
+          continue
         fpath = os.path.join(dirpath, file)
+        keyword_ok = args.skip_keyword or keyword_scanner.scan(fpath)
+        if not keyword_ok:
+          files_skipped += 1
+          continue
         try:
           result = run_scan(scanner_obj, fpath)
+          result = list(result)
         except FileNotFoundError as e:
-          result = ["Error: " + e.strerror + ": '" + e.filename + "'"]
+          result = [f"Error: {e.strerror}: '{e.filename}'"]
           return_code |= 2
         except UnicodeDecodeError as e:
-          result = ["Error: Can not encode file '" + fpath + "' in '" + \
-                    e.encoding + "'"]
-          return_code |= 4
-        result = list(result)
-        result = {"file": os.path.abspath(fpath), "results": result}
+          result = [f"Error: Cannot encode file '{fpath}' in '{e.encoding}'"]
+          return_code |= 2
+        output = {"file": os.path.abspath(fpath), "results": result}
         if printComma:
           print(",", end="")
         else:
           printComma = True
-        print(json.dumps(result, sort_keys=True, ensure_ascii=False))
+        files_scanned += 1
+        print(json.dumps(output, sort_keys=True, ensure_ascii=False))
     print("]")
+    if verbose > 0:
+      print(f"\nScanned: {files_scanned}, Skipped: {files_skipped}")
+    # print(f"Total files scanned: {files_scanned}\n")
+    # print(f"Total files skipped: {files_skipped}.\n")
 
   else:
-    print("Error: Can not understand '" + inputPath + "'. Please enter a " +
-          "correct path or a directory")
-    return_code |= 6
+    print(f"Error: The path '{inputPath}' is not a valid file or directory.", file=sys.stderr)
+    return_code |= 4
+
   return return_code
 
 
