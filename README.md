@@ -44,6 +44,22 @@ https://fossology.github.io/atarashi
     3.  `licenses/processedList.csv`
 - These files will be placed to their appropriate places by the install script.
 
+### Installing dependencies
+
+Before starting with the build, install the dependencies required by Atarashi. If you are using Poetry (recommended), the dependencies are handled automatically.
+
+#### Using Poetry (Recommended)
+```shell
+poetry install
+```
+
+#### Using pip
+If you prefer to install dependencies manually via pip:
+```shell
+pip install tqdm pandas pyxdameraulevenshtein scikit-learn scipy spacy textdistance setuptools nirjas urllib3 importlib-resources
+```
+*Note: Installing with `--user` is handled automatically by pip if you don't have root privileges and are not in a virtual environment. Modern versions of pip and poetry avoid the build failures previously encountered by non-root users.*
+
 ### Build (optional)
 
 - `poetry build`
@@ -108,16 +124,18 @@ pass the options and path to the file relative to the mounted path.
 - eg. `python atarashi/imtihaan.py /path/to/processedList.csv <DLD|tfidf|Ngram> <testfile>`
 - See `python atarashi/imtihaan.py --help` for more
 
-## Creating Debian packages
-
 - Install dependencies
-```
-# apt-get install python3-setuptools python3-all debhelper
-# pip install stdeb
+```bash
+sudo apt-get install python3-setuptools python3-all debhelper
+pip install stdeb
 ```
 - Create Debian packages
-```
-$ python3 setup.py --command-packages=stdeb.command bdist_deb
+```bash
+# Note: This requires a setup.py file. Since Atarashi uses Poetry, 
+# you should first generate a setup.py or use a poetry-based debian builder.
+# To generate a shim setup.py:
+echo "from setuptools import setup; setup()" > setup.py
+python3 setup.py --command-packages=stdeb.command bdist_deb
 ```
 - Locate the files under `deb_dist`
 

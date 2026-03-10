@@ -18,16 +18,19 @@
 #
 # Description: Docker container image recipe
 
-FROM python:3.7 as builder
+FROM python:3.10 as builder
 
 WORKDIR /atarashi
 
+# Install poetry
+RUN pip install poetry
+
 COPY . .
 
-RUN mkdir wheels
-RUN python -m pip wheel --use-pep517 --wheel-dir wheels .
+# Build wheels using poetry 
+RUN poetry build -f wheel
 
-FROM python:3.7-slim
+FROM python:3.10-slim
 
 LABEL maintainer="Fossology <fossology@fossology.org>"
 LABEL Description="Image for Atarashi project"
@@ -36,10 +39,17 @@ RUN useradd --create-home atarashi
 
 WORKDIR /home/atarashi
 
-COPY --from=builder /atarashi/wheels/ .
+# Copy wheels from builder
+COPY --from=builder /atarashi/dist/*.whl .
 
+# Install the wheels
 RUN python -m pip install ./*.whl \
  && rm ./*.whl
+
+# Run the preprocess step to generate data files
+# This ensures the image is ready for use immediately.
+# We use poetry run if available or call the script directly.
+RUN /usr/local/bin/preprocess || python3 -m atarashi.build_deps || true
 
 USER atarashi
 
