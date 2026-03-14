@@ -20,7 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 __author__ = "Ayush Bhardwaj"
 __email__ = "classicayush@gmail.com"
 
-from pkg_resources import resource_filename
+from importlib_resources import files
 import argparse
 import zipfile
 import shutil
@@ -113,9 +113,8 @@ def evaluate(scanner):
 
 
 if __name__ == "__main__":
-  defaultProcessed = resource_filename("atarashi",
-                                       "data/licenses/processedLicenses.csv")
-  defaultJSON = resource_filename("atarashi", "data/Ngram_keywords.json")
+  defaultProcessed = str(files("atarashi.data.licenses").joinpath("processedLicenses.csv"))
+  defaultJSON = str(files("atarashi.data").joinpath("Ngram_keywords.json"))
   parser = argparse.ArgumentParser()
   parser.add_argument("-a", "--agent_name", required=True,
                       choices=['wordFrequencySimilarity', 'DLD', 'tfidf', 'Ngram'],
