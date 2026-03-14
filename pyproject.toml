@@ -30,7 +30,6 @@ dependencies = [
     "scipy (>=1.15.3,<2.0.0)",
     "spacy (>=3.8.7,<4.0.0)",
     "textdistance (>=4.6.3,<5.0.0)",
-    "setuptools (>=80.9.0,<81.0.0)",
     "nirjas (>=1.0.1,<2.0.0)",
     "urllib3 (>=2.4.0,<3.0.0)",
     "importlib-resources (>=6.5.2,<7.0.0)"
