@@ -83,8 +83,9 @@ def spdx_identifer(data, shortnames):
 
 def initial_match(filePath, processedData, licenses):
   '''
-  :param inputFile: Input file path
-  :param licenseList: Processed License List path
+  :param filePath: Path to the pre-processed (extracted) comment file
+  :param processedData: Preprocessed text content from the input file
+  :param licenses: Processed license list as a pandas DataFrame
   :return: Array of JSON with scanning results from spdx_identifer and HeadersNgramSim
   '''
 

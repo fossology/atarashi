@@ -3,7 +3,7 @@
 [![Build Status](https://github.com/fossology/atarashi/actions/workflows/build-test.yml/badge.svg)](https://github.com/fossology/atarashi/actions/workflows/build-test.yml)
 
 Open source software is licensed using open source licenses. There are many
-of open source licenses around and adding to that, open source software
+open source licenses around and adding to that, open source software
 packages involve sometimes multiple licenses for different files.
 
 Atarashi provides different methods for scanning for license statements in
@@ -17,7 +17,7 @@ as possible approach to add new license texts or new license references.
 Atarashi is designed to work stand-alone and with FOSSology. More info at
 https://fossology.github.io/atarashi
 
-### Requirements
+## Requirements
 
 - Python >= v3.10
 - pip >= 25.0
@@ -43,6 +43,22 @@ https://fossology.github.io/atarashi
     2.  `licenses/<SPDX-version>.csv`
     3.  `licenses/processedList.csv`
 - These files will be placed to their appropriate places by the install script.
+
+#### Install using Pipenv
+
+A `Pipfile` and `Pipfile.lock` are also provided if you prefer pipenv over poetry.
+
+```shell
+pip install pipenv
+pipenv install
+pipenv run python atarashi/build_deps.py
+```
+
+To activate the shell:
+```shell
+pipenv shell
+atarashi --help
+```
 
 ### Build (optional)
 
@@ -85,7 +101,7 @@ Get the help by running `atarashi -h` or `atarashi --help`
 
     `atarashi -a DLD -v /path/to/file.c`
 - Running with custom CSVs and JSONs
-    - Please reffer to the build instructions to get the CSV and JSON
+    - Please refer to the build instructions to get the CSV and JSON
     understandable by atarashi.
     - `atarashi -a DLD -l /path/to/processedList.csv /path/to/file.c`
     - `atarashi -a Ngram -l /path/to/processedList.csv -j /path/to/ngram.json /path/to/file.c`

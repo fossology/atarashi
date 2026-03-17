@@ -117,7 +117,7 @@ class NgramAgent(AtarashiAgent):
     all_guesses = unique([l['shortname'] for l in matches])
     self.licenseList = self.licenseList[(self.licenseList.shortname.isin(ngram_guesses)) |
                                         (self.licenseList.shortname.isin(all_guesses))]
-    self.licenseList.sort_values('shortname').reset_index(drop=True)
+    self.licenseList = self.licenseList.sort_values('shortname').reset_index(drop=True)
 
     for idx in range(len(self.licenseList)):
 
