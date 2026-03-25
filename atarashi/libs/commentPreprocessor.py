@@ -24,7 +24,8 @@ import os
 import re
 import string
 import tempfile
-
+import shutil
+import logging
 from nirjas import extract as commentExtract, LanguageMapper
 
 __author__ = "Aman Jain"
@@ -124,15 +125,20 @@ class CommentPreprocessor(object):
     with open(outputFile, 'w') as outFile:
       # if the file extension is supported
       if fileType in supportedFileExtensions:
-        data_file = commentExtract(inputFile)
-        data = licenseComment(data_file)
-        outFile.write(data)
+        try:
+          data_file = commentExtract(inputFile)
+          data = licenseComment(data_file)
+          outFile.write(data)
+        except IndexError as e:
+          # if nirjas fails to parse, fallback to copying file as-is
+          logging.warning(f"Nirjas failed to extract comments from "
+                          f"{inputFile}: {e}. Falling back to raw copy.")
+          with open(inputFile) as inFile:
+            shutil.copyfileobj(inFile, outFile)
       else:
-        # if file extension is not supported
+        # if file extension is not supported, copy file as-is
         with open(inputFile) as inFile:
-          lines = inFile.read().split('\n')
-          for line in lines:
-            outFile.write(line + '\n')
+          shutil.copyfileobj(inFile, outFile)
 
     os.close(fd)
     return outputFile
