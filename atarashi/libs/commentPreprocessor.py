@@ -33,7 +33,7 @@ __email__ = "amanjain5221@gmail.com"
 args = None
 
 def licenseComment(data):
-  match_list = ['source', 'free', 'under','use',  'copyright', 'grant', 'software', 'license','licence', 'agreement', 'distribute', 'redistribution', 'liability', 'rights', 'reserved', 'general', 'public', 'modify', 'modified', 'modification', 'permission','permitted' 'granted', 'distributed', 'notice', 'distribution', 'terms', 'freely', 'licensed', 'merchantibility','redistributed', 'see', 'read', '(c)', 'copying', 'legal', 'licensing', 'spdx']
+  match_list = ['source', 'free', 'under', 'use', 'copyright', 'grant', 'software', 'license', 'licence', 'agreement', 'distribute', 'redistribution', 'liability', 'rights', 'reserved', 'general', 'public', 'modify', 'modified', 'modification', 'permission', 'permitted', 'granted', 'distributed', 'notice', 'distribution', 'terms', 'freely', 'licensed', 'merchantibility', 'merchantability', 'redistributed', 'see', 'read', '(c)', 'copying', 'legal', 'licensing', 'spdx']
 
   MLmapCount, CSLmapCount, SLmapCount = [], [], []
   comment = ""

@@ -91,7 +91,7 @@ class LicenseDownloader(object):
     licenses = jsonData.get('licenses')
 
     version = jsonData.get('licenseListVersion').replace(".", "_")
-    releaseDate = jsonData.get('releaseDate')
+    releaseDate = jsonData.get('releaseDate').replace(':','-').replace('T','_').replace('Z','')
     if licenses is not None:
       fileName = releaseDate + '_' + version + '.csv'
       directory = os.path.dirname(os.path.abspath(__file__))
@@ -140,12 +140,12 @@ class LicenseDownloader(object):
     nextUrl = "https://spdx.org/licenses/{0}.json".format(licenseDict['shortname'])
     licenseData = LicenseDownloader._download_json(nextUrl)
     licenseDict['text'] = licenseData.get('licenseText')
-    licenseDict['url'] = licenseData.get('seeAlso')
+    licenseDict['url'] = ', '.join(licenseData.get('seeAlso', [])) if isinstance(licenseData.get('seeAlso'), list) else licenseData.get('seeAlso', '')
     licenseDict['license_header'] = licenseData.get('standardLicenseHeader', '')
     if 'There is no standard license header for the license' in licenseDict['license_header']:
       licenseDict['license_header'] = ''
 
-    return pd.DataFrame(licenseDict, columns=csvColumns)
+    return pd.DataFrame([licenseDict], columns=csvColumns)
 
   @staticmethod
   def fetch_exceptional_license(license):
@@ -161,11 +161,11 @@ class LicenseDownloader(object):
     nextUrl = "https://spdx.org/licenses/{0}.json".format(licenseDict['shortname'])
     licenseData = LicenseDownloader._download_json(nextUrl)
     licenseDict['text'] = licenseData.get('licenseExceptionText')
-    licenseDict['url'] = licenseData.get('seeAlso')
+    licenseDict['url'] = ', '.join(licenseData.get('seeAlso', [])) if isinstance(licenseData.get('seeAlso'), list) else licenseData.get('seeAlso', '')
     licenseDict['license_header'] = licenseData.get('standardLicenseHeader', '')
     if 'There is no standard license header for the license' in licenseDict['license_header']:
       licenseDict['license_header'] = ''
-    return pd.DataFrame(licenseDict, columns=csvColumns)
+    return pd.DataFrame([licenseDict], columns=csvColumns)
 
 
 if __name__ == "__main__":
