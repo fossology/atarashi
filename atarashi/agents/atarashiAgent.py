@@ -22,6 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 __author__ = "Gaurav Mishra"
 __email__ = "gmishx@gmail.com"
 
+import os
 from abc import ABCMeta, abstractmethod
 
 from atarashi.libs.commentPreprocessor import CommentPreprocessor
@@ -45,6 +46,13 @@ class AtarashiAgent(object):
     with open(self.commentFile) as file:
       data = file.read().replace('\n', ' ')
     return CommentPreprocessor.preprocess(data)
+
+  def cleanup(self):
+    '''
+    Remove the temporary comment file created by CommentPreprocessor.
+    '''
+    if hasattr(self, 'commentFile') and os.path.exists(self.commentFile):
+      os.remove(self.commentFile)
 
   def getVerbose(self):
     return self.verbose

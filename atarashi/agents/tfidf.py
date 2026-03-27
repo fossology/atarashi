@@ -27,12 +27,11 @@ from enum import Enum
 import itertools
 import time
 
-from numpy import unique, sum, dot
-from sklearn.feature_extraction.text import TfidfVectorizer
+import numpy as np
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 
 from atarashi.agents.atarashiAgent import AtarashiAgent
 from atarashi.libs.initialmatch import initial_match
-from atarashi.libs.utils import l2_norm
 
 
 def tokenize(data): return data.split(" ")
@@ -47,19 +46,36 @@ class TFIDF(AtarashiAgent):
   def __init__(self, licenseList, algo=TfidfAlgo.cosineSim):
     super().__init__(licenseList)
     self.algo = algo
+    self.__precompute_tfidf()
 
-  def __cosine_similarity(self, a, b):
+  def __precompute_tfidf(self):
     '''
-    https://blog.nishtahir.com/fuzzy-string-matching-using-cosine-similarity/
+    Precompute representations for the license corpus.
+    '''
+    all_documents = self.licenseList['processed_text'].tolist()
 
-    :return: Cosine similarity value of two word frequency arrays
-    '''
-    dot_product = dot(a, b)
-    temp = l2_norm(a) * l2_norm(b)
-    if temp == 0:
-      return 0
-    else:
-      return dot_product / temp
+    # Precompute for Cosine Similarity (standard params)
+    self.cosine_vectorizer = TfidfVectorizer(min_df=1, max_df=0.10, use_idf=True,
+                                             smooth_idf=True, sublinear_tf=True,
+                                             tokenizer=tokenize, token_pattern=None)
+    self.cosine_license_matrix = self.cosine_vectorizer.fit_transform(all_documents).toarray()
+    self.cosine_license_norms = np.linalg.norm(self.cosine_license_matrix, axis=1)
+
+    # Precompute for Score Similarity (baseline-compatible per-file vocab)
+    self._sumscore_vectorizer = CountVectorizer(min_df=1, tokenizer=tokenize, token_pattern=None)
+    count_matrix = self._sumscore_vectorizer.fit_transform(all_documents)
+
+    # idf in baseline is computed on (licenses + input doc) for input-doc vocab only:
+    # n_docs_total = N + 1, df_total = df_licenses + 1 => idf = log((N+2)/(df+2)) + 1
+    doc_freq = np.bincount(count_matrix.indices, minlength=count_matrix.shape[1])
+    n_docs = len(all_documents)
+    idf = np.log((n_docs + 2) / (doc_freq + 2)) + 1.0
+
+    # Store un-normalized TF-IDF for licenses: (1 + log(tf)) * idf
+    tf = count_matrix.astype(np.float64)
+    tf.data = 1.0 + np.log(tf.data)
+    self._sumscore_license_tfidf = tf.multiply(idf).tocsr()
+    self._sumscore_vocab = self._sumscore_vectorizer.vocabulary_
 
   def __tfidfsumscore(self, inputFile):
     '''
@@ -73,28 +89,31 @@ class TFIDF(AtarashiAgent):
 
     startTime = time.time()
 
-    # unique words from tokenized input file
-    processedData = unique(processedData1.split(" "))
-
-    all_documents = self.licenseList['processed_text'].tolist()
-    all_documents.append(processedData1)
-    sklearn_tfidf = TfidfVectorizer(min_df=1, use_idf=True, smooth_idf=True,
-                                    sublinear_tf=True, tokenizer=tokenize,
-                                    vocabulary=processedData)
-
-    sklearn_representation = sklearn_tfidf.fit_transform(all_documents).toarray()
+    input_words_sorted = sorted(set(processedData1.split(" ")))
+    valid_indices = [self._sumscore_vocab[word] for word in input_words_sorted
+                     if word in self._sumscore_vocab]
 
     score_arr = []
-    result = 0
-    for counter, value in enumerate(sklearn_representation[:len(sklearn_representation) - 1],
-                                    start=0):
-      sim_score = sum(value)
+    if valid_indices:
+      subset = self._sumscore_license_tfidf[:, valid_indices]
+      norms = np.sqrt(np.asarray(subset.multiply(subset).sum(axis=1)).ravel())
+      inv_norms = np.zeros_like(norms)
+      nonzero = norms != 0
+      inv_norms[nonzero] = 1.0 / norms[nonzero]
+
+      normalized = subset.multiply(inv_norms.reshape(-1, 1))
+      scores = np.asarray(normalized.sum(axis=1)).ravel()
+    else:
+      scores = np.zeros(len(self.licenseList), dtype=np.float64)
+
+    for counter, sim_score in enumerate(scores):
       score_arr.append({
         'shortname': self.licenseList.iloc[counter]['shortname'],
         'sim_type': "Sum of TF-IDF score",
-        'sim_score': sim_score,
+        'sim_score': float(sim_score),
         'desc': "Score can be greater than 1 also"
       })
+
     score_arr.sort(key=lambda x: x['sim_score'], reverse=True)
     matches = list(itertools.chain(matches, score_arr[:5]))
     matches.sort(key=lambda x: x['sim_score'], reverse=True)
@@ -114,20 +133,18 @@ class TFIDF(AtarashiAgent):
 
     startTime = time.time()
 
-    all_documents = self.licenseList['processed_text'].tolist()
-    sklearn_tfidf = TfidfVectorizer(min_df=1, max_df=0.10, use_idf=True, smooth_idf=True,
-                                    sublinear_tf=True, tokenizer=tokenize)
+    search_matrix = self.cosine_vectorizer.transform([processedData1]).toarray()[0]
+    search_norm = np.linalg.norm(search_matrix)
+    if search_norm != 0:
+      dot_products = self.cosine_license_matrix.dot(search_matrix)
+      denom = self.cosine_license_norms * search_norm
+      sim_scores = np.divide(dot_products, denom, out=np.zeros_like(dot_products), where=denom != 0)
 
-    all_documents_matrix = sklearn_tfidf.fit_transform(all_documents).toarray()
-    search_martix = sklearn_tfidf.transform([processedData1]).toarray()[0]
-
-    for counter, value in enumerate(all_documents_matrix, start=0):
-      sim_score = self.__cosine_similarity(value, search_martix)
-      if sim_score >= 0.16:
+      for counter in np.nonzero(sim_scores >= 0.16)[0]:
         matches.append({
           'shortname': self.licenseList.iloc[counter]['shortname'],
           'sim_type': "TF-IDF Cosine Sim",
-          'sim_score': sim_score,
+          'sim_score': float(sim_scores[counter]),
           'desc': ''
         })
     matches.sort(key=lambda x: x['sim_score'], reverse=True)
@@ -136,12 +153,14 @@ class TFIDF(AtarashiAgent):
     return matches
 
   def scan(self, filePath):
-    if self.algo == self.TfidfAlgo.cosineSim:
-      return self.__tfidfcosinesim(filePath)
-    elif self.algo == self.TfidfAlgo.scoreSim:
-      return self.__tfidfsumscore(filePath)
-    else:
+    try:
+      if self.algo == self.TfidfAlgo.cosineSim:
+        return self.__tfidfcosinesim(filePath)
+      if self.algo == self.TfidfAlgo.scoreSim:
+        return self.__tfidfsumscore(filePath)
       return -1
+    finally:
+      self.cleanup()
 
   def getSimAlgo(self):
     return self.algo
