@@ -31,6 +31,16 @@ from atarashi.libs.utils import wordFrequency
 
 class WordFrequencySimilarity(AtarashiAgent):
 
+  def __init__(self, licenseList, verbose=0):
+    super().__init__(licenseList, verbose)
+    self.__precompute_frequencies()
+
+  def __precompute_frequencies(self):
+    self.licensesFrequency = []
+    for idx in range(len(self.licenseList)):
+      license = self.licenseList.at[idx, 'processed_text']
+      self.licensesFrequency.append(wordFrequency(re.findall(r'\b[a-z]{3,15}\b', license)))
+
   def scan(self, filePath):
     '''
     Python Module to classify license using histogram similarity algorithm
@@ -45,25 +55,19 @@ class WordFrequencySimilarity(AtarashiAgent):
 
     temp = exactMatcher(processedData, self.licenseList)
     if temp == -1:
-      # create array of frequency array of licenses
-      licensesFrequency = []
-      for idx in range(len(self.licenseList)):
-        license = self.licenseList.at[idx, 'processed_text']
-        licensesFrequency.append(wordFrequency(re.findall(r'\b[a-z]{3,15}\b', license)))
-
       processedLicense = wordFrequency(re.findall(r'\b[a-z]{3,15}\b', processedData))
 
       if self.verbose > 0:
-        print("Frequency array of licenses", licensesFrequency[0])
+        print("Frequency array of licenses", self.licensesFrequency[0])
         print("Frequency table of input data", processedLicense)
 
       # Histogram Similarity Algorithm
       globalCount = 0
       result = 0
-      for idx in range(len(licensesFrequency)):
+      for idx in range(len(self.licensesFrequency)):
         tempCount = 0
         for word, processedLicenseWordFreq in processedLicense.items():
-          licenseWordFreq = licensesFrequency[idx].get(word, 0)
+          licenseWordFreq = self.licensesFrequency[idx].get(word, 0)
           if min(licenseWordFreq, processedLicenseWordFreq) > 0:
             tempCount = tempCount + min(licenseWordFreq, processedLicenseWordFreq)
         if self.verbose > 0:
@@ -73,6 +77,7 @@ class WordFrequencySimilarity(AtarashiAgent):
           globalCount = tempCount
       if self.verbose > 0:
         print("Result is license with ID", result)
+      self.cleanup()
       return [{
         "shortname": str(self.licenseList.at[result, 'shortname']),
         "sim_score": 1,

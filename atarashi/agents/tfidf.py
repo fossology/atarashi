@@ -47,6 +47,25 @@ class TFIDF(AtarashiAgent):
   def __init__(self, licenseList, algo=TfidfAlgo.cosineSim):
     super().__init__(licenseList)
     self.algo = algo
+    self.__precompute_tfidf()
+
+  def __precompute_tfidf(self):
+    '''
+    Precompute TF-IDF vectors for the license corpus.
+    '''
+    all_documents = self.licenseList['processed_text'].tolist()
+
+    # Precompute for Cosine Similarity (standard params)
+    self.cosine_vectorizer = TfidfVectorizer(min_df=1, max_df=0.10, use_idf=True,
+                                             smooth_idf=True, sublinear_tf=True,
+                                             tokenizer=tokenize, token_pattern=None)
+    self.cosine_license_matrix = self.cosine_vectorizer.fit_transform(all_documents).toarray()
+
+    # Precompute for Score Similarity (no max_df, no vocabulary restriction yet)
+    self.score_vectorizer = TfidfVectorizer(min_df=1, use_idf=True, smooth_idf=True,
+                                            sublinear_tf=True, tokenizer=tokenize,
+                                            token_pattern=None)
+    self.score_license_matrix = self.score_vectorizer.fit_transform(all_documents).toarray()
 
   def __cosine_similarity(self, a, b):
     '''
@@ -73,28 +92,36 @@ class TFIDF(AtarashiAgent):
 
     startTime = time.time()
 
-    # unique words from tokenized input file
-    processedData = unique(processedData1.split(" "))
-
-    all_documents = self.licenseList['processed_text'].tolist()
-    all_documents.append(processedData1)
-    sklearn_tfidf = TfidfVectorizer(min_df=1, use_idf=True, smooth_idf=True,
-                                    sublinear_tf=True, tokenizer=tokenize,
-                                    vocabulary=processedData)
-
-    sklearn_representation = sklearn_tfidf.fit_transform(all_documents).toarray()
+    # The original implementation restricted vocabulary to unique words in input file.
+    # To maintain semantic parity while being efficient, we use the precomputed matrix
+    # but only sum the elements corresponding to words present in the input file.
+    input_words = set(processedData1.split(" "))
+    feature_names = self.score_vectorizer.get_feature_names_out()
+    # Indices of features (words) that are present in the input file
+    valid_indices = [i for i, word in enumerate(feature_names) if word in input_words]
 
     score_arr = []
-    result = 0
-    for counter, value in enumerate(sklearn_representation[:len(sklearn_representation) - 1],
-                                    start=0):
-      sim_score = sum(value)
-      score_arr.append({
-        'shortname': self.licenseList.iloc[counter]['shortname'],
-        'sim_type': "Sum of TF-IDF score",
-        'sim_score': sim_score,
-        'desc': "Score can be greater than 1 also"
-      })
+    if valid_indices:
+        # subset of matrix with only valid word columns
+        subset_matrix = self.score_license_matrix[:, valid_indices]
+        sums = subset_matrix.sum(axis=1)
+        for counter, sim_score in enumerate(sums):
+            score_arr.append({
+                'shortname': self.licenseList.iloc[counter]['shortname'],
+                'sim_type': "Sum of TF-IDF score",
+                'sim_score': sim_score,
+                'desc': "Score can be greater than 1 also"
+            })
+    else:
+        # No words match
+        for counter in range(len(self.licenseList)):
+            score_arr.append({
+                'shortname': self.licenseList.iloc[counter]['shortname'],
+                'sim_type': "Sum of TF-IDF score",
+                'sim_score': 0.0,
+                'desc': "Score can be greater than 1 also"
+            })
+
     score_arr.sort(key=lambda x: x['sim_score'], reverse=True)
     matches = list(itertools.chain(matches, score_arr[:5]))
     matches.sort(key=lambda x: x['sim_score'], reverse=True)
@@ -114,15 +141,10 @@ class TFIDF(AtarashiAgent):
 
     startTime = time.time()
 
-    all_documents = self.licenseList['processed_text'].tolist()
-    sklearn_tfidf = TfidfVectorizer(min_df=1, max_df=0.10, use_idf=True, smooth_idf=True,
-                                    sublinear_tf=True, tokenizer=tokenize)
+    search_matrix = self.cosine_vectorizer.transform([processedData1]).toarray()[0]
 
-    all_documents_matrix = sklearn_tfidf.fit_transform(all_documents).toarray()
-    search_martix = sklearn_tfidf.transform([processedData1]).toarray()[0]
-
-    for counter, value in enumerate(all_documents_matrix, start=0):
-      sim_score = self.__cosine_similarity(value, search_martix)
+    for counter, value in enumerate(self.cosine_license_matrix, start=0):
+      sim_score = self.__cosine_similarity(value, search_matrix)
       if sim_score >= 0.16:
         matches.append({
           'shortname': self.licenseList.iloc[counter]['shortname'],

@@ -32,6 +32,15 @@ __email__ = "amanjain5221@gmail.com"
 
 class DameruLevenDist(AtarashiAgent):
 
+  def __init__(self, licenseList, verbose=0):
+    super().__init__(licenseList, verbose)
+    self.__precompute_tokens()
+
+  def __precompute_tokens(self):
+    self.licenseTokens = []
+    for idx in range(len(self.licenseList)):
+      self.licenseTokens.append(self.licenseList.iloc[idx]['processed_text'].split(" "))
+
   def scan(self, filePath):
     '''
     Read the content content of filename, extract the comments and preprocess them.
@@ -48,15 +57,17 @@ class DameruLevenDist(AtarashiAgent):
       # Classify the license with minimum distance with scanned file
       globalDistance = sys.maxsize
       result = 0
-      for idx in range(len(self.licenseList)):
-        distance = damerau_levenshtein_distance(processedData.split(" "),
-                                                self.licenseList.iloc[idx]['processed_text'].split(" "))
+      processedTokens = processedData.split(" ")
+      for idx in range(len(self.licenseTokens)):
+        distance = damerau_levenshtein_distance(processedTokens,
+                                                self.licenseTokens[idx])
         if self.verbose > 0:
           print(str(idx) + "  " + self.licenseList.iloc[idx]['shortname'] + "  " + str(distance))
         if distance < globalDistance:
           globalDistance = distance
           result = idx
 
+      self.cleanup()
       return [{
         "shortname": str(self.licenseList.iloc[result]['shortname']),
         "sim_score": 1,
