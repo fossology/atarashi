@@ -118,89 +118,91 @@ class NgramAgent(AtarashiAgent):
     +------------+-----------------------------------------------------------+
     '''
     processedData = super().loadFile(inputFile)
-    matches = initial_match(self.commentFile, processedData, self.licenseList)
+    try:
+      matches = initial_match(self.commentFile, processedData, self.licenseList)
 
-    # Full text Bi-gram Cosine Similarity Match
-    Cosine_matches = []
-    Dice_matches = []
-    Bigram_cosine_matches = []
+      # Full text Bi-gram Cosine Similarity Match
+      Cosine_matches = []
+      Dice_matches = []
+      Bigram_cosine_matches = []
 
-    initial_guess = self.__Ngram_guess(processedData)
-    ngram_guesses = []
-    for guess in initial_guess:
-      for x in guess['shortname']:
-        ngram_guesses.append(x)
+      initial_guess = self.__Ngram_guess(processedData)
+      ngram_guesses = []
+      for guess in initial_guess:
+        for x in guess['shortname']:
+          ngram_guesses.append(x)
 
-    all_guesses = unique([l['shortname'] for l in matches])
-    filteredLicenseList = self.fullLicenseList[(self.fullLicenseList.shortname.isin(ngram_guesses)) |
-                                                (self.fullLicenseList.shortname.isin(all_guesses))]
-    filteredLicenseList = filteredLicenseList.sort_values('shortname').reset_index(drop=False)
+      all_guesses = unique([l['shortname'] for l in matches])
+      filteredLicenseList = self.fullLicenseList[(self.fullLicenseList.shortname.isin(ngram_guesses)) |
+                                                  (self.fullLicenseList.shortname.isin(all_guesses))]
+      filteredLicenseList = filteredLicenseList.sort_values('shortname').reset_index(drop=False)
 
-    processedUnigrams = processedData.split(" ")
-    processedUnigramFreq = wordFrequency(processedUnigrams)
-    processedBigrams = self.__bigram_tokenize(processedData)
-    processedBigramFreq = wordFrequency(processedBigrams)
+      processedUnigrams = processedData.split(" ")
+      processedUnigramFreq = wordFrequency(processedUnigrams)
+      processedBigrams = self.__bigram_tokenize(processedData)
+      processedBigramFreq = wordFrequency(processedBigrams)
 
-    for idx in range(len(filteredLicenseList)):
-      # Get the original index to access precomputed data
-      original_idx = filteredLicenseList.iloc[idx]['index']
-      shortname = filteredLicenseList.iloc[idx]['shortname']
+      for idx in range(len(filteredLicenseList)):
+        # Get the original index to access precomputed data
+        original_idx = filteredLicenseList.iloc[idx]['index']
+        shortname = filteredLicenseList.iloc[idx]['shortname']
 
-      if self.simType == self.NgramAlgo.cosineSim:
-        # cosine similarity with unigram
-        cosineSim = cosine_similarity(
-            self.licenseUnigramFreq[original_idx],
-            processedUnigramFreq)
-        if cosineSim >= 0.6:
-          Cosine_matches.append({
-            'shortname': shortname,
-            'sim_type': 'CosineSim',
-            'sim_score': cosineSim,
-            'description': ''
-          })
-        if self.verbose > 0:
-          print("Cosine Sim ", str(cosineSim), shortname)
-
-      elif self.simType == self.NgramAlgo.diceSim:
-        # dice similarity
-        diceSim = textdistance.sorensen(self.licenseUnigramTokens[original_idx],
-                                        processedUnigrams)
-        if diceSim >= 0.6:
-          Dice_matches.append({
-            'shortname': shortname,
-            'sim_type': 'DiceSim',
-            'sim_score': diceSim,
-            'description': ''
-          })
-        if self.verbose > 0:
-          print("Dice Sim ", str(diceSim), shortname)
-
-      elif self.simType == self.NgramAlgo.bigramCosineSim:
-        bigram_cosine_sim = cosine_similarity(
-            self.licenseBigramFreq[original_idx],
-            processedBigramFreq)
-        if bigram_cosine_sim >= 0.9:
-          Bigram_cosine_matches.append({
-            'shortname': shortname,
-            'sim_type': 'BigramCosineSim',
-            'sim_score': bigram_cosine_sim,
-            'description': ''
-          })
+        if self.simType == self.NgramAlgo.cosineSim:
+          # cosine similarity with unigram
+          cosineSim = cosine_similarity(
+              self.licenseUnigramFreq[original_idx],
+              processedUnigramFreq)
+          if cosineSim >= 0.6:
+            Cosine_matches.append({
+              'shortname': shortname,
+              'sim_type': 'CosineSim',
+              'sim_score': cosineSim,
+              'description': ''
+            })
           if self.verbose > 0:
-            print("Bigram Cosine Sim ", str(bigram_cosine_sim), shortname)
+            print("Cosine Sim ", str(cosineSim), shortname)
 
-    if self.simType == self.NgramAlgo.cosineSim and len(Cosine_matches) > 0:
-      matches = list(itertools.chain(matches, Cosine_matches))
+        elif self.simType == self.NgramAlgo.diceSim:
+          # dice similarity
+          diceSim = textdistance.sorensen(self.licenseUnigramTokens[original_idx],
+                                          processedUnigrams)
+          if diceSim >= 0.6:
+            Dice_matches.append({
+              'shortname': shortname,
+              'sim_type': 'DiceSim',
+              'sim_score': diceSim,
+              'description': ''
+            })
+          if self.verbose > 0:
+            print("Dice Sim ", str(diceSim), shortname)
 
-    if self.simType == self.NgramAlgo.diceSim and len(Dice_matches) > 0:
-      matches = list(itertools.chain(matches, Dice_matches))
+        elif self.simType == self.NgramAlgo.bigramCosineSim:
+          bigram_cosine_sim = cosine_similarity(
+              self.licenseBigramFreq[original_idx],
+              processedBigramFreq)
+          if bigram_cosine_sim >= 0.9:
+            Bigram_cosine_matches.append({
+              'shortname': shortname,
+              'sim_type': 'BigramCosineSim',
+              'sim_score': bigram_cosine_sim,
+              'description': ''
+            })
+            if self.verbose > 0:
+              print("Bigram Cosine Sim ", str(bigram_cosine_sim), shortname)
 
-    if self.simType == self.NgramAlgo.bigramCosineSim and len(Bigram_cosine_matches) > 0:
-      matches = list(itertools.chain(matches, Bigram_cosine_matches))
+      if self.simType == self.NgramAlgo.cosineSim and len(Cosine_matches) > 0:
+        matches = list(itertools.chain(matches, Cosine_matches))
 
-    matches.sort(key=lambda x: x['sim_score'], reverse=True)
-    self.cleanup()
-    return matches
+      if self.simType == self.NgramAlgo.diceSim and len(Dice_matches) > 0:
+        matches = list(itertools.chain(matches, Dice_matches))
+
+      if self.simType == self.NgramAlgo.bigramCosineSim and len(Bigram_cosine_matches) > 0:
+        matches = list(itertools.chain(matches, Bigram_cosine_matches))
+
+      matches.sort(key=lambda x: x['sim_score'], reverse=True)
+      return matches
+    finally:
+      self.cleanup()
 
   def getSimAlgo(self):
     return self.simType

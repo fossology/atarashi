@@ -49,43 +49,42 @@ class WordFrequencySimilarity(AtarashiAgent):
     :return: License short name with maximum intersection with word frequency of licenses
     '''
     processedData = super().loadFile(filePath)
-    if self.verbose > 0:
-      print("PROCESSED DATA IS ", processedData)
-      print("LICENSES[0]", str(self.licenseList.iloc[0]))
-
-    temp = exactMatcher(processedData, self.licenseList)
-    if temp == -1:
-      processedLicense = wordFrequency(re.findall(r'\b[a-z]{3,15}\b', processedData))
-
+    try:
       if self.verbose > 0:
-        print("Frequency array of licenses", self.licensesFrequency[0])
-        print("Frequency table of input data", processedLicense)
+        print("PROCESSED DATA IS ", processedData)
+        print("LICENSES[0]", str(self.licenseList.iloc[0]))
 
-      # Histogram Similarity Algorithm
-      globalCount = 0
-      result = 0
-      for idx in range(len(self.licensesFrequency)):
-        tempCount = 0
-        for word, processedLicenseWordFreq in processedLicense.items():
-          licenseWordFreq = self.licensesFrequency[idx].get(word, 0)
-          if min(licenseWordFreq, processedLicenseWordFreq) > 0:
-            tempCount = tempCount + min(licenseWordFreq, processedLicenseWordFreq)
+      temp = exactMatcher(processedData, self.licenseList)
+      if temp == -1:
+        processedLicense = wordFrequency(re.findall(r'\b[a-z]{3,15}\b', processedData))
+
         if self.verbose > 0:
-          print(idx, self.licenseList.at[idx, 'shortname'], tempCount)
-        if globalCount < tempCount:
-          result = idx
-          globalCount = tempCount
-      if self.verbose > 0:
-        print("Result is license with ID", result)
-      self.cleanup()
-      return [{
-        "shortname": str(self.licenseList.at[result, 'shortname']),
-        "sim_score": 1,
-        "sim_type": "wordFrequencySimilarity",
-        "description": ""
-      }]
+          print("Frequency array of licenses", self.licensesFrequency[0])
+          print("Frequency table of input data", processedLicense)
 
-    else:
+        # Histogram Similarity Algorithm
+        globalCount = 0
+        result = 0
+        for idx in range(len(self.licensesFrequency)):
+          tempCount = 0
+          for word, processedLicenseWordFreq in processedLicense.items():
+            licenseWordFreq = self.licensesFrequency[idx].get(word, 0)
+            if min(licenseWordFreq, processedLicenseWordFreq) > 0:
+              tempCount = tempCount + min(licenseWordFreq, processedLicenseWordFreq)
+          if self.verbose > 0:
+            print(idx, self.licenseList.at[idx, 'shortname'], tempCount)
+          if globalCount < tempCount:
+            result = idx
+            globalCount = tempCount
+        if self.verbose > 0:
+          print("Result is license with ID", result)
+        return [{
+          "shortname": str(self.licenseList.at[result, 'shortname']),
+          "sim_score": 1,
+          "sim_type": "wordFrequencySimilarity",
+          "description": ""
+        }]
+
       result = []
       for shortname in temp:
         result.append({
@@ -95,6 +94,8 @@ class WordFrequencySimilarity(AtarashiAgent):
           "description": "exact match"
         })
       return result
+    finally:
+      self.cleanup()
 
 
 if __name__ == "__main__":

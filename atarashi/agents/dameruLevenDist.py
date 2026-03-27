@@ -51,30 +51,29 @@ class DameruLevenDist(AtarashiAgent):
     :return: Returns the license's short name with least damerau levenshtien distance
     '''
     processedData = super().loadFile(filePath)
+    try:
+      temp = exactMatcher(processedData, self.licenseList)
+      if temp == -1:
+        # Classify the license with minimum distance with scanned file
+        globalDistance = sys.maxsize
+        result = 0
+        processedTokens = processedData.split(" ")
+        for idx in range(len(self.licenseTokens)):
+          distance = damerau_levenshtein_distance(processedTokens,
+                                                  self.licenseTokens[idx])
+          if self.verbose > 0:
+            print(str(idx) + "  " + self.licenseList.iloc[idx]['shortname'] + "  " + str(distance))
+          if distance < globalDistance:
+            globalDistance = distance
+            result = idx
 
-    temp = exactMatcher(processedData, self.licenseList)
-    if temp == -1:
-      # Classify the license with minimum distance with scanned file
-      globalDistance = sys.maxsize
-      result = 0
-      processedTokens = processedData.split(" ")
-      for idx in range(len(self.licenseTokens)):
-        distance = damerau_levenshtein_distance(processedTokens,
-                                                self.licenseTokens[idx])
-        if self.verbose > 0:
-          print(str(idx) + "  " + self.licenseList.iloc[idx]['shortname'] + "  " + str(distance))
-        if distance < globalDistance:
-          globalDistance = distance
-          result = idx
+        return [{
+          "shortname": str(self.licenseList.iloc[result]['shortname']),
+          "sim_score": 1,
+          "sim_type": "dld",
+          "description": ""
+        }]
 
-      self.cleanup()
-      return [{
-        "shortname": str(self.licenseList.iloc[result]['shortname']),
-        "sim_score": 1,
-        "sim_type": "dld",
-        "description": ""
-      }]
-    else:
       result = []
       for shortname in temp:
         result.append({
@@ -84,6 +83,8 @@ class DameruLevenDist(AtarashiAgent):
           "description": "exact match"
         })
       return result
+    finally:
+      self.cleanup()
 
 
 if __name__ == "__main__":
