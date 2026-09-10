@@ -54,6 +54,11 @@ Get the help by running `atarashi -h` or `atarashi --help`
 
 ### Example
 
+- Running the **Cascade** agent (recommended)
+
+    `atarashi -a Cascade /path/to/file.c`
+
+  See [The Cascade agent](#the-cascade-agent) for what it does and what it returns.
 - Running **DLD** agent
 
     `atarashi -a DLD /path/to/file.c`
@@ -107,6 +112,81 @@ pass the options and path to the file relative to the mounted path.
 - Run imtihaan (meaning *Exam* in Hindi) with the name of the Agent.
 - eg. `python atarashi/imtihaan.py /path/to/processedList.csv <DLD|tfidf|Ngram> <testfile>`
 - See `python atarashi/imtihaan.py --help` for more
+
+## The Cascade agent
+
+`Cascade` is the precision-first agent. It tries the cheapest reliable evidence
+first and abstains rather than guess:
+
+1. **`SPDX-License-Identifier`** — an author-declared tag, resolved to a license
+   expression. Highest precision available, and no matching required.
+2. **Exact text** — the input normalizes to a known license verbatim.
+3. **Token-sequence match** — a license notice or body embedded in the input,
+   scored by the longest contiguous matched run and by how much of the reference
+   is covered.
+4. **`UNKNOWN`** — no confident match.
+
+Stages 2 and 3 run on the extracted comment block rather than the raw file, so
+code is not matched as if it were license prose. Stage 1 runs on the raw text,
+because a tag is a literal string that comment extraction may reformat.
+
+**Abstention is the normal outcome, not an error.** On real source files carrying
+an SPDX tag, about 72% have no license prose at all once the tag is stripped —
+there is nothing to identify, and `UNKNOWN` is the correct answer.
+
+### What it returns
+
+A matched license carries the span, because a compliance reviewer needs to see the
+text, not just a label:
+
+```json
+{
+  "shortname": "Apache-2.0",
+  "sim_type": "SequenceCoverage",
+  "sim_score": 1.0,
+  "matched_start": 21,
+  "matched_end": 149,
+  "matched_text": "Licensed under the Apache License, Version 2.0 (the \"License\") ...",
+  "description": "matched chars 21:149 (run 22 tokens)"
+}
+```
+
+Offsets index the text that was scanned — the extracted comment block, or the file
+itself when extraction is unavailable.
+
+A resolved tag carries the whole expression, so `AND`, `OR` and `WITH` survive.
+A flat list of shortnames cannot distinguish `MIT AND Apache-2.0` from
+`MIT OR Apache-2.0`, and would drop the exception from
+`GPL-2.0 WITH Classpath-exception-2.0` — which changes what the license permits:
+
+```json
+{
+  "shortname": "GPL-2.0",
+  "sim_type": "SPDXIdentifier",
+  "sim_score": 1.0,
+  "expression": "GPL-2.0 WITH Classpath-exception-2.0"
+}
+```
+
+### The reference index
+
+Real files carry short license *notices* and one-line references, not license
+bodies — "Licensed under the Apache License, Version 2.0, see LICENSE for details."
+appears in no license text anywhere. Alongside the license list, the agent indexes
+a notice layer built from scancode-toolkit's rules:
+`atarashi/data/licenses/notice_rules.json`, 24k units across 986 licenses.
+
+That artifact is committed, so **installing Atarashi never pulls scancode-toolkit
+in**. Regenerate it only when you want to track a newer ScanCode:
+
+```
+pip install scancode-toolkit          # build-time only
+python scripts/build_references.py
+```
+
+On macOS scancode needs libmagic — `brew install libmagic`, then set
+`TYPECODE_LIBMAGIC_PATH=/opt/homebrew/lib/libmagic.dylib` and
+`TYPECODE_LIBMAGIC_DB_PATH=/opt/homebrew/share/misc/magic.mgc`.
 
 ## Creating Debian packages
 

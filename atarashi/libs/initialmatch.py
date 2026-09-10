@@ -51,34 +51,18 @@ def HeadersNgramSim(header, processedData):
 
 def spdx_identifer(data, shortnames):
   '''
-  Identify SPDX-License-Identifier
-  Make sure the identifier must be present in Fossology merged license list
+  Identify SPDX-License-Identifier tags via the first-class SPDX detector.
+
+  Parses full SPDX expressions (AND/OR/WITH, `+`, LicenseRef) and resolves each
+  component to a Fossology shortname; unresolved ids are dropped. Unlike the
+  legacy scan this does not treat bare `license:` lines as tags.
 
   :param data: Input File data
   :param shortnames: Array of shortnames (SPDX-ID)
   :return: Array of JSON with scanning results
   '''
-  data = data.lower()  # preprocessing of data
-  shortnamesLow = [shortname.lower() for shortname in shortnames]
-  tokenized_data = data.split('\n')
-  possible_spdx = []
-  for idx in range(len(tokenized_data)):
-    if "spdx-license-identifier:" in tokenized_data[idx] or "license:" in tokenized_data[idx]:
-      possible_spdx.append(tokenized_data[idx])
-
-  spdx_identifiers = []
-  for identifiers in possible_spdx:
-    for x in identifiers.split(" "):
-      if x in shortnamesLow:
-        shortnameIndex = shortnamesLow.index(x)
-        spdx_identifiers.append({
-          'shortname': shortnames[shortnameIndex],
-          'sim_type': 'SPDXIdentifier',
-          'sim_score': 1.0,
-          'description': ''
-        })
-
-  return spdx_identifiers
+  from atarashi.spdx.resolver import detect_and_resolve
+  return detect_and_resolve(data, shortnames)
 
 
 def initial_match(filePath, processedData, licenses):

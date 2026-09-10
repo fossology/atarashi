@@ -136,3 +136,6 @@ dmypy.json
 
 # VSCode
 .vscode
+
+# SPDX snapshot downloaded by `preprocess`; regenerable, dated, and large.
+atarashi/data/licenses/[0-9]*Z_*.csv
