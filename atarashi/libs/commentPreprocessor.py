@@ -25,8 +25,6 @@ import re
 import string
 import tempfile
 
-from nirjas import extract as commentExtract, LanguageMapper
-
 __author__ = "Aman Jain"
 __email__ = "amanjain5221@gmail.com"
 
@@ -115,6 +113,9 @@ class CommentPreprocessor(object):
     :param inputFile: Location of Input file from which comments needs to be extracted
     :return: Temp file path from the OS
     '''
+    # Imported lazily: nirjas is only needed to extract comments, so importing
+    # Atarashi's agents (e.g. the SPDX path) does not require it to be installed.
+    from nirjas import LanguageMapper, extract as commentExtract
 
     supportedFileExtensions = list(LanguageMapper.LANG_MAP.keys())
 

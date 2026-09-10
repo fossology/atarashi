@@ -40,6 +40,13 @@ dependencies = [
 homepage = "https://github.com/fossology/atarashi"
 repository = "https://github.com/fossology/atarashi"
 
+[project.optional-dependencies]
+dev = [
+    "pyright>=1.1.409,<2.0.0",
+    "ruff>=0.15.15,<1.0.0",
+    "pytest>=8.0,<9.0",
+]
+
 [tool.poetry.scripts]
 atarashi = "atarashi.atarashii:main"
 preprocess = "atarashi.build_deps:download_dependencies"
@@ -53,3 +60,25 @@ include = [
     { path = "atarashi/data/Ngram_keywords.json", format = ["sdist", "wheel"] },
     { path = "atarashi/data/licenses/processedLicenses.csv", format = ["sdist", "wheel"] }
 ]
+
+[tool.ruff]
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F"]
+ignore = ["E501"]
+
+[tool.pyright]
+pythonVersion = "3.10"
+# Scoped to actively-developed modules; legacy agents predate typing and are
+# covered by their own tests. Broaden as the cascade replaces them.
+include = [
+    "atarashi/spdx",
+    "atarashi/libs/decision.py",
+    "atarashi/libs/gate.py",
+    "atarashi/agents/cascade.py",
+    "atarashi/libs/normalize.py",
+    "atarashi/libs/sequence.py",
+]
+typeCheckingMode = "standard"
+exclude = ["build", "dist", "**/__pycache__", "**/.*"]
