@@ -25,8 +25,6 @@ import re
 import string
 import tempfile
 
-from nirjas import extract as commentExtract, LanguageMapper
-
 __author__ = "Aman Jain"
 __email__ = "amanjain5221@gmail.com"
 
@@ -83,6 +81,16 @@ def licenseComment(data):
   return comment
 
 
+# Nirjas maps `.txt` to a "text" language and runs comment extraction over it, which
+# on prose drops content rather than selecting it. A whole license text is prose, and
+# `LICENSE.txt` is one of the most common license filenames there is: measured on the
+# Software Heritage annotated sample, a verbatim GPL-3.0 body lost 1,315 characters
+# that way and the cascade then abstained on it — the same file named `LICENSE`
+# resolved correctly. A prose file has no comments to extract, so it is copied through
+# whole and the matcher sees what the file actually says.
+PROSE_EXTENSIONS = frozenset({'.txt', '.text'})
+
+
 class CommentPreprocessor(object):
 
   @staticmethod
@@ -115,6 +123,9 @@ class CommentPreprocessor(object):
     :param inputFile: Location of Input file from which comments needs to be extracted
     :return: Temp file path from the OS
     '''
+    # Imported lazily: nirjas is only needed to extract comments, so importing
+    # Atarashi's agents (e.g. the SPDX path) does not require it to be installed.
+    from nirjas import LanguageMapper, extract as commentExtract
 
     supportedFileExtensions = list(LanguageMapper.LANG_MAP.keys())
 
@@ -123,7 +134,7 @@ class CommentPreprocessor(object):
 
     with open(outputFile, 'w') as outFile:
       # if the file extension is supported
-      if fileType in supportedFileExtensions:
+      if fileType in supportedFileExtensions and fileType not in PROSE_EXTENSIONS:
         data_file = commentExtract(inputFile)
         data = licenseComment(data_file)
         outFile.write(data)

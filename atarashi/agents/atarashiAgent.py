@@ -53,7 +53,7 @@ class AtarashiAgent(object):
     self.verbose = int(verbose)
 
   @abstractmethod
-  def scan(self, filePath):
+  def scan(self, filePath) -> list:
     pass
 
 

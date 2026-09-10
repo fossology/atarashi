@@ -24,6 +24,7 @@ import errno
 import json
 import os
 
+from atarashi.agents.cascade import Cascade
 from atarashi.agents.cosineSimNgram import NgramAgent
 from atarashi.agents.dameruLevenDist import DameruLevenDist
 from atarashi.agents.tfidf import TFIDF
@@ -74,7 +75,9 @@ def build_scanner_obj(processedLicense, agent_name, similarity="CosineSim",
   :return: Returns the scanner agent object
   '''
   scanner = ""
-  if agent_name == "wordFrequencySimilarity":
+  if agent_name == "Cascade":
+    scanner = Cascade(processedLicense)
+  elif agent_name == "wordFrequencySimilarity":
     scanner = WordFrequencySimilarity(processedLicense)
   elif agent_name == "DLD":
     scanner = DameruLevenDist(processedLicense)
@@ -128,7 +131,7 @@ def main():
   parser.add_argument("-l", "--processedLicenseList", required=False,
                       help="Specify the location of processed license list file")
   parser.add_argument("-a", "--agent_name", required=True,
-                      choices=['wordFrequencySimilarity', 'DLD', 'tfidf', 'Ngram'],
+                      choices=['Cascade', 'wordFrequencySimilarity', 'DLD', 'tfidf', 'Ngram'],
                       help="Name of the agent that needs to be run")
   parser.add_argument("-s", "--similarity", required=False, default="CosineSim",
                       choices=["ScoreSim", "CosineSim", "DiceSim", "BigramCosineSim"],
