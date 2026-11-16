@@ -34,11 +34,30 @@ from tqdm import tqdm
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)) + '/../')
 
 from atarashii import build_scanner_obj
+from report import summarize, misclassifications, format_table, \
+  confusion_matrix
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 CONFIG_PATH = os.path.join(ROOT_DIR, 'TestFiles.zip')
-with zipfile.ZipFile(CONFIG_PATH, 'r') as zip:
-  zip.extractall()
+
+# Every agent and similarity combination supported by build_scanner_obj()
+AGENT_COMBINATIONS = [
+  ('wordFrequencySimilarity', None),
+  ('DLD', None),
+  ('tfidf', 'CosineSim'),
+  ('tfidf', 'ScoreSim'),
+  ('Ngram', 'CosineSim'),
+  ('Ngram', 'DiceSim'),
+  ('Ngram', 'BigramCosineSim'),
+]
+
+
+def extract_test_files():
+  '''
+  Extract the labelled test files into ./TestFiles
+  '''
+  with zipfile.ZipFile(CONFIG_PATH, 'r') as zip:
+    zip.extractall()
 
 
 # To generate colored Text
@@ -54,34 +73,40 @@ match = 0
 
 def processFile(scan_input):
   '''
-  processFile function runs the agent command on the bash/terminal and gets the
-  result for the given file
+  processFile runs the agent on the given file and records the outcome.
 
-  :param filepath: The path of the file to be scanned
-  :param similarity: Similarity type of the agent
-  :return: Returns 1 if the result found by agent is correct and otherwise returns false
-  :rtype: int
+  :param scan_input: Tuple of (scanner object, file path)
+  :return: Dict with the file name, expected license, predicted license,
+           status ('ok', 'null' or 'error') and error message if any
+  :rtype: dict
   '''
   scanner = scan_input[0]
   filepath = scan_input[1]
-  if filepath:
-    # Extract Filename from the Path
-    base = os.path.basename(filepath)
-    filename = os.path.splitext(base)[0]
-    # Run Scanner
-    try:
-      temp = scanner.scan(filepath)
-      if temp == -1 or len(temp) == 0:
-        temp = [{'shortname': 'NULL'}]
-      result = temp[0]['shortname']
-      result = result.strip("['']")
-      prCyan("\n" + " ====> " + 'On File: ' + filename)
-      tqdm.write("The Obtained result by agent is: " + result)
-      if filename == result:
-        return 1
-      return 0
-    except Exception:
-      return 0
+  base = os.path.basename(filepath)
+  filename = os.path.splitext(base)[0]
+  record = {
+    'file': base,
+    'expected': filename,
+    'predicted': None,
+    'status': 'ok',
+    'error': None
+  }
+  try:
+    temp = scanner.scan(filepath)
+    if temp == -1 or len(temp) == 0:
+      temp = [{'shortname': 'NULL'}]
+    result = temp[0]['shortname']
+    result = result.strip("['']")
+    prCyan("\n" + " ====> " + 'On File: ' + filename)
+    tqdm.write("The Obtained result by agent is: " + result)
+    record['predicted'] = result
+    if result == 'NULL':
+      record['status'] = 'null'
+  except Exception as e:
+    record['status'] = 'error'
+    record['error'] = str(e)
+    tqdm.write("Error while scanning " + base + ": " + str(e))
+  return record
 
 
 def evaluate(scanner):
@@ -91,8 +116,9 @@ def evaluate(scanner):
   name. Successful matched % is then returned as accuracy.
 
   :param scanner: Scanner object prepared to run scans
-  :return: Time elapsed in the evaluation & the accuracy
-  :rtype: float, int
+  :return: Time elapsed in the evaluation, the accuracy and the per-file
+           records returned by processFile()
+  :rtype: float, float, list
   '''
   start_time = time.time()
   fileList = []
@@ -101,15 +127,39 @@ def evaluate(scanner):
       filepath = root + os.sep + file
       fileList.append((scanner, filepath))
 
-  result = process_map(processFile, fileList, max_workers=os.cpu_count())
+  records = process_map(processFile, fileList, max_workers=os.cpu_count())
 
-  # success_count is the count of successfully matched files
-  success_count = sum(result)
-  accuracy = success_count * 100 / len(result)
-  prCyan('Total files scanned = ' + str(len(fileList)))
-  prGreen('Successfully matched = ' + str(success_count))
+  summary = summarize(records)
+  prCyan('Total files scanned = ' + str(summary['total']))
+  prGreen('Successfully matched = ' + str(summary['correct']))
   timeElapsed = time.time() - start_time
-  return (timeElapsed, accuracy)
+  return (timeElapsed, summary['accuracy'], records)
+
+
+def print_result(timeElapsed, accuracy):
+  print('\n' + '      ++++++++++++++++++ Result ++++++++++++++++++')
+  print('      ' + '+' * 44)
+  prGreen("     ---> Total time elapsed: " + str(round(timeElapsed, 2)) + " Seconds  <---")
+  prGreen("     ---> Accuracy: " + str(round(accuracy, 2)) + "%                     <---")
+  print('      ' + '+' * 44)
+  print('      ' + '+' * 44)
+
+
+def print_details(records):
+  '''
+  Print the outcome breakdown and the list of misclassified files
+  '''
+  summary = summarize(records)
+  print("\n      Correct: {correct}  Wrong: {wrong}  NULL: {null}  "
+        "Errors: {errors}".format(**summary))
+  mistakes = misclassifications(records)
+  if mistakes:
+    print("\n      Misclassified files (expected -> predicted):")
+    for expected, predicted in mistakes:
+      print("        " + expected + " -> " + predicted)
+  for r in records:
+    if r['status'] == 'error':
+      print("      Error in " + r['file'] + ": " + str(r['error']))
 
 
 if __name__ == "__main__":
@@ -117,7 +167,7 @@ if __name__ == "__main__":
                                        "data/licenses/processedLicenses.csv")
   defaultJSON = resource_filename("atarashi", "data/Ngram_keywords.json")
   parser = argparse.ArgumentParser()
-  parser.add_argument("-a", "--agent_name", required=True,
+  parser.add_argument("-a", "--agent_name", required=False,
                       choices=['wordFrequencySimilarity', 'DLD', 'tfidf', 'Ngram'],
                       help="Name of the agent that needs to be run")
   parser.add_argument("-s", "--similarity", required=False, default="CosineSim",
@@ -130,7 +180,16 @@ if __name__ == "__main__":
                       help="Specify the location of Ngram JSON (for Ngram agent only)")
   parser.add_argument("-v", "--verbose", help="increase output verbosity",
                       action="count", default=0)
+  parser.add_argument("--all", action="store_true",
+                      help="Evaluate every agent and similarity combination"
+                           " and print a comparison table")
+  parser.add_argument("--confusion-csv", dest="confusion_csv", required=False,
+                      help="Save the confusion matrix (expected vs predicted)"
+                           " as CSV. With --all, one file per combination"
+                           " is written using this path as prefix")
   args = parser.parse_args()
+  if not args.all and args.agent_name is None:
+    parser.error("one of -a/--agent_name or --all is required")
   agent_name = args.agent_name
   similarity = args.similarity
   verbose = args.verbose
@@ -141,19 +200,35 @@ if __name__ == "__main__":
     processedLicense = defaultProcessed
   if ngram_json is None:
     ngram_json = defaultJSON
-  agent_name = args.agent_name
-  similarity = args.similarity
+  confusion_csv = args.confusion_csv
 
-  scanner = build_scanner_obj(processedLicense, agent_name, similarity,
-                              ngram_json, verbose)
-  timeElapsed, accuracy = evaluate(scanner)
-
-  print('\n' + '      ++++++++++++++++++ Result ++++++++++++++++++')
-  print('      ' + '+' * 44)
-  prGreen("     ---> Total time elapsed: " + str(round(timeElapsed, 2)) + " Seconds  <---")
-  prGreen("     ---> Accuracy: " + str(round(accuracy, 2)) + "%                     <---")
-  print('      ' + '+' * 44)
-  print('      ' + '+' * 44)
-
-  shutil.rmtree('TestFiles')
+  extract_test_files()
+  try:
+    if args.all:
+      rows = []
+      for agent, sim in AGENT_COMBINATIONS:
+        prCyan("\n ====> Evaluating " + agent + (" with " + sim if sim else ""))
+        scanner = build_scanner_obj(processedLicense, agent,
+                                    sim or "CosineSim", ngram_json, verbose)
+        timeElapsed, accuracy, records = evaluate(scanner)
+        rows.append(dict(summarize(records), agent=agent, similarity=sim,
+                         time=timeElapsed))
+        if confusion_csv:
+          name = agent + ("_" + sim if sim else "")
+          root, ext = os.path.splitext(confusion_csv)
+          confusion_matrix(records).to_csv(root + "_" + name + (ext or ".csv"))
+      print("\n" + format_table(rows))
+    else:
+      scanner = build_scanner_obj(processedLicense, agent_name, similarity,
+                                  ngram_json, verbose)
+      if scanner == -1:
+        sys.exit(1)
+      timeElapsed, accuracy, records = evaluate(scanner)
+      print_result(timeElapsed, accuracy)
+      print_details(records)
+      if confusion_csv:
+        confusion_matrix(records).to_csv(confusion_csv)
+        print("\n      Confusion matrix saved to " + confusion_csv)
+  finally:
+    shutil.rmtree('TestFiles', ignore_errors=True)
 
